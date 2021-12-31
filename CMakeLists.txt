@@ -421,21 +421,6 @@ if(BUILD_DOCS)
   add_subdirectory(doc)
 endif()
 
-if(BUILD_RECASTDEMOMOD)
-  if (WIN32)
-    if (NOT BUILD_EXTRACTORS)
-      add_subdirectory(contrib/mmap)
-    endif()
-    add_subdirectory(contrib/recastdemomod)
-  else()
-    message(STATUS "BUILD_RECASTDEMOMOD forced to OFF. Not supported on non windows system.")
-  endif()
-endif()
-
-if(BUILD_GIT_ID)
-  add_subdirectory(contrib/git_id)
-endif()
-
 # set default startup project
 if(MSVC)
   if(BUILD_GAME_SERVER)
