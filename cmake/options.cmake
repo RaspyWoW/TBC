@@ -7,7 +7,6 @@ option(BUILD_EXTRACTORS     "Build map/dbc/vmap/mmap extractors"       OFF)
 option(BUILD_SCRIPTDEV      "Build ScriptDev. (OFF Speedup build)"     ON )
 option(BUILD_PLAYERBOT      "Build Playerbot mod"                      OFF)
 option(BUILD_AHBOT          "Build Auction House Bot mod"              OFF)
-option(BUILD_METRICS        "Build Metrics, generate data for Grafana" OFF)
 
 message("")
 message(STATUS
