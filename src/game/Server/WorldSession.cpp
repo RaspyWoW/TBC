@@ -97,7 +97,7 @@ WorldSession::WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8
     m_gameBuild(0), m_clientOS(CLIENT_OS_UNKNOWN), m_accountMaxLevel(0), m_lastAnticheatUpdate(0), m_anticheat(nullptr), m_localAddress("127.0.0.1"),
     m_requestSocket(nullptr), m_sessionState(WORLD_SESSION_STATE_CREATED),
     _security(sec), _accountId(id), m_expansion(expansion), m_orderCounter(0), _logoutTime(0), m_playerSave(true),
-    m_inQueue(false), m_playerLoading(false), m_kickSession(false), m_playerLogout(false), m_playerRecentlyLogout(false),
+    m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false),
     m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(sObjectMgr.GetStorageLocaleIndexFor(locale)),
     m_latency(0), m_tutorialState(TUTORIALDATA_UNCHANGED),
     m_timeSyncClockDeltaQueue(6), m_timeSyncClockDelta(0), m_pendingTimeSyncRequests(), m_timeSyncNextCounter(0), m_timeSyncTimer(0),
@@ -672,11 +672,11 @@ void WorldSession::LogoutPlayer()
         if (!_player->GetPlayerbotAI())
         {
             // Unmodded core code below
-            SqlStatement stmt = LoginDatabase.CreateStatement(id, "UPDATE account SET active_realm_id = ? WHERE id = ?");
+            SqlStatement stmt = LoginDatabase.CreateStatement(id, "UPDATE `account` SET `current_realm` = ? WHERE `id` = ?");
             stmt.PExecute(uint32(0), GetAccountId());
         }
 #else
-        SqlStatement stmt = LoginDatabase.CreateStatement(id, "UPDATE account SET active_realm_id = ? WHERE id = ?");
+        SqlStatement stmt = LoginDatabase.CreateStatement(id, "UPDATE `account` SET `current_realm` = ? WHERE `id` = ?");
         stmt.PExecute(uint32(0), GetAccountId());
 #endif
 
@@ -774,16 +774,6 @@ void WorldSession::LogoutPlayer()
     SetInCharSelection();
 
     LogoutRequest(0);
-
-    if (m_kickSession)
-    {
-        if (m_Socket)
-        {
-            m_Socket->Close();
-            m_Socket = nullptr;
-        }
-        m_kickSession = false;
-    }
 }
 
 /// Kick a player out of the World
@@ -792,8 +782,13 @@ void WorldSession::KickPlayer(bool save, bool inPlace)
     m_playerSave = save;
     if (inPlace)
     {
-        m_kickSession = true;
-        LogoutPlayer();
+        if (m_Socket)
+        {
+            LogoutPlayer();
+            m_Socket->Close();
+            m_Socket = nullptr;
+        }
+
         return;
     }
 
@@ -811,7 +806,7 @@ void WorldSession::KickPlayer(bool save, bool inPlace)
     else
         LogoutRequest(time(nullptr) - 20, false);
 #else
-    LogoutRequest(time(nullptr) - 20, false, true);
+    LogoutRequest(time(nullptr) - 20, false);
 #endif
 }
 

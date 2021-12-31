@@ -461,8 +461,6 @@ bool Database::CheckRequiredField(char const* table_name, char const* required_n
         db_name = "WORLD";
     else if (!strcmp(table_name, "character_db_version") || !strcmp(table_name, "playerbot_db_version"))
         db_name = "CHARACTER";
-    else if (!strcmp(table_name, "realmd_db_version"))
-        db_name = "REALMD";
     else
         db_name = "UNKNOWN";
 

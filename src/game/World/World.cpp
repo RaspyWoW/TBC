@@ -1864,20 +1864,16 @@ void World::WarnAccount(uint32 accountId, std::string from, std::string reason, 
     reason = std::string(type) + ": " + reason;
     LoginDatabase.escape_string(reason);
 
-    LoginDatabase.PExecute("INSERT INTO account_banned (account_id, banned_at, expires_at, banned_by, reason, active) VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+1, '%s', '%s', '0')",
-        accountId, from.c_str(), reason.c_str());
+    LoginDatabase.PExecute("INSERT INTO `account_banned` (`id`, `bandate`, `unbandate`, `bannedby`, `banreason`, `active`) VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP() + 1, '%s', '%s', '0')", accountId, from.c_str(), reason.c_str());
 }
 
 BanReturn World::BanAccount(WorldSession *session, uint32 duration_secs, const std::string& reason, const std::string& author)
 {
     if (duration_secs)
-        LoginDatabase.PExecute("INSERT INTO account_banned(account_id, banned_at, expires_at, banned_by, reason, active) VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
-            session->GetAccountId(), duration_secs, author.c_str(), reason.c_str());
+        LoginDatabase.PExecute("INSERT INTO account_banned(`id`, `bandate`, `unbandate`, `bannedby`, `banreason`, `active`) VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP() + %u, '%s', '%s', '1')", session->GetAccountId(), duration_secs, author.c_str(), reason.c_str());
     else
-        LoginDatabase.PExecute("INSERT INTO account_banned(account_id, banned_at, expires_at, banned_by, reason, active) VALUES ('%u', UNIX_TIMESTAMP(), 0, '%s', '%s', '1')",
-            session->GetAccountId(), author.c_str(), reason.c_str());
+        LoginDatabase.PExecute("INSERT INTO account_banned(`id`, `bandate`, `unbandate`, `bannedby`, `banreason`, `active`) VALUES ('%u', UNIX_TIMESTAMP(), 0, '%s', '%s', '1')", session->GetAccountId(), author.c_str(), reason.c_str());
 
-    session->KickPlayer();
     return BAN_SUCCESS;
 }
 
@@ -1896,7 +1892,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, uint32 duration_
     {
         case BAN_IP:
             // No SQL injection as strings are escaped
-            resultAccounts = LoginDatabase.PQuery("SELECT accountId FROM account_logons WHERE ip = '%s' ORDER BY loginTime DESC LIMIT 1", nameOrIP.c_str());
+            resultAccounts = LoginDatabase.PQuery("SELECT `id` FROM `account` WHERE `last_ip` = '%s' ORDER BY `last_login` DESC LIMIT 1", nameOrIP.c_str());
             LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')", nameOrIP.c_str(), duration_secs, safe_author.c_str(), reason.c_str());
             break;
         case BAN_ACCOUNT:
@@ -1928,13 +1924,14 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, uint32 duration_
         if (mode != BAN_IP)
         {
             // No SQL injection as strings are escaped
-            LoginDatabase.PExecute("INSERT INTO account_banned(account_id, banned_at, expires_at, banned_by, reason, active) VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
-                                   account, duration_secs, safe_author.c_str(), reason.c_str());
+            LoginDatabase.PExecute("INSERT INTO account_banned(`id`, `bandate`, `unbandate`, `bannedby`, `banreason`, `active`) VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP() + %u, '%s', '%s', '1')", account, duration_secs, safe_author.c_str(), reason.c_str());
         }
 
         if (WorldSession* sess = FindSession(account))
+        {
             if (std::string(sess->GetPlayerName()) != author)
-                sess->KickPlayer();
+                sess->KickPlayer(true, true);
+        }
     }
     while (resultAccounts->NextRow());
 
@@ -1962,9 +1959,10 @@ bool World::RemoveBanAccount(BanMode mode, const std::string& source, const std:
             return false;
 
         // NO SQL injection as account is uint32
-        LoginDatabase.PExecute("UPDATE account_banned SET active = '0', unbanned_at = UNIX_TIMESTAMP(), unbanned_by = '%s' WHERE account_id = '%u'", source.data(), account);
+        LoginDatabase.PExecute("UPDATE `account_banned` SET `active` = '0' WHERE `id` = '%u'", account);
         WarnAccount(account, source, message, "UNBAN");
     }
+
     return true;
 }
 

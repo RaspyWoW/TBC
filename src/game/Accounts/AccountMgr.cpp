@@ -243,6 +243,12 @@ AccountTypes AccountMgr::GetSecurity(uint32 acc_id)
     return SEC_PLAYER;
 }
 
+void AccountMgr::SetSecurity(const uint32 accId, AccountTypes sec)
+{
+    LoginDatabase.PExecute("DELETE FROM `account_access` WHERE `id`=%u", accId);
+    LoginDatabase.PExecute("INSERT INTO `account_access` SET `RealmID`='-1', `id`=%u, `gmlevel`=%u", accId, sec);
+}
+
 bool AccountMgr::GetName(uint32 acc_id, std::string& name) const
 {
     QueryResult* result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = '%u'", acc_id);

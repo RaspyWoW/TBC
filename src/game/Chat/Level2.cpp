@@ -2512,7 +2512,7 @@ bool ChatHandler::HandleKickPlayerCommand(char* args)
 
     // send before target pointer invalidate
     PSendSysMessage(LANG_COMMAND_KICKMESSAGE, GetNameLink(target).c_str());
-    target->GetSession()->KickPlayer();
+    target->GetSession()->KickPlayer(true, true);
     return true;
 }
 
@@ -2569,7 +2569,7 @@ bool ChatHandler::HandlePInfoCommand(char* args)
     AccountTypes security = SEC_PLAYER;
     std::string last_login = GetMangosString(LANG_ERROR);
 
-    QueryResult* result = LoginDatabase.PQuery("SELECT username,gmlevel,ip,loginTime FROM account a JOIN account_logons b ON(a.id=b.accountId) WHERE a.id = '%u' ORDER BY loginTime DESC LIMIT 1", accId);
+    QueryResult const* result = LoginDatabase.PQuery("SELECT `username`, `gmlevel`, `last_ip`, `last_login` FROM `account` WHERE `id` = '%u' ORDER BY `last_login` DESC LIMIT 1", accId);
     if (result)
     {
         Field* fields = result->Fetch();
@@ -3927,8 +3927,10 @@ bool ChatHandler::HandleLookupAccountEmailCommand(char* args)
 
     std::string email = emailStr;
     LoginDatabase.escape_string(email);
-    //                                                 0   1         2        3        4
-    QueryResult* result = LoginDatabase.PQuery("SELECT a.id, username, ip, gmlevel, expansion FROM account a join account_logons b on (a.id=b.accountId) WHERE email " _LIKE_ " " _CONCAT3_("'%%'", "'%s'", "'%%'  ORDER BY loginTime DESC LIMIT 1"), email.c_str());
+
+    QueryResult* result = LoginDatabase.PQuery("SELECT `id`, `username`, `last_ip`, 0, `expansion` FROM `account` WHERE `email` " _LIKE_ " " _CONCAT3_("'%%'", "'%s'", "'%%'") " LIMIT %u", email.c_str(), limit);
+    if (!result)
+        return false;
 
     return ShowAccountListHelper(result, &limit);
 }
@@ -3946,8 +3948,9 @@ bool ChatHandler::HandleLookupAccountIpCommand(char* args)
     std::string ip = ipStr;
     LoginDatabase.escape_string(ip);
 
-    //                                                 0            1         2        3        4
-    QueryResult* result = LoginDatabase.PQuery("SELECT distinct id, username, ip, gmlevel, expansion FROM account a join account_logons b on(a.id=b.accountId) WHERE ip " _LIKE_ " " _CONCAT3_("'%%'", "'%s'", "'%%'"), ip.c_str());
+    QueryResult* result = LoginDatabase.PQuery("SELECT `id`, `username`, `last_ip`, 0, `expansion` FROM `account` WHERE `last_ip` " _LIKE_ " " _CONCAT3_("'%%'", "'%%'", "'%%'") " LIMIT %u", limit);
+    if (!result)
+        return false;
 
     return ShowAccountListHelper(result, &limit);
 }
@@ -3967,8 +3970,10 @@ bool ChatHandler::HandleLookupAccountNameCommand(char* args)
         return false;
 
     LoginDatabase.escape_string(account);
-    //                                                 0   1         2        3        4
-    QueryResult* result = LoginDatabase.PQuery("SELECT a.id, username, ip, gmlevel, expansion FROM account a join account_logons b on (a.id=b.accountId) WHERE username " _LIKE_ " " _CONCAT3_("'%%'", "'%s'", "'%%' ORDER BY loginTime DESC LIMIT 1"), account.c_str());
+
+    QueryResult* result = LoginDatabase.PQuery("SELECT `id`, `username`, `last_ip`, 0, `expansion` FROM `account` WHERE `username` " _LIKE_ " " _CONCAT3_("'%%'", "'%s'", "'%%'") " LIMIT %u", account.c_str(), limit);
+    if (!result)
+        return false;
 
     return ShowAccountListHelper(result, &limit);
 }
@@ -4038,7 +4043,9 @@ bool ChatHandler::HandleLookupPlayerIpCommand(char* args)
     std::string ip = ipStr;
     LoginDatabase.escape_string(ip);
 
-    QueryResult* result = LoginDatabase.PQuery("SELECT a.id, username, distinct ip FROM account a join account_logons b on (a.id=b.accountId) WHERE b.ip " _LIKE_ " " _CONCAT3_("'%%'", "'%s'", "'%%'  ORDER BY loginTime DESC LIMIT 1"), ip.c_str());
+    QueryResult* result = LoginDatabase.PQuery("SELECT `id`, `username` FROM `account` WHERE `last_ip` " _LIKE_ " " _CONCAT3_("'%%'", "'%s'", "'%%'"), ip.c_str());
+    if (!result)
+        return false;
 
     return LookupPlayerSearchCommand(result, &limit);
 }

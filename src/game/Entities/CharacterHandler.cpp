@@ -736,10 +736,10 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     static SqlStatementID updChars;
     static SqlStatementID updAccount;
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updChars, "UPDATE characters SET online = 1 WHERE guid = ?");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updChars, "UPDATE `characters` SET `online` = 1 WHERE `guid` = ?");
     stmt.PExecute(pCurrChar->GetGUIDLow());
 
-    stmt = LoginDatabase.CreateStatement(updAccount, "UPDATE account SET active_realm_id = ? WHERE id = ?");
+    stmt = LoginDatabase.CreateStatement(updAccount, "UPDATE `account` SET `current_realm` = ? WHERE `id` = ?");
     stmt.PExecute(realmID, GetAccountId());
 
     pCurrChar->SetInGameTime(WorldTimer::getMSTime());
