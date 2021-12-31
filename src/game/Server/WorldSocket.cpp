@@ -333,23 +333,7 @@ bool WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     LoginDatabase.escape_string(safe_account);
     // No SQL injection, username escaped.
 
-    QueryResult* result =
-        LoginDatabase.PQuery("SELECT "
-                             "a.id, "                    //0
-                             "gmlevel, "                 //1
-                             "sessionkey, "              //2
-                             "lockedIp, "                //3
-                             "locked, "                  //4
-                             "v, "                       //5
-                             "s, "                       //6
-                             "expansion, "               //7
-                             "mutetime, "                //8
-                             "locale, "                  //9
-                             "os, "                      //10
-                             "flags "                    //11
-                             "FROM account a "
-                             "WHERE username = '%s'",
-                             safe_account.c_str());
+    QueryResult const* result = LoginDatabase.PQuery("SELECT `id`, `gmlevel`, `sessionkey`, `last_ip`, `locked`, `v`, `s`, `expansion`, `mutetime`, `locale`, `os`, `flags` FROM `account` WHERE `username` = '%s'", safe_account.c_str());
 
     // Stop if the account is not found
     if (!result)
@@ -424,11 +408,7 @@ bool WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     delete result;
 
     // Re-check account ban (same check as in realmd)
-    QueryResult* banresult =
-        LoginDatabase.PQuery("SELECT 1 FROM account_banned WHERE account_id = %u AND active = 1 AND (expires_at > UNIX_TIMESTAMP() OR expires_at = banned_at)"
-                             "UNION "
-                             "SELECT 1 FROM ip_banned WHERE (expires_at = banned_at OR expires_at > UNIX_TIMESTAMP()) AND ip = '%s'",
-                             id, GetRemoteAddress().c_str());
+    QueryResult* banresult = LoginDatabase.PQuery("SELECT 1 FROM `account_banned` WHERE `id` = %u AND `active` = 1 AND (unbandate > UNIX_TIMESTAMP() OR `unbandate` = `bandate`) UNION SELECT 1 FROM `ip_banned` WHERE (`unbandate` = `bandate` OR `unbandate` > UNIX_TIMESTAMP()) AND `ip` = '%s'", id, GetRemoteAddress().c_str());
 
     if (banresult) // if account banned
     {
@@ -497,13 +477,6 @@ bool WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         return -1;
     }
 
-    // Update the last_ip in the database
-    // No SQL injection, username escaped.
-    static SqlStatementID updAccount;
-
-    SqlStatement stmt = LoginDatabase.CreateStatement(updAccount, "INSERT INTO account_logons(accountId,ip,loginTime,loginSource) VALUES(?,?,NOW(),?)");
-    stmt.PExecute(id, address.c_str(), std::to_string(LOGIN_TYPE_MANGOSD).c_str());
-
     m_crypt.Init(&K);
 
     m_session = sWorld.FindSession(id);
@@ -551,26 +524,8 @@ bool WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     }
     else
     {
-        uint32 otherRaf = 0;
-        bool isRecruiter = false;
-        {
-            std::unique_ptr<QueryResult> result(LoginDatabase.PQuery("SELECT referrer, referred FROM account_raf WHERE referrer=%u OR referred=%u", id, id));
-            if (result)
-            {
-                Field* fields = result->Fetch();
-                uint32 recruiter = fields[0].GetUInt32();
-                if (id == recruiter)
-                {
-                    isRecruiter = true;
-                    otherRaf = fields[1].GetUInt32();
-                }
-                else
-                    otherRaf = recruiter;
-            }
-        }
-
         // new session
-        if (!(m_session = new WorldSession(id, this, AccountTypes(security), expansion, mutetime, locale, account, accountFlags, otherRaf, isRecruiter)))
+        if (!(m_session = new WorldSession(id, this, AccountTypes(security), expansion, mutetime, locale, account, accountFlags, 0, false)))
             return false;
 
         m_session->LoadGlobalAccountData();
