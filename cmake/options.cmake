@@ -22,5 +22,5 @@ message(STATUS
     BUILD_SCRIPTDEV         Build scriptdev. (Disable it to speedup build in dev mode by not including scripts)
     BUILD_PLAYERBOT         Build Playerbot mod
     BUILD_AHBOT             Build Auction House Bot mod
-)
+")
 message("")
