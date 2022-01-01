@@ -14951,7 +14951,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
 
     // init saved position, and fix it later if problematic
     uint32 transGUID = fields[31].GetUInt32();
-    Relocate(fields[12].GetFloat(), fields[14].GetFloat(), fields[15].GetFloat(), fields[17].GetFloat());
+    Relocate(fields[13].GetFloat(), fields[14].GetFloat(), fields[15].GetFloat(), fields[17].GetFloat());
     SetLocationMapId(fields[16].GetUInt32());
 
     uint32 difficulty = fields[39].GetUInt32();
