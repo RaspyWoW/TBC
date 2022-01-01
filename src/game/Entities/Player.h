@@ -1935,6 +1935,9 @@ class Player : public Unit
         void SendAuraDurationsForTarget(Unit* target);
         void SendAuraDurationsOnLogin(bool visible); // uses different packets
 
+        void ForbidToExportToon();
+        bool IsAllowToExportToon() const { return m_bIsAllowedToExportToon; }
+
         PlayerMenu* GetPlayerMenu() const { return m_playerMenu.get(); }
         std::vector<ItemSetEffect*> ItemSetEff;
 
@@ -2605,6 +2608,8 @@ class Player : public Unit
         float m_energyRegenRate;
 
         bool m_launched;
+
+        bool m_bIsAllowedToExportToon;
 
         std::unique_ptr<Spell> m_queuedSpell;
 
