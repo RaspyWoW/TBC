@@ -33,8 +33,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Define here name of the binaries
-set(CMANGOS_BINARY_SERVER_NAME "mangosd")
-set(CMANGOS_BINARY_REALMD_NAME "realmd")
+set(CMANGOS_BINARY_SERVER_NAME "worldserver")
 
 # Function to remove duplicate entries in provided string
 function(RemoveDuplicateSubstring stringIn stringOut)
@@ -214,7 +213,7 @@ endif()
 # Find needed packages and if necessery abort if something important is missing
 find_package(Boost REQUIRED COMPONENTS system program_options thread regex serialization filesystem)
 
-if(NOT Boost_FOUND AND (BUILD_GAME_SERVER OR BUILD_LOGIN_SERVER))
+if(NOT Boost_FOUND AND BUILD_GAME_SERVER)
   message(STATUS "BOOST_ROOT = $ENV{BOOST_ROOT}")
   message(STATUS "BOOST_LIBRARYDIR = $ENV{BOOST_LIBRARYDIR}")
   if ("$ENV{BOOST_ROOT}" STREQUAL "")
@@ -231,7 +230,7 @@ if(NOT Boost_FOUND AND (BUILD_GAME_SERVER OR BUILD_LOGIN_SERVER))
 endif()
 
 # Win32 delivered packages
-if(WIN32 AND (BUILD_GAME_SERVER OR BUILD_LOGIN_SERVER OR BUILD_EXTRACTORS))
+if(WIN32 AND (BUILD_GAME_SERVER OR BUILD_EXTRACTORS))
   set(MYSQL_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/dep/lib/include/mysql")
   set(MYSQL_LIBRARY "${CMAKE_SOURCE_DIR}/dep/lib/${DEP_ARCH}_release/libmySQL.lib")
   set(MYSQL_DEBUG_LIBRARY "${CMAKE_SOURCE_DIR}/dep/lib/${DEP_ARCH}_debug/libmySQL.lib")
@@ -247,12 +246,8 @@ if(WIN32 AND (BUILD_GAME_SERVER OR BUILD_LOGIN_SERVER OR BUILD_EXTRACTORS))
 endif()
 
 # *nix-specific packages
-if(UNIX AND (BUILD_GAME_SERVER OR BUILD_LOGIN_SERVER OR BUILD_EXTRACTORS))
-  if(POSTGRESQL)
-    find_package(PostgreSQL REQUIRED)
-  else()
+if(UNIX AND (BUILD_GAME_SERVER OR BUILD_EXTRACTORS))
     find_package(MySQL REQUIRED)
-  endif()
 
   if(APPLE)
     find_package(OpenSSL QUIET)
@@ -363,7 +358,7 @@ endif()
 # print out the results before continuing
 include(cmake/showoptions.cmake)
 
-if(NOT BUILD_GAME_SERVER AND NOT BUILD_LOGIN_SERVER AND NOT BUILD_EXTRACTORS AND NOT BUILD_DOCS AND NOT BUILD_RECASTDEMOMOD)
+if(NOT BUILD_GAME_SERVER AND NOT BUILD_EXTRACTORS AND NOT BUILD_DOCS AND NOT BUILD_RECASTDEMOMOD)
   message(FATAL_ERROR "You must select something to build!")
 endif()
 
@@ -381,12 +376,6 @@ add_subdirectory(dep)
 # Don't place this above 'dep' subdirectory! Because of defines build will crash.
 set(DEFINITIONS "")
 
-if(POSTGRESQL)
-  set(DEFINITIONS ${DEFINITIONS} DO_POSTGRESQL)
-else()
-  set(DEFINITIONS ${DEFINITIONS} DO_MYSQL)
-endif()
-
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "${DEFINITIONS};${DEFINITIONS_DEBUG}")
 elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
@@ -401,7 +390,7 @@ if(UNIX)
   add_compile_definitions(SYSCONFDIR="../${CONF_FOLDER_NAME}/")
 endif()
 
-if(BUILD_GAME_SERVER OR BUILD_LOGIN_SERVER OR BUILD_EXTRACTORS)
+if(BUILD_GAME_SERVER OR BUILD_EXTRACTORS)
   add_subdirectory(src)
 endif()
 
@@ -417,21 +406,9 @@ if(BUILD_EXTRACTORS)
   endif()
 endif()
 
-if(BUILD_DOCS)
-  add_subdirectory(doc)
-endif()
-
 # set default startup project
 if(MSVC)
   if(BUILD_GAME_SERVER)
     set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${CMANGOS_BINARY_SERVER_NAME})
-  elseif(BUILD_LOGIN_SERVER)
-    set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${CMANGOS_BINARY_REALMD_NAME})
-  elseif(BUILD_RECASTDEMOMOD)
-    set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT "RecastDemoMod")
   endif()
 endif()
-
-# if(SQL)
-#   add_subdirectory(sql)
-# endif()
