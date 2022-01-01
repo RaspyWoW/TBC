@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the CMaNGOS Project. See AUTHORS file for Copyright information
  *
  * This program is free software; you can redistribute it and/or modify
@@ -160,17 +160,25 @@ int main(int argc, char* argv[])
     }
 #endif
 
-    sLog.outString("[%s World server v%s] id(%d) port(%d)", _PACKAGENAME, VERSION
-        , sConfig.GetIntDefault("RealmID", -1), sConfig.GetIntDefault("WorldServerPort", -1));
-    sLog.outString("\n\n"
-        "       _____     __  __       _   _  _____  ____   _____ \n"
-        "      / ____|   |  \\/  |     | \\ | |/ ____|/ __ \\ / ____|\n"
-        "     | |        | \\  / |     |  \\| | |  __  |  | | (___  \n"
-        "     | |ontinued| |\\/| | __ _| . ` | | |_ | |  | |\\___ \\ \n"
-        "     | |____    | |  | |/ _` | |\\  | |__| | |__| |____) |\n"
-        "      \\_____|   |_|  |_| (_| |_| \\_|\\_____|\\____/ \\____/ \n"
-        "      http://cmangos.net\\__,_|     Doing emulation right!\n\n");
-
+    sLog.outString("[%s World server v%s] id(%d) port(%d)", _PACKAGENAME, VERSION, sConfig.GetIntDefault("RealmID", -1), sConfig.GetIntDefault("WorldServerPort", -1));
+    sLog.outString("");
+    sLog.outString(" ,▄▄▄██▄▄▄,    ,▄▄▄███▄▄,");
+    sLog.outString("██░░░░░░░░▀█▄▄█▀░░░░░░░░▀█▌");
+    sLog.outString("█▌▒▒░░░▄░▒▒░██░▒▒▒░░░░░▒░█");
+    sLog.outString("▀█▄▒▒▒▒▒░▀▄▄██▄▄█▀░▒▒▒▒░█▀");
+    sLog.outString("  ██▄░░▒░▄██████▄░░▒░▄██▀");
+    sLog.outString("    █████▀▒▒▒▒▒▒▀█████");
+    sLog.outString("    ██╣╣╣╣╣╣╣╣╣╣╣╣╣╣██");
+    sLog.outString("   ██▒╢███▒╣▒▌╣╣███╣▒██");
+    sLog.outString("  ▐█▒╣╣╣██▌▒██▒▒██╢╣╣▒█▌");
+    sLog.outString("  ██▒╣╣╣▒████████▌╣╣╣╢█▌");
+    sLog.outString("   ██╣╣╣╢███▒▒███╢╣╣╣██");
+    sLog.outString("   ▀██╣╣▒███╣╣███▒╣╣██▀");
+    sLog.outString("    ████▒▒╣╣╣╣╣╣▒▒████");
+    sLog.outString("        ▀████████▀");
+    sLog.outString("");
+    sLog.outString("RaspyWoW - https://raspywow.org");
+    sLog.outString("");
     sLog.outString("Built on %s at %s", __DATE__, __TIME__);
     sLog.outString("Built for %s", _ENDIAN_PLATFORM);
     sLog.outString("Using commit hash(%s) committed on %s", REVISION_ID, REVISION_DATE);
