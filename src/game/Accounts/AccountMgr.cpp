@@ -343,3 +343,23 @@ uint32 AccountMgr::GetFlags(uint32 acc_id) const
 
     return 0;
 }
+
+bool AccountMgr::IsPlayerAccount(const uint32 gmlevel) const
+{
+    return gmlevel == SEC_PLAYER;
+}
+
+bool AccountMgr::IsGMAccount(const uint32 gmlevel) const
+{
+    return gmlevel >= SEC_MODERATOR && gmlevel <= SEC_CONSOLE;
+}
+
+bool AccountMgr::IsAdminAccount(const uint32 gmlevel) const
+{
+    return gmlevel == SEC_ADMINISTRATOR || gmlevel == SEC_CONSOLE;
+}
+
+bool AccountMgr::IsConsoleAccount(const uint32 gmlevel) const
+{
+    return gmlevel == SEC_CONSOLE;
+}

@@ -40,6 +40,7 @@
 #include "Tools/Language.h"
 #include "AI/ScriptDevAI/ScriptDevAIMgr.h"
 #include "Anticheat/Anticheat.hpp"
+#include "Accounts/AccountMgr.h"
 
 #ifdef BUILD_PLAYERBOT
 #include "PlayerBot/Base/PlayerbotMgr.h"
@@ -692,7 +693,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     pCurrChar->SendInitialPacketsBeforeAddToMap();
 
     // Show cinematic at the first time that player login
-    if (!pCurrChar->getCinematic())
+    AccountMgr AccountMgr;
+    if (AccountMgr.IsPlayerAccount(GetSecurity()) && !pCurrChar->getCinematic())
     {
         pCurrChar->setCinematic(1);
 

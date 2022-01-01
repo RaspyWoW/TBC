@@ -161,7 +161,7 @@ int main(int argc, char* argv[])
 #endif
 
     sLog.outString("[%s World server v%s] id(%d) port(%d)", _PACKAGENAME, VERSION, sConfig.GetIntDefault("RealmID", -1), sConfig.GetIntDefault("WorldServerPort", -1));
-    sLog.outString("");
+    sLog.outString(" ");
     sLog.outString(" ,▄▄▄██▄▄▄,    ,▄▄▄███▄▄,");
     sLog.outString("██░░░░░░░░▀█▄▄█▀░░░░░░░░▀█▌");
     sLog.outString("█▌▒▒░░░▄░▒▒░██░▒▒▒░░░░░▒░█");
@@ -176,9 +176,9 @@ int main(int argc, char* argv[])
     sLog.outString("   ▀██╣╣▒███╣╣███▒╣╣██▀");
     sLog.outString("    ████▒▒╣╣╣╣╣╣▒▒████");
     sLog.outString("        ▀████████▀");
-    sLog.outString("");
+    sLog.outString(" ");
     sLog.outString("RaspyWoW - https://raspywow.org");
-    sLog.outString("");
+    sLog.outString(" ");
     sLog.outString("Built on %s at %s", __DATE__, __TIME__);
     sLog.outString("Built for %s", _ENDIAN_PLATFORM);
     sLog.outString("Using commit hash(%s) committed on %s", REVISION_ID, REVISION_DATE);

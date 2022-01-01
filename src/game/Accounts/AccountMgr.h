@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _ACCMGR_H
-#define _ACCMGR_H
+#pragma once
 
 #include "Common.h"
 
@@ -31,7 +30,7 @@ enum AccountOpResult
     AOR_DB_INTERNAL_ERROR
 };
 
-#define MAX_ACCOUNT_STR 16
+constexpr auto MAX_ACCOUNT_STR = 16;
 
 class AccountMgr
 {
@@ -55,7 +54,11 @@ class AccountMgr
         uint32 GetFlags(uint32 acc_id) const;
 
         static bool normalizeString(std::string& utf8str);
+
+        bool IsPlayerAccount(const uint32 gmlevel) const;
+        bool IsGMAccount(const uint32 gmlevel) const;
+        bool IsAdminAccount(const uint32 gmlevel) const;
+        bool IsConsoleAccount(const uint32 gmlevel) const;
 };
 
 #define sAccountMgr MaNGOS::Singleton<AccountMgr>::Instance()
-#endif

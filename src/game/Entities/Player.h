@@ -1596,7 +1596,7 @@ class Player : public Unit
         void ResurrectUsingRequestDataFinish(); // Finalizes resurrection
 
         uint32 getCinematic() const { return m_cinematic; }
-        void setCinematic(uint32 cine) { m_cinematic = cine; }
+        void setCinematic(const uint32 cine) { m_cinematic = cine; }
 
         static bool IsActionButtonDataValid(uint8 button, uint32 action, uint8 type, Player* player);
         ActionButton* addActionButton(uint8 button, uint32 action, uint8 type);

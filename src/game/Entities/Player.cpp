@@ -784,10 +784,19 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     for (auto& m_item : m_items)
         m_item = nullptr;
 
-    SetLocationMapId(info->mapId);
-    Relocate(info->positionX, info->positionY, info->positionZ, info->orientation);
+    if (GetSession()->GetSecurity() == SEC_PLAYER)
+    {
+        SetLocationMapId(info->mapId);
+        Relocate(info->positionX, info->positionY, info->positionZ, info->orientation);
 
-    SetMap(sMapMgr.CreateMap(info->mapId, this));
+        SetMap(sMapMgr.CreateMap(info->mapId, this));
+    }
+    else
+    {
+        SetLocationMapId(1);
+        Relocate(16201.578f, 16211.127f, 1.139f, 1.072f); // GM Island
+        SetMap(sMapMgr.CreateMap(1, this));
+    }
 
     uint8 powertype = cEntry->powerType;
 
@@ -922,8 +931,18 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
         }
     }
 
-    for (auto item_id_itr : info->item)
-        StoreNewItemInBestSlots(item_id_itr.item_id, item_id_itr.item_amount);
+    if (GetSession()->GetSecurity() == SEC_PLAYER)
+    {
+        for (const auto& item_id_itr : info->item)
+            StoreNewItemInBestSlots(item_id_itr.item_id, item_id_itr.item_amount);
+    }
+    else if (GetSession()->GetSecurity() >= SEC_MODERATOR)
+    {
+        StoreNewItemInBestSlots(4500, 4);  // 4 x Traveler's Backpack
+        StoreNewItemInBestSlots(12064, 1); // Gamemaster Hood
+        StoreNewItemInBestSlots(11508, 1); // Gamemaster's Slippers
+        StoreNewItemInBestSlots(2586, 1);  // Gamemaster's Robe
+    }
 
     // bags and main-hand weapon must equipped at this moment
     // now second pass for not equipped (offhand weapon/shield if it attempt equipped before main-hand weapon)
