@@ -1434,6 +1434,13 @@ Rate.XP.Quest = 1
 Rate.XP.Explore = 1
 
 #
+#    Rate.XP.Personal.Min
+#    Rate.XP.Personal.Max
+
+Rate.XP.Personal.Min = 1
+Rate.XP.Personal.Max = 1
+
+#
 #    Rate.Rest.InGame
 #    Rate.Rest.Offline.InTavernOrCity
 #    Rate.Rest.Offline.InWilderness
