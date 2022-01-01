@@ -1028,7 +1028,8 @@ class Player : public Unit
                 m_ExtraFlags |= PLAYER_EXTRA_AUCTION_NEUTRAL;
         }
 
-
+        void SetPersonalXpRate(const float rate) { if (rate >= 0.0f) m_personalXpRate = rate; }
+        float GetPersonalXpRate() const { return m_personalXpRate; }
         void GiveXP(uint32 xp, Creature* victim, float groupRate = 1.f);
         void GiveLevel(uint32 level);
 
@@ -1303,7 +1304,7 @@ class Player : public Unit
         void AddQuest(Quest const* pQuest, Object* questGiver);
         void CompleteQuest(uint32 quest_id);
         void IncompleteQuest(uint32 quest_id);
-        void RewardQuest(Quest const* pQuest, uint32 reward, Object* questGiver, bool announce = true);
+        void RewardQuest(Quest const* pQuest, const uint32 reward, Object* questGiver, const bool announce = true);
         bool IsQuestExplored(uint32 quest_id) const;
 
         void FailQuest(uint32 questId);
@@ -1935,6 +1936,9 @@ class Player : public Unit
         void SendAuraDurationsForTarget(Unit* target);
         void SendAuraDurationsOnLogin(bool visible); // uses different packets
 
+        void ForbidToExportToon();
+        bool IsAllowToExportToon() const { return m_bIsAllowedToExportToon; }
+
         PlayerMenu* GetPlayerMenu() const { return m_playerMenu.get(); }
         std::vector<ItemSetEffect*> ItemSetEff;
 
@@ -2480,6 +2484,7 @@ class Player : public Unit
         uint8 m_swingErrorMsg;
         float m_ammoDPSMin;
         float m_ammoDPSMax;
+        float m_personalXpRate;
 
         //////////////////// Rest System/////////////////////
         time_t time_inn_enter;
@@ -2604,6 +2609,8 @@ class Player : public Unit
         float m_energyRegenRate;
 
         bool m_launched;
+
+        bool m_bIsAllowedToExportToon;
 
         std::unique_ptr<Spell> m_queuedSpell;
 

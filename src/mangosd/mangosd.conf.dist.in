@@ -813,7 +813,6 @@ MaxPrimaryTradeSkill = 2
 #    TradeSkill.GMIgnore.MaxPrimarySkillsCount
 #        GM level starting from max primary skill count requirement ignored.
 
-
 TradeSkill.GMIgnore.MaxPrimarySkillsCount = 4
 
 #
@@ -1447,6 +1446,32 @@ Rate.RespecBaseCost = 1
 Rate.RespecMultiplicativeCost = 5
 Rate.RespecMinMultiplier = 2
 Rate.RespecMaxMultiplier = 10
+
+#
+#    Rate.XP.Personal.Min
+#        Minimum XP rate.
+#        (0 To stop XP gain.)
+
+Rate.XP.Personal.Min = 1
+
+#
+#    Rate.XP.Personal.Max
+#        Maximum XP rate.
+
+Rate.XP.Personal.Max = 1
+
+#
+#    Rate.XP.Personal.Bonus
+#        Bonus XP rate will be added to Rate.XP.Personal.Max (if Rate.XP.Personal.Bonus == true).
+
+Rate.XP.Personal.Bonus = 1
+
+#
+#    Rate.XP.Personal.Bonus.Min.Lvl
+#        Minimum character level on current account to activate Rate.XP.Personal.Bonus for every other character on your account.
+
+Rate.XP.Personal.Bonus.Min.Lvl = 70
+
 
 #
 #    Rate.Rest.InGame
