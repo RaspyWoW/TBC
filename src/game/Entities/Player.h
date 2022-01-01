@@ -1553,8 +1553,9 @@ class Player : public Unit
         uint32 GetFreeTalentPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS1); }
         void SetFreeTalentPoints(uint32 points) { SetUInt32Value(PLAYER_CHARACTER_POINTS1, points); }
         void UpdateFreeTalentPoints(bool resetIfNeed = true);
-        bool resetTalents(bool no_cost = false);
-        uint32 resetTalentsCost() const;
+        void UpdateResetTalentsMultiplier() const;
+        uint32 GetResetTalentsCost() const;
+        bool ResetTalents(bool no_cost);
         void InitTalentForLevel();
         void LearnTalent(uint32 talentId, uint32 talentRank);
         uint32 CalculateTalentsPoints() const;
@@ -2492,7 +2493,7 @@ class Player : public Unit
         RestType m_restType;
         //////////////////// Rest System/////////////////////
 
-        uint32 m_resetTalentsCost;
+        mutable uint32 m_resetTalentsMultiplier;
         time_t m_resetTalentsTime;
         uint32 m_usedTalentCount;
 

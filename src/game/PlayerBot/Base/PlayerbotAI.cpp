@@ -7506,7 +7506,7 @@ void PlayerbotAI::BankBalance()
 
 bool PlayerbotAI::Talent(Creature* trainer)
 {
-    if (!(m_bot->resetTalents()))
+    if (!(m_bot->ResetTalents(false)))
     {
         std::unique_ptr<WorldPacket> packet(new WorldPacket(MSG_TALENT_WIPE_CONFIRM, 8 + 4));    //you do not have any talent
         *packet << uint64(0);
@@ -9543,7 +9543,7 @@ void PlayerbotAI::_HandleCommandTalent(std::string& text, Player& fromPlayer)
     }
     else
     {
-        uint32 gold = uint32(m_bot->resetTalentsCost() / 10000);
+        uint32 gold = uint32(m_bot->GetResetTalentsCost() / 10000);
 
         out << "I have " << CurTalentPoints << " free talent points to spend.\r";
 

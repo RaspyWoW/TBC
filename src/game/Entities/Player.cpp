@@ -599,7 +599,7 @@ Player::Player(WorldSession* session): Unit(), m_taxiTracker(*this), m_mover(thi
     unReadMails = 0;
     m_nextMailDelivereTime = 0;
 
-    m_resetTalentsCost = 0;
+    m_resetTalentsMultiplier = 0;
     m_resetTalentsTime = 0;
     m_itemUpdateQueueBlocked = false;
 
@@ -2784,7 +2784,7 @@ void Player::UpdateFreeTalentPoints(bool resetIfNeed)
         if (m_usedTalentCount > 0)                          // Free any used talents
         {
             if (resetIfNeed)
-                resetTalents(true);
+                ResetTalents(true);
             SetFreeTalentPoints(0);
         }
     }
@@ -2796,7 +2796,7 @@ void Player::UpdateFreeTalentPoints(bool resetIfNeed)
         if (m_usedTalentCount > talentPointsForLevel)
         {
             if (resetIfNeed && GetSession()->GetSecurity() < SEC_ADMINISTRATOR)
-                resetTalents(true);
+                ResetTalents(true);
             else
                 SetFreeTalentPoints(0);
         }
@@ -3803,48 +3803,72 @@ void Player::_SaveSpellCooldowns()
     }
 }
 
-
-uint32 Player::resetTalentsCost() const
+void Player::UpdateResetTalentsMultiplier() const
 {
-    // The first time reset costs 1 gold
-    if (m_resetTalentsCost < 1 * GOLD)
-        return 1 * GOLD;
-    // then 5 gold
-    if (m_resetTalentsCost < 5 * GOLD)
-        return 5 * GOLD;
-    // After that it increases in increments of 5 gold
-    if (m_resetTalentsCost < 10 * GOLD)
-        return 10 * GOLD;
     time_t months = (sWorld.GetGameTime() - m_resetTalentsTime) / MONTH;
+
     if (months > 0)
     {
-        // This cost will be reduced by a rate of 5 gold per month
-        int32 new_cost = int32((m_resetTalentsCost) - 5 * GOLD * months);
-        // to a minimum of 10 gold.
-        return uint32(new_cost < 10 * GOLD ? 10 * GOLD : new_cost);
+        const uint32 minMulti = sWorld.getConfig(CONFIG_UINT32_RESPEC_MIN_MULTIPLIER);
+        const bool clamp = m_resetTalentsMultiplier >= minMulti;
+
+        if (months > m_resetTalentsMultiplier)
+        {
+            m_resetTalentsMultiplier = 0;
+        }
+        else
+        {
+            m_resetTalentsMultiplier -= months;
+        }
+
+        if (clamp && m_resetTalentsMultiplier < minMulti)
+        {
+            m_resetTalentsMultiplier = minMulti;
+        }
     }
-    // After that it increases in increments of 5 gold
-    int32 new_cost = m_resetTalentsCost + 5 * GOLD;
-    // until it hits a cap of 50 gold.
-    if (new_cost > 50 * GOLD)
-        new_cost = 50 * GOLD;
-    return new_cost;
 }
 
-bool Player::resetTalents(bool no_cost)
+uint32 Player::GetResetTalentsCost() const
+{
+    // Decay respec cost
+    UpdateResetTalentsMultiplier();
+
+    if (!m_resetTalentsMultiplier && !sWorld.getConfig(CONFIG_BOOL_NO_RESPEC_COSTS)) // Initial respec
+    {
+        return sWorld.getConfig(CONFIG_UINT32_RESPEC_BASE_COST) * GOLD;
+    }
+
+    uint32 multiCost = sWorld.getConfig(CONFIG_UINT32_RESPEC_MULTIPLICATIVE_COST);
+    uint32 maxMulti = sWorld.getConfig(CONFIG_UINT32_RESPEC_MAX_MULTIPLIER);
+
+    if (m_resetTalentsMultiplier > maxMulti)
+    {
+        return (multiCost * maxMulti) * GOLD;
+    }
+
+    return sWorld.getConfig(CONFIG_BOOL_NO_RESPEC_COSTS) ? 0 : ((m_resetTalentsMultiplier * multiCost) * GOLD);
+}
+
+bool Player::ResetTalents(bool no_cost)
 {
     // not need after this call
     if (HasAtLoginFlag(AT_LOGIN_RESET_TALENTS))
         RemoveAtLoginFlag(AT_LOGIN_RESET_TALENTS, true);
 
-    if (!m_usedTalentCount)
-        no_cost = true;
+    if (m_usedTalentCount == 0)
+    {
+        UpdateFreeTalentPoints(false); // for fix if need counter
+        return false;
+    }
 
     uint32 cost = 0;
 
+    if (sWorld.getConfig(CONFIG_BOOL_NO_RESPEC_COSTS))
+        no_cost = true;
+
     if (!no_cost)
     {
-        cost = resetTalentsCost();
+        cost = GetResetTalentsCost();
 
         if (GetMoney() < cost)
         {
@@ -3853,7 +3877,7 @@ bool Player::resetTalents(bool no_cost)
         }
     }
 
-    for (unsigned int i = 0; i < sTalentStore.GetNumRows(); ++i)
+    for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
         TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
 
@@ -3871,9 +3895,17 @@ bool Player::resetTalents(bool no_cost)
         if ((getClassMask() & talentTabInfo->ClassMask) == 0)
             continue;
 
-        for (unsigned int j : talentInfo->RankID)
+        for (const uint32& j : talentInfo->RankID)
+        {
+            SpellEntry const* pInfos = sSpellTemplate.LookupEntry<SpellEntry>(j);
+            if (pInfos)
+                for (uint32 eff : pInfos->EffectTriggerSpell)
+                    if (eff)
+                        RemoveAurasDueToSpell(eff);
+
             if (j)
                 removeSpell(j, !IsPassiveSpell(j), false);
+        }
     }
 
     UpdateFreeTalentPoints(false);
@@ -3882,11 +3914,16 @@ bool Player::resetTalents(bool no_cost)
     {
         ModifyMoney(-(int32)cost);
 
-        m_resetTalentsCost = cost;
+        ++m_resetTalentsMultiplier;
+
+        if (m_resetTalentsMultiplier > sWorld.getConfig(CONFIG_UINT32_RESPEC_MAX_MULTIPLIER))
+        {
+            m_resetTalentsMultiplier = sWorld.getConfig(CONFIG_UINT32_RESPEC_MAX_MULTIPLIER);
+        }
+
         m_resetTalentsTime = time(nullptr);
     }
 
-    // FIXME: remove pet before or after unlearn spells? for now after unlearn to allow removing of talent related, pet affecting auras
     RemovePet(PET_SAVE_REAGENTS);
     return true;
 }
@@ -8113,7 +8150,7 @@ void Player::SendTalentWipeConfirm(ObjectGuid guid) const
 {
     WorldPacket data(MSG_TALENT_WIPE_CONFIRM, (8 + 4));
     data << ObjectGuid(guid);
-    data << uint32(resetTalentsCost());
+    data << uint32(GetResetTalentsCost());
     GetSession()->SendPacket(data);
 }
 
@@ -15184,7 +15221,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     m_Played_time[PLAYED_TIME_TOTAL] = fields[20].GetUInt32();
     m_Played_time[PLAYED_TIME_LEVEL] = fields[21].GetUInt32();
 
-    m_resetTalentsCost = fields[25].GetUInt32();
+    m_resetTalentsMultiplier = fields[25].GetUInt32();
     m_resetTalentsTime = time_t(fields[26].GetUInt64());
 
     // reserve some flags
@@ -16614,7 +16651,7 @@ void Player::SaveToDB()
     uberInsert.addUInt32(HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0);
     // save, far from tavern/city
     // save, but in tavern/city
-    uberInsert.addUInt32(m_resetTalentsCost);
+    uberInsert.addUInt32(m_resetTalentsMultiplier);
     uberInsert.addUInt64(uint64(m_resetTalentsTime));
 
     Position const& transportPosition = m_movementInfo.GetTransportPos();

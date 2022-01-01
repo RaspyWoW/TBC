@@ -4325,7 +4325,7 @@ bool ChatHandler::HandleResetTalentsCommand(char* args)
 
     if (target)
     {
-        target->resetTalents(true);
+        target->ResetTalents(true);
 
         ChatHandler(target).SendSysMessage(LANG_RESET_TALENTS);
         if (!m_session || m_session->GetPlayer() != target)

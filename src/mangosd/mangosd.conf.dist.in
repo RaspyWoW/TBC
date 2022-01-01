@@ -593,6 +593,11 @@ CharactersPerRealm = 10
 
 SkipCinematics = 0
 
+#    NoRespecCosts
+#        Don't charge players for talent reset.
+
+NoRespecCosts = 0
+
 #
 #    MaxPlayerLevel
 #        Max level that can be reached by a player for experience. (1 - 255)
@@ -1431,6 +1436,16 @@ Rate.Pet.XP.Kill = 1
 Rate.XP.Kill = 1
 Rate.XP.Quest = 1
 Rate.XP.Explore = 1
+
+#    Rate.RespecBaseCost
+#    Rate.RespecMultiplicativeCost
+#    Rate.RespecMinMultiplier
+#    Rate.RespecMaxMultiplier
+
+Rate.RespecBaseCost = 1
+Rate.RespecMultiplicativeCost = 5
+Rate.RespecMinMultiplier = 2
+Rate.RespecMaxMultiplier = 10
 
 #
 #    Rate.XP.Personal.Min
