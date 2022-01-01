@@ -309,7 +309,7 @@ bool ChatHandler::HandleXpCommand(char* args)
         return false;
     }
 
-    if (pPlayer->GetSession()->GetAccountMaxLevel() >= sWorld.getConfig(CONFIG_UINT32_XP_PERSONAL_BONUS_REQ_ACCOUNT_LEVEL)) // If player already got a lvl 60 on current acc ...
+    if (pPlayer->GetSession()->GetAccountMaxLevel() >= sWorld.getConfig(CONFIG_UINT32_XP_PERSONAL_BONUS_REQ_ACCOUNT_LEVEL)) // If player already got a lvl 70 on current acc ...
         fMaxXPRate += sWorld.getConfig(CONFIG_FLOAT_RATE_XP_PERSONAL_BONUS); // ... increment highest possible CONFIG_FLOAT_RATE_XP_PERSONAL_MAX + CONFIG_FLOAT_RATE_XP_PERSONAL_BONUS
 
     if ((fXP > fMaxXPRate))
