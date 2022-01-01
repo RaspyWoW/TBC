@@ -2398,7 +2398,7 @@ class Unit : public WorldObject
         void UpdateScalingAuras();
 
         uint32 GetDamageDoneByOthers() { return m_damageByOthers; }
-        uint32 GetModifierXpBasedOnDamageReceived(uint32 xp);
+        float GetModifierXpBasedOnDamageReceived(float xp);
         
         void OverrideMountDisplayId(uint32 newDisplayId);
 

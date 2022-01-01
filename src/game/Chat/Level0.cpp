@@ -283,3 +283,46 @@ bool ChatHandler::HandleServerMotdCommand(char* /*args*/)
     PSendSysMessage(LANG_MOTD_CURRENT, sWorld.GetMotd());
     return true;
 }
+
+bool ChatHandler::HandleXpCommand(char* args)
+{
+    // Only a GM can modify another player's rates.
+    Player* pPlayer = (m_session->GetSecurity() < SEC_GAMEMASTER) ? m_session->GetPlayer() : getSelectedPlayer();
+
+    if (!pPlayer)
+    {
+        SendSysMessage(LANG_NO_CHAR_SELECTED);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    float fXP;
+    float fMinXPRate = sWorld.getConfig(CONFIG_FLOAT_RATE_XP_PERSONAL_MIN);
+    float fMaxXPRate = sWorld.getConfig(CONFIG_FLOAT_RATE_XP_PERSONAL_MAX);
+
+    if (!ExtractFloat(&args, fXP))
+        return false;
+
+    if (fXP < fMinXPRate)
+    {
+        PSendSysMessage(LANG_XP_RATE_MIN, fMinXPRate);
+        return false;
+    }
+
+    if (pPlayer->GetSession()->GetAccountMaxLevel() >= sWorld.getConfig(CONFIG_UINT32_XP_PERSONAL_BONUS_REQ_ACCOUNT_LEVEL)) // If player already got a lvl 70 on current acc ...
+        fMaxXPRate += sWorld.getConfig(CONFIG_FLOAT_RATE_XP_PERSONAL_BONUS); // ... increment highest possible CONFIG_FLOAT_RATE_XP_PERSONAL_MAX + CONFIG_FLOAT_RATE_XP_PERSONAL_BONUS
+
+    if ((fXP > fMaxXPRate))
+    {
+        PSendSysMessage(LANG_XP_RATE_MAX, fMaxXPRate);
+        return false;
+    }
+
+    pPlayer->SetPersonalXpRate(fXP);
+    PSendSysMessage(LANG_XP_RATE_SET, (pPlayer != m_session->GetPlayer() ? (std::string(pPlayer->GetName()) + std::string("'s")).c_str() : "your"), fXP);
+
+    if (fXP > 1.0f) // If player is using a higher XP rate then x1 ...
+        pPlayer->ForbidToExportToon(); // ... forbid the export of this toon
+
+    return true;
+}

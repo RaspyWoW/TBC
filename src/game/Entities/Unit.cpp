@@ -12548,17 +12548,18 @@ void Unit::UpdateScalingAuras()
         aura->UpdateAuraScaling();
 }
 
-uint32 Unit::GetModifierXpBasedOnDamageReceived(uint32 xp)
+float Unit::GetModifierXpBasedOnDamageReceived(float xp)
 {
     if (xp && IsCreature() && GetDamageDoneByOthers())
     {
-        uint32 health = GetMaxHealth();
-        float percentageHp = float(GetDamageDoneByOthers()) / health;
-        if (percentageHp >= 1.f)
-            xp = 0;
+        const auto health = GetMaxHealth();
+        const float percentageHp = float(GetDamageDoneByOthers()) / health;
+        if (percentageHp > 1.f)
+            xp = 0.f;
         else if (percentageHp > 0.f)
             xp *= (1.f - percentageHp);
     }
+
     return xp;
 }
 

@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MANGOS_FORMULAS_H
-#define MANGOS_FORMULAS_H
+#pragma once
 
 #include "World/World.h"
 
@@ -30,9 +29,10 @@ namespace MaNGOS
             return (float)ceil(count * (-0.53177f + 0.59357f * exp((level + 23.54042f) / 26.07859f)));
         }
     }
+
     namespace XP
     {
-        inline bool IsTrivialLevelDifference(uint32 unitLvl, uint32 targetLvl)
+        inline bool IsTrivialLevelDifference(const uint32 unitLvl, const uint32 targetLvl)
         {
             if (unitLvl > targetLvl)
             {
@@ -55,38 +55,41 @@ namespace MaNGOS
                         return (diff > 8);
                 }
             }
+
             return false;
         }
 
         enum XPColorChar { RED, ORANGE, YELLOW, GREEN, GRAY };
 
-        inline uint32 GetGrayLevel(uint32 pl_level)
+        inline uint32 GetGrayLevel(const uint32 pl_level)
         {
             if (pl_level <= 5)
                 return 0;
-            if (pl_level <= 39)
+            else if (pl_level <= 39)
                 return pl_level - 5 - pl_level / 10;
-            if (pl_level <= 59)
+            else if (pl_level <= 59)
                 return pl_level - 1 - pl_level / 5;
+
             return pl_level - 9;
         }
 
-        inline XPColorChar GetColorCode(uint32 pl_level, uint32 mob_level)
+        inline XPColorChar GetColorCode(const uint32 pl_level, const uint32 mob_level)
         {
             if (mob_level >= pl_level + 5)
                 return RED;
-            if (mob_level >= pl_level + 3)
+            else if (mob_level >= pl_level + 3)
                 return ORANGE;
-            if (mob_level >= pl_level - 2)
+            else if (mob_level >= pl_level - 2)
                 return YELLOW;
-            if (mob_level > GetGrayLevel(pl_level))
+            else if (mob_level > GetGrayLevel(pl_level))
                 return GREEN;
-            return GRAY;
+            else
+                return GRAY;
         }
 
-        inline uint32 GetZeroDifference(uint32 unit_level)
+        inline uint32 GetZeroDifference(const uint32 unit_level)
         {
-            if (unit_level < 8)  return 5;
+            if (unit_level < 8) return 5;
             if (unit_level < 10) return 6;
             if (unit_level < 12) return 7;
             if (unit_level < 16) return 8;
@@ -100,13 +103,18 @@ namespace MaNGOS
             return 17;
         }
 
-        inline uint32 BaseGain(uint32 unit_level, uint32 mob_level, ContentLevels content)
+        inline uint32 BaseGain(const uint32 unit_level, const uint32 mob_level, ContentLevels content)
         {
             uint32 nBaseExp = unit_level * 5;
+
             switch (content)
             {
-                case CONTENT_1_60:  nBaseExp += 45;  break;
-                case CONTENT_61_70: nBaseExp += 235; break;
+                case CONTENT_1_60:
+                    nBaseExp += 45;
+                    break;
+                case CONTENT_61_70:
+                    nBaseExp += 235;
+                    break;
                 default:
                     sLog.outError("BaseGain: Unsupported content level %u", content);
                     nBaseExp += 45;  break;
@@ -117,15 +125,17 @@ namespace MaNGOS
                 uint32 nLevelDiff = mob_level - unit_level;
                 if (nLevelDiff > 4)
                     nLevelDiff = 4;
+
                 return nBaseExp * (1.0f + (0.05f * nLevelDiff));
             }
 
             if (!IsTrivialLevelDifference(unit_level, mob_level))
             {
-                uint32 ZD = GetZeroDifference(unit_level);
-                uint32 nLevelDiff = unit_level - mob_level;
+                const uint32 ZD = GetZeroDifference(unit_level);
+                const uint32 nLevelDiff = unit_level - mob_level;
                 return nBaseExp * (1.0f - (float(nLevelDiff) / ZD));
             }
+
             return 0;
         }
 
@@ -134,8 +144,8 @@ namespace MaNGOS
             if (target->IsTotem() || target->IsPet() || target->IsNoXp() || target->IsCritter())
                 return 0;
 
-            uint32 xp_gain = BaseGain(unit->GetLevel(), target->GetLevel(), GetContentLevelsForMapAndZone(unit->GetMapId(), unit->GetZoneId()));
-            if (xp_gain == 0.0f)
+            float xp_gain = BaseGain(unit->GetLevel(), target->GetLevel(), GetContentLevelsForMapAndZone(unit->GetMapId(), unit->GetZoneId()));
+            if (!xp_gain)
                 return 0;
 
             if (target->IsElite())
@@ -146,14 +156,24 @@ namespace MaNGOS
                     xp_gain *= 2.0f;
             }
 
-            xp_gain *= target->GetCreatureInfo()->ExperienceMultiplier;
+            if (target->IsPet())
+                xp_gain *= 0.75f;
 
+            xp_gain *= target->GetCreatureInfo()->ExperienceMultiplier;
             xp_gain = target->GetModifierXpBasedOnDamageReceived(xp_gain);
 
-            return (uint32)(std::nearbyint(xp_gain * sWorld.getConfig(CONFIG_FLOAT_RATE_XP_KILL)));
+            Player* pPlayer = unit->GetBeneficiaryPlayer();
+            const float personalRate = pPlayer ? pPlayer->GetPersonalXpRate() : -1.0f;
+
+            if (personalRate >= 0.0f)
+                xp_gain *= personalRate;
+            else
+                xp_gain *= sWorld.getConfig(CONFIG_FLOAT_RATE_XP_KILL);
+
+            return static_cast<uint32>(std::nearbyint(xp_gain));
         }
 
-        inline float xp_in_group_rate(uint32 count, bool /*isRaid*/)
+        inline float xp_in_group_rate(const uint32 count, bool /*isRaid*/)
         {
             // TODO: this formula is completely guesswork only based on a logical assumption
             switch (count)
@@ -174,4 +194,3 @@ namespace MaNGOS
         }
     }
 }
-#endif
