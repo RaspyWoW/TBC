@@ -128,6 +128,12 @@ void WorldSession::HandleGMTicketCreateOpcode(WorldPacket& recv_data)
         {
             GMTicket* ticket = new GMTicket(GetPlayer(), message, category);
 
+            ChatHandler(this).SendSysMessage("NOTE: Game Masters DO NOT handle bug reports!");
+            ChatHandler(this).SendSysMessage("Please use our bugtracker and provide reliable sources:");
+            ChatHandler(this).SendSysMessage("https://github.com/RaspyWoW/TBC/issues");
+            ChatHandler(this).SendSysMessage("If it's gamebreaking please PM our staff directly on discord:");
+            ChatHandler(this).SendSysMessage("https://raspywow.org/discord");
+
             if (sTicketMgr.Add(ticket))
             {
                 m_ticketSquelchTimer.Reset(5000);
