@@ -51,7 +51,7 @@ void WorldSession::HandleTalentWipeConfirmOpcode(WorldPacket& recv_data)
     if (!unit->CanTrainAndResetTalentsOf(_player))
         return;
 
-    if (!(_player->resetTalents()))
+    if (!(_player->ResetTalents(false)))
     {
         WorldPacket data(MSG_TALENT_WIPE_CONFIRM, 8 + 4);   // you have not any talent
         data << uint64(0);
