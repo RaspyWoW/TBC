@@ -15392,7 +15392,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     DEBUG_FILTER_LOG(LOG_FILTER_PLAYER_STATS, "The value of player %s after load item and aura is: ", m_name.c_str());
     outDebugStatsValues();
 
-    if (fields[63].GetUInt8() == 1) // If character is allowed to export
+    if (fields[62].GetUInt8() == 1) // If character is allowed to export
         m_bIsAllowedToExportToon = true;
 
     // all fields read
