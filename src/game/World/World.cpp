@@ -2030,11 +2030,12 @@ void World::ShutdownMsg(bool show /*= false*/, Player* player /*= nullptr*/)
 
     ///- Display a message every 12 hours, 1 hour, 5 minutes, 1 minute and 15 seconds
     if (show ||
-            (m_ShutdownTimer < 5 * MINUTE && (m_ShutdownTimer % 15) == 0) ||            // < 5 min; every 15 sec
-            (m_ShutdownTimer < 15 * MINUTE && (m_ShutdownTimer % MINUTE) == 0) ||       // < 15 min; every 1 min
-            (m_ShutdownTimer < 30 * MINUTE && (m_ShutdownTimer % (5 * MINUTE)) == 0) || // < 30 min; every 5 min
-            (m_ShutdownTimer < 12 * HOUR && (m_ShutdownTimer % HOUR) == 0) ||           // < 12 h; every 1 h
-            (m_ShutdownTimer >= 12 * HOUR && (m_ShutdownTimer % (12 * HOUR)) == 0))     // >= 12 h; every 12 h
+        (m_ShutdownTimer < 10) ||
+        (m_ShutdownTimer <= 30 && (m_ShutdownTimer % 5) == 0) ||
+        (m_ShutdownTimer <= 5 * MINUTE && (m_ShutdownTimer % MINUTE) == 0) ||
+        (m_ShutdownTimer <= 30 * MINUTE && (m_ShutdownTimer % (5 * MINUTE)) == 0) ||
+        (m_ShutdownTimer <= 12 * HOUR && (m_ShutdownTimer % HOUR) == 0) ||
+        (m_ShutdownTimer > 12 * HOUR && (m_ShutdownTimer % (12 * HOUR)) == 0))
     {
         std::string str = secsToTimeString(m_ShutdownTimer);
 
