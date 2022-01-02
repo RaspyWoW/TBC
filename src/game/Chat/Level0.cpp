@@ -326,3 +326,33 @@ bool ChatHandler::HandleXpCommand(char* args)
 
     return true;
 }
+
+bool ChatHandler::HandlePermaPvPCommand(char* args)
+{
+    Player* pPlayer = m_session->GetPlayer();
+    if (pPlayer && pPlayer->IsPermaPvP())
+    {
+        SendSysMessage("[Permanent-PvP-Mode] already active.");
+        return false;
+    }
+
+    const std::string str = args;
+    if (str.empty())
+    {
+        SendSysMessage("If you want to activate the [Permanent-PvP-Mode] type: .permapvp on");
+        SendSysMessage("Keep in mind, this operation cannot be undone.");
+        return false;
+    }
+    else if (!str.compare("on"))
+    {
+        GetSession()->GetPlayer()->SetPermaPvP();
+        SendSysMessage("[Permanent PvP Mode] has been activated!");
+    }
+    else
+    {
+        SendSysMessage("Invalid Input.");
+        return false;
+    }
+
+    return true;
+}

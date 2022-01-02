@@ -600,10 +600,24 @@ class Object
         Loot* m_loot;
 
         inline bool IsPlayer() const { return GetTypeId() == TYPEID_PLAYER; }
+        Player* ToPlayer();
+        Player const* ToPlayer() const;
+
         inline bool IsCreature() const { return GetTypeId() == TYPEID_UNIT; }
+        Creature* ToCreature();
+        Creature const* ToCreature() const;
+
         inline bool IsUnit() const { return isType(TYPEMASK_UNIT); }
+        Unit* ToUnit();
+        Unit const* ToUnit() const;
+
         inline bool IsGameObject() const { return GetTypeId() == TYPEID_GAMEOBJECT; }
+        GameObject* ToGameObject();
+        GameObject const* ToGameObject() const;
+
         inline bool IsCorpse() const { return GetTypeId() == TYPEID_CORPSE; }
+        Corpse* ToCorpse();
+        Corpse const* ToCorpse() const;
 
     protected:
         Object();

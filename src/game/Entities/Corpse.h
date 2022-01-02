@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MANGOSSERVER_CORPSE_H
-#define MANGOSSERVER_CORPSE_H
+#pragma once
 
 #include "Common.h"
 #include "Entities/Object.h"
@@ -30,10 +29,11 @@ enum CorpseType
     CORPSE_RESURRECTABLE_PVE = 1,
     CORPSE_RESURRECTABLE_PVP = 2
 };
-#define MAX_CORPSE_TYPE        3
+
+constexpr auto MAX_CORPSE_TYPE = 3;
 
 // Value equal client resurrection dialog show radius.
-#define CORPSE_RECLAIM_RADIUS 39
+constexpr auto CORPSE_RECLAIM_RADIUS = 39;
 
 enum CorpseFlags
 {
@@ -94,6 +94,15 @@ class Corpse : public WorldObject
 
         CorpseType m_type;
         time_t m_time;
-        GridPair m_grid;                                    // gride for corpse position for fast search
+        GridPair m_grid; // gride for corpse position for fast search
 };
-#endif
+
+inline Corpse* Object::ToCorpse()
+{
+    return IsCorpse() ? static_cast<Corpse*>(this) : nullptr;
+}
+
+inline Corpse const* Object::ToCorpse() const
+{
+    return IsCorpse() ? static_cast<Corpse const*>(this) : nullptr;
+}

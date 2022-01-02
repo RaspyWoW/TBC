@@ -22,9 +22,7 @@
  * \file
  */
 
-
-#ifndef __UNIT_H
-#define __UNIT_H
+#pragma once
 
 #include "Common.h"
 #include "Entities/Object.h"
@@ -1438,7 +1436,7 @@ class Unit : public WorldObject
         void SetImmuneToPlayer(bool state);
         bool IsPlayerControlled() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED); }
 
-        bool IsPvP() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); }
+        virtual bool IsPvP() const { return (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP)); }
         void SetPvP(bool state);
         bool IsPvPFreeForAll() const;
         void SetPvPFreeForAll(bool state);
@@ -2613,6 +2611,26 @@ class Unit : public WorldObject
         void CastSpell(float x, float y, float z, SpellEntry const* spell, TR triggered);
 };
 
+inline Unit* Object::ToUnit()
+{
+    return IsUnit() ? static_cast<Unit*>(this) : nullptr;
+}
+
+inline Unit const* Object::ToUnit() const
+{
+    return IsUnit() ? static_cast<Unit const*>(this) : nullptr;
+}
+
+inline Unit* ToUnit(Object* object)
+{
+    return object && object->IsUnit() ? static_cast<Unit*>(object) : nullptr;
+}
+
+inline Unit const* ToUnit(Object const* object)
+{
+    return object && object->IsUnit() ? static_cast<Unit const*>(object) : nullptr;
+}
+
 template<typename Func>
 void Unit::CallForAllControlledUnits(Func const& func, uint32 controlledMask)
 {
@@ -2754,5 +2772,3 @@ class UnitLambdaEvent : public BasicEvent
 };
 
 /** @} */
-
-#endif

@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MANGOSSERVER_CREATURE_H
-#define MANGOSSERVER_CREATURE_H
+#pragma once
 
 #include "Common.h"
 #include "Entities/Unit.h"
@@ -932,6 +931,26 @@ class Creature : public Unit
         CreatureInfo const* m_creatureInfo;                 // in heroic mode can different from sObjectMgr::GetCreatureTemplate(GetEntry())
 };
 
+inline Creature* Object::ToCreature()
+{
+    return IsCreature() ? static_cast<Creature*>(this) : nullptr;
+}
+
+inline Creature const* Object::ToCreature() const
+{
+    return IsCreature() ? static_cast<Creature const*>(this) : nullptr;
+}
+
+inline Creature* ToCreature(Object* object)
+{
+    return object && object->IsCreature() ? static_cast<Creature*>(object) : nullptr;
+}
+
+inline Creature const* ToCreature(Object const* object)
+{
+    return object && object->IsCreature() ? static_cast<Creature const*>(object) : nullptr;
+}
+
 class ForcedDespawnDelayEvent : public BasicEvent
 {
     public:
@@ -942,5 +961,3 @@ class ForcedDespawnDelayEvent : public BasicEvent
         Creature& m_owner;
         bool m_onlyAlive;
 };
-
-#endif

@@ -968,6 +968,7 @@ ChatCommand* ChatHandler::getCommandTable()
         { "neargrave",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNearGraveCommand,           "", nullptr },
         { "explorecheat",   SEC_ADMINISTRATOR,  false, &ChatHandler::HandleExploreCheatCommand,        "", nullptr },
         { "xprate",         SEC_PLAYER,         false, &ChatHandler::HandleXpCommand,                  "", nullptr },
+        { "permapvp",       SEC_PLAYER,         false, &ChatHandler::HandlePermaPvPCommand,            "", nullptr },
         { "levelup",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleLevelUpCommand,             "", nullptr },
         { "showarea",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleShowAreaCommand,            "", nullptr },
         { "hidearea",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleHideAreaCommand,            "", nullptr },

@@ -402,9 +402,10 @@ enum PlayerFlags
     PLAYER_FLAGS_UNK21                  = 0x00100000,
     PLAYER_FLAGS_UNK22                  = 0x00200000,
     PLAYER_FLAGS_COMMENTATOR_UBER       = 0x00400000,       // something like COMMENTATOR_CAN_USE_INSTANCE_COMMAND
+    PLAYER_FLAGS_PERMANENT_PVP          = 0x00800000
 };
 
-#define MAX_TITLE_INDEX     64                              // 1 uint64 field
+constexpr uint64 MAX_TITLE_INDEX = 64; // 1 uint64 field
 
 // used in (PLAYER_FIELD_BYTES, 0) byte values
 enum PlayerFieldByteFlags
@@ -1879,6 +1880,17 @@ class Player : public Unit
         void ModifyHonorPoints(int32 value);
         void ModifyArenaPoints(int32 value);
 
+        bool IsPermaPvP() const { return (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_PERMANENT_PVP)); }
+        void SetPermaPvP() { SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_PERMANENT_PVP); }
+
+        bool IsPvP() const override
+        {
+            if (IsPermaPvP())
+                return true;
+
+            return Unit::IsPvP();
+        }
+
         uint8 GetHighestPvPRankIndex() const;
         uint32 GetMaxPersonalArenaRatingRequirement();
 
@@ -2625,6 +2637,26 @@ class Player : public Unit
         std::unordered_map<uint32, TimePoint> m_enteredInstances;
         uint32 m_createdInstanceClearTimer;
 };
+
+inline Player* Object::ToPlayer()
+{
+    return IsPlayer() ? static_cast<Player*>(this) : nullptr;
+}
+
+inline Player const* Object::ToPlayer() const
+{
+    return IsPlayer() ? static_cast<Player const*>(this) : nullptr;
+}
+
+inline Player* ToPlayer(Object* object)
+{
+    return object && object->IsPlayer() ? static_cast<Player*>(object) : nullptr;
+}
+
+inline Player const* ToPlayer(Object const* object)
+{
+    return object && object->IsPlayer() ? static_cast<Player const*>(object) : nullptr;
+}
 
 void AddItemsSetItem(Player* player, Item* item);
 void RemoveItemsSetItem(Player* player, ItemPrototype const* proto);

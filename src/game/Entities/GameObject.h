@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MANGOSSERVER_GAMEOBJECT_H
-#define MANGOSSERVER_GAMEOBJECT_H
+#pragma once
 
 #include "Common.h"
 #include "Globals/SharedDefines.h"
@@ -967,5 +966,22 @@ class ForcedDespawnDelayGameObjectEvent : public BasicEvent
         bool m_onlyAlive;
 };
 
+inline GameObject* Object::ToGameObject()
+{
+    return IsGameObject() ? static_cast<GameObject*>(this) : nullptr;
+}
 
-#endif
+inline GameObject const* Object::ToGameObject() const
+{
+    return IsGameObject() ? static_cast<GameObject const*>(this) : nullptr;
+}
+
+inline GameObject* ToGameObject(Object* object)
+{
+    return object && object->IsGameObject() ? static_cast<GameObject*>(object) : nullptr;
+}
+
+inline GameObject const* ToGameObject(Object const* object)
+{
+    return object && object->IsGameObject() ? static_cast<GameObject const*>(object) : nullptr;
+}
