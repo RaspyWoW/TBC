@@ -1675,7 +1675,7 @@ void WorldObject::MovePositionToFirstCollision(Position& pos, float dist, float 
 
     GenericTransport* transport = GetTransport();
 
-    float halfHeight = GetCollisionHeight();
+    const float halfHeight = GetCollisionHeight();
     if (IsUnit())
     {
         PathFinder path(static_cast<Unit*>(this));
@@ -1686,7 +1686,10 @@ void WorldObject::MovePositionToFirstCollision(Position& pos, float dist, float 
             transport->CalculatePassengerOffset(src.x, src.y, src.z);
             transport->CalculatePassengerOffset(dest.x, dest.y, dest.z);
         }
+
+        UpdateAllowedPositionZ(dest.x, dest.y, dest.z);
         path.calculate(src, dest, false, true);
+
         if (path.getPathType())
         {
             G3D::Vector3 result = path.getPath().back();
@@ -1941,6 +1944,20 @@ void WorldObject::SendMessageToSetExcept(WorldPacket const& data, Player const* 
     {
         MaNGOS::MessageDelivererExcept notifier(data, skipped_receiver);
         Cell::VisitWorldObjects(this, notifier, GetMap()->GetVisibilityDistance());
+    }
+}
+
+void WorldObject::SendMessageToAllWhoSeeMe(WorldPacket const& data, bool /*self*/) const
+{
+    if (IsInWorld())
+    {
+        for (ObjectGuid guid : m_clientGUIDsIAmAt)
+        {
+            if (Player* player = GetMap()->GetPlayer(guid))
+            {
+                player->GetSession()->SendPacket(data);
+            }
+        }
     }
 }
 

@@ -1112,11 +1112,71 @@ void ObjectMgr::LoadSpawnGroups()
             entry.Flags = fields[5].GetUInt32();
             entry.Active = false;
             entry.EnabledByDefault = true;
+            entry.formationEntry = nullptr;
             newContainer->spawnGroupMap.emplace(entry.Id, entry);
         } while (result->NextRow());
     }
 
-    result.reset(WorldDatabase.Query("SELECT Id, Guid FROM spawn_group_spawn"));
+    result.reset(WorldDatabase.Query("SELECT SpawnGroupID, FormationType, FormationSpread, FormationOptions, MovementID, MovementType, Comment FROM spawn_group_formation"));
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+
+            FormationEntrySPtr fEntry = std::make_shared<FormationEntry>();
+            fEntry->GroupId = fields[0].GetUInt32();
+            uint32 fType = fields[1].GetUInt32();
+            fEntry->Spread = fields[2].GetFloat();
+            fEntry->Options = fields[3].GetUInt32();
+            fEntry->MovementID = fields[4].GetUInt32();
+            fEntry->MovementType = fields[5].GetUInt32();
+            fEntry->Comment = fields[6].GetCppString();
+
+            auto itr = newContainer->spawnGroupMap.find(fEntry->GroupId);
+            if (itr == newContainer->spawnGroupMap.end())
+            {
+                sLog.outErrorDb("LoadSpawnGroups: Invalid group Id:%u found in `spawn_group_formation`. Skipping.", fEntry->GroupId);
+                continue;
+            }
+
+            if (fType >= static_cast<uint32>(SPAWN_GROUP_FORMATION_TYPE_COUNT))
+            {
+                sLog.outErrorDb("LoadSpawnGroups: Invalid formation type in `spawn_group_formation` ID:%u. Skipping.", fEntry->GroupId);
+                continue;
+            }
+
+            if (fEntry->MovementType >= static_cast<uint32>(MAX_DB_MOTION_TYPE))
+            {
+                sLog.outErrorDb("LoadSpawnGroups: Invalid movement type in `spawn_group_formation` ID:%u. Skipping.", fEntry->GroupId);
+                continue;
+            }
+
+            //todo this check have to be done after loading movement_table (load movement before spawn_group)
+//             if (fEntry->MovementID)
+//             {
+//                 auto path = sWaypointMgr.GetPathFromOrigin(fEntry->MovementID, 0, 0, WaypointPathOrigin::PATH_FROM_MOVEMENT_TEMPLATE);
+//                 if (!path)
+//                 {
+//                     sLog.outErrorDb("LoadSpawnGroups: No path ID(%u) found for formation ID(%u) in `movement_template` ID:%u. Ignoring movement.", fEntry->MovementID, fEntry->GroupId);
+//                     fEntry->MovementID = 0;
+//                 }
+//             }
+
+            fEntry->Type = static_cast<SpawnGroupFormationType>(fType);
+
+            if (fEntry->Spread > 15.0f || fEntry->Spread < 0.5f)
+            {
+                sLog.outErrorDb("LoadSpawnGroups: Invalid spread value (%5.2f) should be between (0.5..15) in formation ID:%u . Skipping.", fEntry->Spread, fEntry->GroupId);
+                continue;
+            }
+
+            itr->second.formationEntry = std::move(fEntry);
+        } while (result->NextRow());
+    }
+
+    result.reset(WorldDatabase.Query("SELECT Id, Guid, SlotId FROM spawn_group_spawn"));
+
     if (result)
     {
         do
@@ -1126,6 +1186,7 @@ void ObjectMgr::LoadSpawnGroups()
             SpawnGroupDbGuids guid;
             guid.Id = fields[0].GetUInt32();
             guid.DbGuid = fields[1].GetUInt32();
+            guid.SlotId = fields[2].GetInt32();
 
             if (newContainer->spawnGroupMap.find(guid.Id) == newContainer->spawnGroupMap.end())
             {
@@ -1154,6 +1215,34 @@ void ObjectMgr::LoadSpawnGroups()
 
             group.DbGuids.push_back(guid);
         } while (result->NextRow());
+
+        // check and fix correctness of slot id indexation
+        for (auto& sg : newContainer->spawnGroupMap)
+        {
+            if (sg.second.formationEntry == nullptr)
+                continue;
+
+            auto& guidMap = sg.second.DbGuids;
+
+            uint32 slotIndex = 0;
+            bool dbError = false;
+            std::sort(guidMap.begin(), guidMap.end(), [](SpawnGroupDbGuids const& a, SpawnGroupDbGuids const& b) { return a.SlotId < b.SlotId; });
+            for (auto& gInfo : guidMap)
+            {
+                if (gInfo.SlotId < 0)
+                    continue;
+
+                if (gInfo.SlotId != slotIndex)
+                {
+                    gInfo.SlotId = slotIndex;
+                    dbError = true;
+                }
+                ++slotIndex;
+            }
+
+            if (dbError)
+                sLog.outErrorDb("LoadSpawnGroups: Invalid index for slot id in `spawn_group_spawn` for group ID:%u. Using default.", sg.second.Id);
+        }
     }
 
     result.reset(WorldDatabase.Query("SELECT Id, Entry, MinCount, MaxCount, Chance FROM spawn_group_entry"));
@@ -1302,7 +1391,7 @@ void ObjectMgr::LoadSpawnGroups()
     }
 
     m_spawnGroupEntries = newContainer;
-    sLog.outString(">> Loaded %u spawn_group definitions", count);
+    sLog.outString(">> Loaded %u spawn_group definitions", uint32(m_spawnGroupEntries->spawnGroupMap.size()));
     sLog.outString();
 }
 
@@ -2238,6 +2327,55 @@ void ObjectMgr::LoadGameObjectSpawnEntry()
     delete result;
 
     sLog.outString(">> Loaded %u gameobject_spawn_entry entries", count);
+    sLog.outString();
+}
+
+void ObjectMgr::LoadGameObjectTemplateAddons()
+{
+    m_gameobjectAddonTemplates.clear();
+
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT entry, artkit0, artkit1, artkit2, artkit3 FROM gameobject_template_addon"));
+
+    if (!result)
+    {
+        BarGoLink bar(1);
+        bar.step();
+        sLog.outErrorDb(">> Loaded gameobject_template_addon, table is empty!");
+        sLog.outString();
+        return;
+    }
+
+    BarGoLink bar(result->GetRowCount());
+
+    uint32 count = 0;
+
+    do
+    {
+        bar.step();
+
+        Field* fields = result->Fetch();
+
+        uint32 entry = fields[0].GetUInt32();
+
+        GameObjectTemplateAddon& gameObjectAddon = m_gameobjectAddonTemplates[entry];
+
+        for (uint32 i = 1; i < gameObjectAddon.artKits.size(); ++i)
+        {
+            uint32 artKitID = fields[i].GetUInt32();
+            if (!artKitID)
+                continue;
+
+            if (!sGameObjectArtKitStore.LookupEntry(artKitID))
+            {
+                sLog.outErrorDb("GameObject (Entry: %u) has invalid `artkit%d` (%d) defined, set to zero instead.", entry, i, artKitID);
+                continue;
+            }
+
+            gameObjectAddon.artKits[i] = artKitID;
+        }
+    } while (result->NextRow());
+
+    sLog.outString(">> Loaded %u gameobject_template_addon entries", count);
     sLog.outString();
 }
 
@@ -7660,15 +7798,6 @@ void ObjectMgr::LoadSpellTemplate()
         {
             if (spell->Category)
                 sSpellCategoryStore[spell->Category].insert(i);
-
-            if (spell->SpellFamilyName == SPELLFAMILY_ROGUE)
-            {
-                for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
-                {
-                    if (spell->Effect[i] == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)
-                        m_roguePoisonEnchantIds[spell->EffectMiscValue[i]] = true;
-                }
-            }
         }
 
         // DBC not support uint64 fields but SpellEntry have SpellFamilyFlags mapped at 2 uint32 fields
@@ -7839,6 +7968,15 @@ void ObjectMgr::DeleteCreatureData(uint32 guid)
         RemoveCreatureFromGrid(guid, data);
 
     mCreatureDataMap.erase(guid);
+}
+
+GameObjectTemplateAddon const* ObjectMgr::GetGOTemplateAddon(uint32 entry) const
+{
+    auto itr = m_gameobjectAddonTemplates.find(entry);
+    if (itr == m_gameobjectAddonTemplates.end())
+        return nullptr;
+
+    return &itr->second;
 }
 
 void ObjectMgr::DeleteGOData(uint32 guid)

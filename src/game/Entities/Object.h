@@ -955,6 +955,7 @@ class WorldObject : public Object
         bool GetFanningPoint(const Unit* mover, float& x, float& y, float& z, float dist, float angle) const;
 
         virtual float GetCollisionHeight() const { return 0.f; }
+        virtual float GetCollisionWidth() const { return 0.f; }
         virtual float GetObjectBoundingRadius() const { return DEFAULT_WORLD_OBJECT_SIZE; }
         virtual float GetCombatReach() const { return 0.f; }
         float GetCombinedCombatReach(WorldObject const* pVictim, bool forMeleeRange = true, float flat_mod = 0.0f) const;
@@ -1061,6 +1062,7 @@ class WorldObject : public Object
         virtual void SendMessageToSet(WorldPacket const& data, bool self) const;
         virtual void SendMessageToSetInRange(WorldPacket const& data, float dist, bool self) const;
         void SendMessageToSetExcept(WorldPacket const& data, Player const* skipped_receiver) const;
+        virtual void SendMessageToAllWhoSeeMe(WorldPacket const& data, bool self) const;
 
         void MonsterSay(const char* text, uint32 language, Unit const* target = nullptr) const;
         void MonsterYell(const char* text, uint32 language, Unit const* target = nullptr) const;

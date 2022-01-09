@@ -552,8 +552,8 @@ class Spell
             return false;
         }
         bool IsChannelActive() const { return m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != 0; }
-        bool IsMeleeAttackResetSpell() const { return !m_IsTriggeredSpell && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT);  }
-        bool IsRangedAttackResetSpell() const { return !m_IsTriggeredSpell && IsRangedSpell() && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT); }
+        bool IsMeleeAttackResetSpell() const { return !m_IsTriggeredSpell && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_COMBAT); }
+        bool IsRangedAttackResetSpell() const { return !m_IsTriggeredSpell && IsRangedSpell() && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_COMBAT); }
         bool IsEffectWithImplementedMultiplier(uint32 effectId) const;
 
         bool IsDeletable() const { return !m_referencedFromCurrentSpell && !m_executedCurrently; }
@@ -713,6 +713,7 @@ class Spell
         GameObject* GetGOTarget() { return gameObjTarget; }
         uint32 GetDamage() { return damage; }
         void SetDamage(uint32 newDamage) { damage = newDamage; }
+        SpellSchoolMask GetSchoolMask() { return m_spellSchoolMask; }
         // OnHit use only
         uint32 GetTotalTargetDamage() { return m_damage; }
         // script initialization hook only setters - use only if dynamic - else use appropriate helper

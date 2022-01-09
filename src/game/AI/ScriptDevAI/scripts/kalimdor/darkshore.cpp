@@ -773,52 +773,90 @@ UnitAI* GetAI_npc_rabid_bear(Creature* pCreature)
 ######*/
 
 enum {
-    NPC_BLACKWOOD_WARRIOR = 2168,
-    NPC_BLACKWOOD_TOTEMIC = 2169,
+    NPC_BLACKWOOD_WARRIOR    = 2168,
+    NPC_BLACKWOOD_TOTEMIC    = 2169,
 
-    GO_PURIFIED_FOOD      = 175336,
+    GO_PURIFIED_FOOD         = 175336,
 
-    FACTION_BLACKWOOD     = 35,         // Faction guessed
+    FACTION_BLACKWOOD        = 35,         // Faction guessed
 
-    EMOTE_LURED           = -1010027,
-    EMOTE_PURIFIED        = -1010028,
-    EMOTE_GENERIC_FLEE    = -1000007,
+    EMOTE_LURED              = -1010027,
+    EMOTE_PURIFIED           = -1010028,
+    EMOTE_GENERIC_FLEE       = -1000007,
 
-    SPELL_BATTLE_STANCE   = 7165,
-    SPELL_THUNDERCLAP     = 8078,
-    SPELL_HEALING_WARD    = 5605,
+    SPELL_BATTLE_STANCE      = 7165,
+    SPELL_THUNDERCLAP        = 8078,
+    SPELL_HEALING_WARD       = 5605,
+    EVENT_BECOME_PURIFIED    = 1,
+    EVENT_FURBOLG_RESET      = 2,
+    EVENT_START_PURIFICATION = 3,
+    BOWL_DISTANCE            = 5,
 };
 
-static const uint32 furbolgList[2] = { NPC_BLACKWOOD_WARRIOR, NPC_BLACKWOOD_TOTEMIC };
+static const std::vector<uint32> furbolgList = { NPC_BLACKWOOD_WARRIOR, NPC_BLACKWOOD_TOTEMIC };
+Position bowlCoords;
 
 struct npc_corrupted_furbolgAI : public ScriptedAI
 {
-    npc_corrupted_furbolgAI(Creature* creature) : ScriptedAI(creature) { Reset(); }
+    bool m_isFirst;
+    bool m_hasFled;
 
-    bool m_isMovementActive;
-    bool m_hasFleed;
-    uint32 m_purifyTimer;
+    npc_corrupted_furbolgAI(Creature* creature) : ScriptedAI(creature)
+    { 
+        AddCustomAction(EVENT_BECOME_PURIFIED, true, [&]()
+        {
+            if (m_isFirst)
+                DoScriptText(EMOTE_PURIFIED, m_creature);
+            m_creature->SetFactionTemporary(FACTION_BLACKWOOD, TEMPFACTION_RESTORE_COMBAT_STOP);
+            m_creature->GetMotionMaster()->MoveRandomAroundPoint(bowlCoords.GetPositionX(), bowlCoords.GetPositionY(), bowlCoords.GetPositionZ(), 40.f);
+            m_creature->SetWalk(true);
+            ResetTimer(EVENT_FURBOLG_RESET, 1.5 * MINUTE * IN_MILLISECONDS);
+        });
+        AddCustomAction(EVENT_FURBOLG_RESET, true, [&]()
+        {
+            m_creature->GetMotionMaster()->Initialize();
+            EnterEvadeMode();
+            if (m_creature->GetDefaultMovementType() == IDLE_MOTION_TYPE)
+                m_creature->GetMotionMaster()->MoveTargetedHome(false);
+        });
+        AddCustomAction(EVENT_START_PURIFICATION, true, [&]()
+        {
+            if (!bowlCoords.IsEmpty() && sqrt(bowlCoords.GetDistance(m_creature->GetPosition())) <= 60.f)
+            {
+                if (m_isFirst)
+                    DoScriptText(EMOTE_LURED, m_creature);
+                SetCombatScriptStatus(true);
+                SetReactState(REACT_PASSIVE);
+                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PLAYER);
+                m_creature->CombatStop();
+
+                float x, y, z, angle;
+                angle = m_creature->GetAngle(bowlCoords.GetPositionX(), bowlCoords.GetPositionY());
+                m_creature->GetNearPointAt(bowlCoords.GetPositionX(), bowlCoords.GetPositionY(), bowlCoords.GetPositionZ(),
+                    m_creature, x, y, z, m_creature->GetObjectBoundingRadius(), CONTACT_DISTANCE * 2.f, angle + M_PI);
+                m_creature->SetWalk(false);
+                m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
+            }
+        });
+        Reset();
+    }
 
     void Reset() override
     {
-        m_isMovementActive  = false;
-        m_hasFleed          = false;
-        m_purifyTimer       = 0;
+        SetCombatScriptStatus(false);
+        m_hasFled           = false;
+        m_isFirst           = false;
         SetReactState(REACT_AGGRESSIVE);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PLAYER);
     }
 
-    void SeekPurification()
+    void SeekPurification(bool isFirst)
     {
-        if (GameObject* bowl = GetClosestGameObjectWithEntry(m_creature, GO_PURIFIED_FOOD, 60.0f))
-        {
-            m_isMovementActive = true;
-            SetReactState(REACT_PASSIVE);
-            DoScriptText(EMOTE_LURED, m_creature);
-            float x, y, z;
-            bowl->GetContactPoint(m_creature, x, y, z, 1.0f);
-            m_creature->SetWalk(false);
-            m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
-        }
+        m_isFirst = isFirst;
+        if(m_isFirst)
+            ResetTimer(EVENT_START_PURIFICATION, 0);
+        else
+            ResetTimer(EVENT_START_PURIFICATION, urand(0, 5 * IN_MILLISECONDS));
     }
 
     void MovementInform(uint32 moveType, uint32 pointId) override
@@ -827,8 +865,7 @@ struct npc_corrupted_furbolgAI : public ScriptedAI
             return;
 
         m_creature->GetMotionMaster()->MoveIdle();
-        m_isMovementActive  = false;
-        m_purifyTimer = 5 * IN_MILLISECONDS;
+        ResetTimer(EVENT_BECOME_PURIFIED, 5 * IN_MILLISECONDS);
     }
 
     // Return true to handle shared timers and MeleeAttack
@@ -836,38 +873,19 @@ struct npc_corrupted_furbolgAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff) override
     {
-        if (m_isMovementActive)
-            return;
-
-        if (m_purifyTimer)
-        {
-            if (m_purifyTimer < diff)
-            {
-                m_purifyTimer = 0;
-                DoScriptText(EMOTE_PURIFIED, m_creature);
-                m_isMovementActive = false;
-                m_creature->SetFactionTemporary(FACTION_BLACKWOOD, TEMPFACTION_RESTORE_RESPAWN);
-                m_creature->GetMotionMaster()->MoveTargetedHome();
-                m_creature->SetWalk(true);
-                m_creature->ForcedDespawn(2 * MINUTE * IN_MILLISECONDS);
-            }
-            else
-            {
-                m_purifyTimer -= diff;
-                return;
-            }
-        }
+        UpdateTimers(diff, m_creature->GetVictim());
+        ExecuteActions();
 
         // Return since we have no target
         if (!m_creature->SelectHostileTarget() || !m_creature->GetVictim())
             return;
 
         // Flee at 15% HP
-        if (m_creature->GetHealthPercent() <= 10.0f && !m_hasFleed)
+        if (m_creature->GetHealthPercent() <= 10.0f && !m_hasFled)
         {
             DoScriptText(EMOTE_GENERIC_FLEE, m_creature);
-            if (m_creature->AI()->DoFlee())
-                m_hasFleed = true;
+            if (DoFlee())
+                m_hasFled = true;
         }
 
         // Call furbolg specific virtual function
@@ -963,33 +981,30 @@ bool ProcessEventId_event_purify_food(uint32 /*eventId*/, Object* source, Object
 {
     if (source->GetTypeId() == TYPEID_PLAYER && target->GetTypeId() == TYPEID_GAMEOBJECT)
     {
-        GameObject* bowl = (GameObject*)target;
+        GameObject* bonfire = (GameObject*)target;
+        Player* player = (Player*)source;
         CreatureList furbolgs;
         // Get all nearby Blackwood Furbolgs
-        for (auto entry : furbolgList)
-        {
-            MaNGOS::AllCreaturesOfEntryInRangeCheck check(((GameObject*)target), entry, 40.0f);
-            MaNGOS::CreatureListSearcher<MaNGOS::AllCreaturesOfEntryInRangeCheck> searcher(furbolgs, check);
-            Cell::VisitGridObjects(((Player*)source), searcher, 40.0f);
-        }
+        GetCreatureListWithEntryInGrid(furbolgs, bonfire, furbolgList, 40.f);
+        player->GetFirstCollisionPosition(bowlCoords, float(BOWL_DISTANCE), player->GetOrientation());
 
         // Spawn two extra Blackwood Warriors
         float x, y, z;
         for (int8 i = 0; i < 2; ++i)
         {
-            bowl->GetRandomPoint(bowl->GetPositionX(), bowl->GetPositionY(), bowl->GetPositionZ(), 30.0f, x, y, z);
-            if (Creature* warrior = bowl->SummonCreature(NPC_BLACKWOOD_WARRIOR, x, y, z, 0.0f, TEMPSPAWN_TIMED_OOC_OR_CORPSE_DESPAWN, 120000))
+            bonfire->GetRandomPoint(bonfire->GetPositionX(), bonfire->GetPositionY(), bonfire->GetPositionZ(), 30.0f, x, y, z);
+            if (Creature* warrior = bonfire->SummonCreature(NPC_BLACKWOOD_WARRIOR, x, y, z, 0.0f, TEMPSPAWN_TIMED_OOC_OR_DEAD_DESPAWN, 120000))
                 furbolgs.push_back(warrior);
         }
 
         // Activate the purification sequence for all hostile furbolgs (prevent attracting already purified ones)
         for (auto& furbolg : furbolgs)
         {
-            if (furbolg->IsInCombat() || !furbolg->IsAlive() || !((Unit*)source)->IsEnemy(furbolg))
+            if (furbolg->IsInCombat() || !furbolg->IsAlive() || !furbolg->CanAttack((Unit*)source))
                 continue;
 
             if (auto* furbolgAI = dynamic_cast<npc_corrupted_furbolgAI*>(furbolg->AI()))
-                furbolgAI->SeekPurification();
+                furbolgAI->SeekPurification(furbolg == furbolgs.back());
         }
 
         return false;
@@ -1007,7 +1022,7 @@ bool GOUse_go_furbolg_food(Player* player, GameObject* go)
     // Search for a nearby Blackwood Warrior and make it attack
     if (Creature* warrior = GetClosestCreatureWithEntry(go, NPC_BLACKWOOD_WARRIOR, 20.0f))
     {
-        if (warrior->IsInCombat() || !warrior->IsAlive() || !player->IsEnemy(warrior))
+        if (!warrior->IsInCombat() && warrior->IsAlive() && warrior->CanAttack(player))
             warrior->AI()->AttackStart(player);
     }
     // Else spawn a new one (and make it attack)
@@ -1015,7 +1030,7 @@ bool GOUse_go_furbolg_food(Player* player, GameObject* go)
     {
         float x, y, z;
         go->GetRandomPoint(go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), 20.0f, x, y, z);
-        if (Creature* warrior = go->SummonCreature(NPC_BLACKWOOD_WARRIOR, x, y, z, 0.0f, TEMPSPAWN_TIMED_OOC_OR_CORPSE_DESPAWN, 120000))
+        if (Creature* warrior = go->SummonCreature(NPC_BLACKWOOD_WARRIOR, x, y, z, 0.0f, TEMPSPAWN_TIMED_OOC_OR_DEAD_DESPAWN, 120000))
             warrior->AI()->AttackStart(player);
     }
 

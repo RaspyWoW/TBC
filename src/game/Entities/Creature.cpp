@@ -163,6 +163,9 @@ Creature::~Creature()
 
 void Creature::CleanupsBeforeDelete()
 {
+    if (GetCreatureGroup() && GetCreatureGroup()->GetFormationData())
+        GetCreatureGroup()->GetFormationData()->OnDelete(this);
+
     Unit::CleanupsBeforeDelete();
     m_vendorItemCounts.clear();
 }
@@ -1547,7 +1550,13 @@ void Creature::SetCreatureGroup(CreatureGroup* group)
 void Creature::ClearCreatureGroup()
 {
     if (m_creatureGroup)
+    {
+        if (m_creatureGroup->GetFormationData())
+            m_creatureGroup->GetFormationData()->Remove(this);
+
         m_creatureGroup->RemoveObject(this);
+    }
+
     m_creatureGroup = nullptr;
 }
 
@@ -1678,7 +1687,13 @@ bool Creature::LoadFromDB(uint32 dbGuid, Map* map, uint32 newGuid, uint32 forced
         GetMap()->GetCreatureLinkingHolder()->DoCreatureLinkingEvent(LINKING_EVENT_RESPAWN, this);
 
     if (GetCreatureGroup())
+    {
+        const auto fData = m_creatureGroup->GetFormationData();
+        if (fData)
+            fData->SetFormationSlot(this);
+
         GetCreatureGroup()->TriggerLinkingEvent(CREATURE_GROUP_EVENT_RESPAWN, this);
+    }
 
     // check if it is rabbit day
     if (IsAlive() && sWorld.getConfig(CONFIG_UINT32_RABBIT_DAY))

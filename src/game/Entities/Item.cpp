@@ -291,7 +291,8 @@ void Item::UpdateDuration(Player* owner, uint32 diff)
         return;
     }
 
-    SetUInt32Value(ITEM_FIELD_DURATION, GetUInt32Value(ITEM_FIELD_DURATION) <= diff ? 1 : - diff);
+    const uint32 oldDuration = GetUInt32Value(ITEM_FIELD_DURATION);
+    SetUInt32Value(ITEM_FIELD_DURATION, oldDuration <= diff ? 1 : oldDuration - diff);
     SetState(ITEM_CHANGED, owner);                          // save new time in database
 }
 
@@ -919,9 +920,19 @@ bool Item::IsBoundByEnchant() const
         if (!enchantEntry)
             continue;
 
-        if (enchantEntry->slot & ENCHANTMENT_CAN_SOULBOUND)
+        if (enchantEntry->flags & ENCHANTMENT_SOULBOUND)
             return true;
     }
+
+    return false;
+}
+
+bool Item::CanEnterArenaEnchant(EnchantmentSlot slot) const
+{
+    SpellItemEnchantmentEntry const* enchantEntry = sSpellItemEnchantmentStore.LookupEntry(GetEnchantmentId(slot));
+    if (enchantEntry && enchantEntry->flags & ENCHANTMENT_ALLOW_ENTERING_ARENA)
+        return true;
+
     return false;
 }
 

@@ -691,7 +691,7 @@ bool Spell::FillUnitTargets(TempTargetingData& targetingData, SpellTargetingData
                     if (targetOwner && targetOwner != me && targetOwner->IsPvP() && !me->IsInDuelWith(targetOwner))
                     {
                         me->UpdatePvP(true);
-                        me->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
+                        me->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_PVP_ACTIVE_CANCELS);
                         break;
                     }
                 }
@@ -801,7 +801,7 @@ void Spell::PrepareMasksForProcSystem(uint8 effectMask, uint32& procAttacker, ui
     // Hunter traps spells (for Entrapment trigger)
     // Gives your Immolation Trap, Frost Trap, Explosive Trap, and Snake Trap ....
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags & uint64(0x000020000000001C))
-        procAttacker |= PROC_FLAG_DEAL_HELPFUL_PERIODIC;
+        procAttacker |= PROC_FLAG_ON_TRAP_ACTIVATION;
 
     if (IsNextMeleeSwingSpell(m_spellInfo))
     {
@@ -1262,7 +1262,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (m_canTrigger && missInfo != SPELL_MISS_REFLECT)
             // traps need to be procced at trap triggerer
-            Unit::ProcDamageAndSpell(ProcSystemArguments(affectiveCaster, procAttacker & PROC_FLAG_DEAL_HELPFUL_PERIODIC ? m_targets.getUnitTarget() : unit, affectiveCaster ? procAttacker : uint32(PROC_FLAG_NONE), procVictim, procEx, 0, m_attackType, m_spellInfo, this));
+            Unit::ProcDamageAndSpell(ProcSystemArguments(affectiveCaster, procAttacker & PROC_FLAG_ON_TRAP_ACTIVATION ? m_targets.getUnitTarget() : unit, affectiveCaster ? procAttacker : uint32(PROC_FLAG_NONE), procVictim, procEx, 0, m_attackType, m_spellInfo, this));
     }
 
     OnAfterHit();
@@ -1471,7 +1471,7 @@ void Spell::DoAllTargetlessEffects(bool dest)
         if (m_caster)
         {
             PrepareMasksForProcSystem(effectMask, procAttacker, procVictim, m_trueCaster, unitTarget);
-            Unit::ProcDamageAndSpell(ProcSystemArguments(m_caster, procAttacker & PROC_FLAG_DEAL_HELPFUL_PERIODIC ? m_targets.getUnitTarget() : nullptr, m_caster ? procAttacker : uint32(PROC_FLAG_NONE), procVictim, procEx, 0, m_attackType, m_spellInfo, this));
+            Unit::ProcDamageAndSpell(ProcSystemArguments(m_caster, procAttacker & PROC_FLAG_ON_TRAP_ACTIVATION ? m_targets.getUnitTarget() : nullptr, m_caster ? procAttacker : uint32(PROC_FLAG_NONE), procVictim, procEx, 0, m_attackType, m_spellInfo, this));
         }
     }
 }
@@ -2201,7 +2201,7 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, bool targ
                     if (targetOwner && targetOwner != me && targetOwner->IsPvP() && !me->IsInDuelWith(targetOwner))
                     {
                         me->UpdatePvP(true);
-                        me->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
+                        me->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_PVP_ACTIVE_CANCELS);
                     }
                 }
 
@@ -2995,7 +2995,7 @@ void Spell::Prepare()
 
     if (!m_IsTriggeredSpell && !m_trueCaster->IsGameObject())
     {
-        m_caster->RemoveAurasOnCast(m_spellInfo);
+        m_caster->RemoveAurasOnCast(AURA_INTERRUPT_FLAG_ACTION, m_spellInfo);
 
         // Orientation changes inside
         if (m_notifyAI && m_caster->AI())
@@ -3517,7 +3517,7 @@ void Spell::update(uint32 difftime)
         // always cancel for channeled spells
         if (m_spellState == SPELL_STATE_CHANNELING)
         {
-            if (m_spellInfo->ChannelInterruptFlags & AURA_INTERRUPT_FLAG_MOVE && !m_spellInfo->HasAttribute(SPELL_ATTR_EX5_CAN_CHANNEL_WHEN_MOVING))
+            if (m_spellInfo->ChannelInterruptFlags & AURA_INTERRUPT_FLAG_MOVING && !m_spellInfo->HasAttribute(SPELL_ATTR_EX5_CAN_CHANNEL_WHEN_MOVING))
                 cancel();
         }
         // don't cancel for melee, autorepeat, triggered and instant spells
@@ -3752,6 +3752,9 @@ void Spell::finish(bool ok)
     // call triggered spell only at successful cast (after clear combo points -> for add some if need)
     if (!m_TriggerSpells.empty())
         CastTriggerSpells();
+
+    if (m_caster)
+        m_caster->RemoveAurasOnCast(AURA_INTERRUPT_FLAG_ACTION_LATE, m_spellInfo);
 
     // Stop Attack for some spells
     if (m_caster && m_spellInfo->HasAttribute(SPELL_ATTR_STOP_ATTACK_TARGET))
@@ -4711,7 +4714,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 // skip stuck spell to allow use it in falling case and apply spell limitations at movement
                 if ((!m_caster->m_movementInfo.HasMovementFlag(MOVEFLAG_FALLINGFAR) || m_spellInfo->Effect[EFFECT_INDEX_0] != SPELL_EFFECT_STUCK) &&
-                    (IsAutoRepeat() || (m_spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED) != 0))
+                    (IsAutoRepeat() || (m_spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_STANDING_CANCELS) != 0))
                     return SPELL_FAILED_MOVING;
             }
 
@@ -6700,7 +6703,7 @@ SpellCastResult Spell::CheckItems()
                     SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
                     if (!pEnchant)
                         return SPELL_FAILED_ERROR;
-                    if (pEnchant->slot & ENCHANTMENT_CAN_SOULBOUND)
+                    if (pEnchant->flags & ENCHANTMENT_SOULBOUND)
                         return SPELL_FAILED_NOT_TRADEABLE;
                 }
                 break;
@@ -6717,7 +6720,7 @@ SpellCastResult Spell::CheckItems()
                     SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
                     if (!pEnchant)
                         return SPELL_FAILED_ERROR;
-                    if (pEnchant->slot & ENCHANTMENT_CAN_SOULBOUND)
+                    if (pEnchant->flags & ENCHANTMENT_SOULBOUND)
                         return SPELL_FAILED_NOT_TRADEABLE;
                 }
                 break;
@@ -6863,7 +6866,7 @@ void Spell::Delayed()
         return;                                             // spell is active and can't be time-backed
 
     // spells not loosing casting time ( slam, dynamites, bombs.. )
-    if (!(m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_DAMAGE))
+    if (!(m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_DAMAGE_PUSHBACK))
         return;
 
     // check resist chance

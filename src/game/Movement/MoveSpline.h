@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MANGOSSERVER_MOVEPLINE_H
-#define MANGOSSERVER_MOVEPLINE_H
+#pragma once
 
 #include "spline.h"
 #include "Movement/MoveSplineInitArgs.h"
@@ -130,12 +129,13 @@ namespace Movement
             const Vector3 FinalDestination() const;
             const Vector3 CurrentDestination() const { return Initialized() ? spline.getPoint(point_Idx + 1) : Vector3();}
             int32 currentPathIdx() const;
+            int32 GetRawPathIndex() const { return point_Idx; }
 
-            uint32 Duration() const { return spline.length();}
+            uint32 Duration() const { return spline.length(); }
+            int32 ComputeTimeToIndex(uint32 idx) const { return spline.length(idx) - time_passed; }
 
             float Speed() const { return speed; }
 
             std::string ToString() const;
     };
 }
-#endif // MANGOSSERVER_MOVEPLINE_H

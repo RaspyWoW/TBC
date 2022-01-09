@@ -66,14 +66,28 @@ void MotionMaster::Initialize()
     Clear(false, true);
 
     // set new default movement generator
-    if (m_owner->GetTypeId() == TYPEID_UNIT && !m_owner->hasUnitState(UNIT_STAT_POSSESSED))
+    if (m_owner->IsCreature() && !m_owner->hasUnitState(UNIT_STAT_POSSESSED))
     {
+        const auto creature = static_cast<Creature*>(m_owner);
         m_currentPathId = m_defaultPathId;
-        MovementGenerator* movement = FactorySelector::selectMovementGenerator((Creature*)m_owner);
+        MovementGenerator* movement = FactorySelector::selectMovementGenerator(creature);
         push(movement == nullptr ? &si_idleMovement : movement);
         top()->Initialize(*m_owner);
-        if (top()->GetMovementGeneratorType() == WAYPOINT_MOTION_TYPE)
-            (static_cast<WaypointMovementGenerator<Creature>*>(top()))->InitializeWaypointPath(*((Creature*)(m_owner)), m_currentPathId, PATH_NO_PATH, 0, 0);
+
+        if (top()->GetMovementGeneratorType() == WAYPOINT_MOTION_TYPE || top()->GetMovementGeneratorType() == LINEAR_WP_MOTION_TYPE)
+        {
+            // check if creature is part of formation and use waypoint path as path origin
+            WaypointPathOrigin pathOrigin = WaypointPathOrigin::PATH_NO_PATH;
+            uint32 pathEntry = 0;
+            const auto creatureGroup = creature->GetCreatureGroup();
+            if (creatureGroup && creatureGroup->GetFormationEntry() && creatureGroup->GetGroupEntry().GetFormationSlotId(m_owner->GetDbGuid()) == 0)
+            {
+                pathEntry = creatureGroup->GetFormationEntry()->MovementID;
+                pathOrigin = WaypointPathOrigin::PATH_FROM_WAYPOINT_PATH;
+            }
+
+            (static_cast<WaypointMovementGenerator<Creature>*>(top()))->InitializeWaypointPath(*creature, m_currentPathId, pathOrigin, 0, pathEntry);
+        }
     }
     else
         push(&si_idleMovement);
@@ -346,6 +360,27 @@ void MotionMaster::MoveFollow(Unit* target, float dist, float angle, bool asMain
     Mutate(new FollowMovementGenerator(*target, dist, angle, asMain, (m_owner->IsPlayer() && !m_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED)), alwaysBoost));
 }
 
+void MotionMaster::MoveInFormation(FormationSlotDataSPtr& sData, bool asMain /*= false*/)
+{
+    if (m_owner->hasUnitState(UNIT_STAT_LOST_CONTROL))
+        return;
+
+    if (asMain)
+        Clear(false, true);
+    else
+        Clear(!empty()); // avoid resetting if we are already empty
+
+    const auto master = sData->GetMaster();
+    // ignore movement request if target not exist
+    if (!sData->GetOwner() || !master)
+        return;
+
+    DEBUG_FILTER_LOG(LOG_FILTER_AI_AND_MOVEGENSS, "%s is in formation with %s", m_owner->GetGuidStr().c_str(), master->GetGuidStr().c_str());
+    sLog.outString("%s is in formation with %s", m_owner->GetGuidStr().c_str(), master->GetGuidStr().c_str());
+
+    Mutate(new FormationMovementGenerator(sData, asMain));
+}
+
 void MotionMaster::MoveStay(float x, float y, float z, float o, bool asMain)
 {
     if (m_owner->hasUnitState(UNIT_STAT_LOST_CONTROL))
@@ -423,7 +458,7 @@ void MotionMaster::MoveFleeing(Unit* source, uint32 time)
         Mutate(new FleeingMovementGenerator(*source));
 }
 
-void MotionMaster::MoveWaypoint(uint32 pathId /*=0*/, uint32 source /*=0==PATH_NO_PATH*/, uint32 initialDelay /*=0*/, uint32 overwriteEntry /*=0*/, ForcedMovement forcedMovement /*=FORCED_MOVEMENT_NONE*/, ObjectGuid guid/* = ObjectGuid()*/)
+void MotionMaster::MoveWaypoint(uint32 pathId /*= 0*/, uint32 source /*= 0*/, uint32 initialDelay /*= 0*/, uint32 overwriteEntry /*= 0*/, ForcedMovement forcedMovement /*= FORCED_MOVEMENT_NONE*/, ObjectGuid guid /*= ObjectGuid()*/)
 {
     if (m_owner->GetTypeId() == TYPEID_UNIT)
     {
@@ -446,6 +481,32 @@ void MotionMaster::MoveWaypoint(uint32 pathId /*=0*/, uint32 source /*=0==PATH_N
     else
     {
         sLog.outError("Non-creature %s attempt to MoveWaypoint()", m_owner->GetGuidStr().c_str());
+    }
+}
+
+void MotionMaster::MoveLinearWP(uint32 pathId /*= 0*/, uint32 source /*= 0*/, uint32 initialDelay /*= 0*/, uint32 overwriteEntry /*= 0*/, ForcedMovement forcedMovement /*= FORCED_MOVEMENT_NONE*/, ObjectGuid guid /*= ObjectGuid()*/)
+{
+    if (m_owner->GetTypeId() == TYPEID_UNIT)
+    {
+        if (GetCurrentMovementGeneratorType() == LINEAR_WP_MOTION_TYPE)
+        {
+            sLog.outError("%s attempt to MoveWaypoint() but is already using waypoint", m_owner->GetGuidStr().c_str());
+            return;
+        }
+
+        Creature* creature = (Creature*)m_owner;
+        m_currentPathId = pathId;
+
+        DEBUG_FILTER_LOG(LOG_FILTER_AI_AND_MOVEGENSS, "%s start MoveWaypoint()", m_owner->GetGuidStr().c_str());
+        LinearWPMovementGenerator<Creature>* newWPMMgen = new LinearWPMovementGenerator<Creature>(*creature);
+        newWPMMgen->SetForcedMovement(forcedMovement);
+        newWPMMgen->SetGuid(guid);
+        Mutate(newWPMMgen);
+        newWPMMgen->InitializeWaypointPath(*creature, pathId, (WaypointPathOrigin)source, initialDelay, overwriteEntry);
+    }
+    else
+    {
+        sLog.outError("Non-creature %s attempt to MoveLinearWP()", m_owner->GetGuidStr().c_str());
     }
 }
 

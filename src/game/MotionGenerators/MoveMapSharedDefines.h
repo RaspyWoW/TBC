@@ -16,14 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _MOVE_MAP_SHARED_DEFINES_H
-#define _MOVE_MAP_SHARED_DEFINES_H
+#pragma once
 
 #include "Platform/Define.h"
 #include <Detour/Include/DetourNavMesh.h>
 
-#define MMAP_MAGIC 0x4d4d4150   // 'MMAP'
-#define MMAP_VERSION 6
+constexpr auto MMAP_MAGIC = 0x4d4d4150;   // 'MMAP'
+constexpr auto MMAP_VERSION = 6;
 
 struct MmapTileHeader
 {
@@ -37,18 +36,25 @@ struct MmapTileHeader
         mmapVersion(MMAP_VERSION), size(0), usesLiquids(0) {}
 };
 
-enum NavTerrain
+enum NavArea
 {
-    NAV_EMPTY   = 0x00,
-    NAV_GROUND  = 0x01,
-    NAV_MAGMA   = 0x02,
-    NAV_SLIME   = 0x04,
-    NAV_WATER   = 0x08,
-    NAV_UNUSED1 = 0x10,
-    NAV_UNUSED2 = 0x20,
-    NAV_UNUSED3 = 0x40,
-    NAV_UNUSED4 = 0x80
-                  // we only have 8 bits
+    NAV_AREA_EMPTY = 0,
+    // areas 1-60 will be used for destructible areas (currently skipped in vmaps, WMO with flag 1)
+    // ground is the highest value to make recast choose ground over water when merging surfaces very close to each other (shallow water would be walkable)
+    NAV_AREA_GROUND = 11,
+    NAV_AREA_GROUND_STEEP = 10, // unused in cmangos - keeping it for structure
+    NAV_AREA_WATER = 9,
+    NAV_AREA_MAGMA_SLIME = 8, // don't need to differentiate between them
+    NAV_AREA_MAX_VALUE = NAV_AREA_GROUND,
+    NAV_AREA_MIN_VALUE = NAV_AREA_MAGMA_SLIME,
+    NAV_AREA_ALL_MASK = 0x3F // max allowed value
 };
 
-#endif  // _MOVE_MAP_SHARED_DEFINES_H
+enum NavTerrainFlag
+{
+    NAV_EMPTY = 0x00,
+    NAV_GROUND = 1 << (NAV_AREA_MAX_VALUE - NAV_AREA_GROUND),
+    NAV_GROUND_STEEP = 1 << (NAV_AREA_MAX_VALUE - NAV_AREA_GROUND_STEEP),
+    NAV_WATER = 1 << (NAV_AREA_MAX_VALUE - NAV_AREA_WATER),
+    NAV_MAGMA_SLIME = 1 << (NAV_AREA_MAX_VALUE - NAV_AREA_MAGMA_SLIME)
+};

@@ -925,7 +925,7 @@ uint32 Unit::DealDamage(Unit* dealer, Unit* victim, uint32 damage, CleanDamage c
     {
         int32 actionInterruptFlags = AURA_INTERRUPT_FLAG_DAMAGE;
         if (damagetype != DOT)
-            actionInterruptFlags = (actionInterruptFlags | AURA_INTERRUPT_FLAG_DIRECT_DAMAGE);
+            actionInterruptFlags = (actionInterruptFlags | AURA_INTERRUPT_FLAG_NON_PERIODIC_DAMAGE);
 
         SpellAuraHolderMap& vInterrupts = victim->GetSpellAuraHolderMap();
         std::vector<uint32> cleanupHolder;
@@ -1153,11 +1153,15 @@ void Unit::Kill(Unit* killer, Unit* victim, DamageEffectType damagetype, SpellEn
     /*
     *  Actions for the victim
     */
-    if (victim->GetTypeId() == TYPEID_PLAYER)          // Killed player
+    if (victim->IsPlayer())          // Killed player
     {
-        Player* playerVictim = (Player*)victim;
+        Player* playerVictim = static_cast<Player*>(victim);
 
-
+        if (victim->GetFormationSlot())
+        {
+            // simply remove player from the formation on death event
+            victim->GetFormationSlot()->GetFormationData()->Remove(playerVictim);
+        }
 
         // remember victim PvP death for corpse type and corpse reclaim delay
         // at original death (not at SpiritOfRedemtionTalent timeout)
@@ -1297,10 +1301,13 @@ void Unit::InterruptOrDelaySpell(Unit* pVictim, DamageEffectType damagetype, Spe
         {
             if (!dotDamage && spell->getState() == SPELL_STATE_CASTING)
             {
-                if (spell->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_ABORT_ON_DMG)
-                    pVictim->InterruptSpell(CurrentSpellTypes(i));
-                else
-                    spell->Delayed();
+                if (pVictim->IsPlayer())
+                {
+                    if (spell->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_DAMAGE_CANCELS)
+                        pVictim->InterruptSpell(CurrentSpellTypes(i));
+                    else
+                        spell->Delayed();
+                }
             }
 
             if (CurrentSpellTypes(i) == CURRENT_CHANNELED_SPELL)
@@ -1311,7 +1318,7 @@ void Unit::InterruptOrDelaySpell(Unit* pVictim, DamageEffectType damagetype, Spe
                     if (spell->CanBeInterrupted())
                     {
                         uint32 channelInterruptFlags = spell->m_spellInfo->ChannelInterruptFlags;
-                        if (!dotDamage && (channelInterruptFlags & AURA_INTERRUPT_FLAG_UNK14) != 0) // DOTs do not delay channels
+                        if (!dotDamage && (channelInterruptFlags & AURA_INTERRUPT_FLAG_DAMAGE_CHANNEL_DURATION) != 0) // DOTs do not delay channels
                         {
                             if (pVictim != this)                // don't shorten the duration of channeling if you damage yourself
                                 spell->DelayedChannel();
@@ -1404,6 +1411,13 @@ void Unit::JustKilledCreature(Unit* killer, Creature* victim, Player* responsibl
 
     if (victim->IsLinkingEventTrigger())
         victim->GetMap()->GetCreatureLinkingHolder()->DoCreatureLinkingEvent(LINKING_EVENT_DIE, victim);
+
+    if (victim->GetCreatureGroup())
+    {
+        const auto fData = victim->GetCreatureGroup()->GetFormationData();
+        if (fData)
+            fData->OnDeath(victim);
+    }
 
     // Dungeon specific stuff
     if (victim->GetInstanceId())
@@ -2717,7 +2731,7 @@ void Unit::AttackerStateUpdate(Unit* pVictim, WeaponAttackType attType, bool ext
             return;
     }
 
-    RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MELEE_ATTACK);
+    RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ATTACKING);
 
     // attack can be redirected to another target
     if (Unit* magnetTarget = SelectMagnetTarget(pVictim))
@@ -4355,7 +4369,7 @@ void Unit::_UpdateAutoRepeatSpell()
         if (!IsNonMeleeSpellCasted(false, false, true, false, true)) // stricter check to see if we should introduce cooldown or just return
             return;
         // cancel wand shoot
-        if ((m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->ChannelInterruptFlags & AURA_INTERRUPT_FLAG_MOVE) != 0)
+        if ((m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->ChannelInterruptFlags & AURA_INTERRUPT_FLAG_MOVING) != 0)
         {
             InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
             return;
@@ -5453,7 +5467,7 @@ void Unit::RemoveAurasWithAttribute(uint32 flags)
     }
 }
 
-void Unit::RemoveAurasOnCast(SpellEntry const* castedSpellEntry)
+void Unit::RemoveAurasOnCast(uint32 flag, SpellEntry const* castedSpellEntry)
 {
     for (SpellAuraHolderMap::iterator iter = m_spellAuraHolders.begin(); iter != m_spellAuraHolders.end();)
     {
@@ -5461,7 +5475,7 @@ void Unit::RemoveAurasOnCast(SpellEntry const* castedSpellEntry)
         SpellEntry const* spellEntry = holder->GetSpellProto();
         bool removeThisHolder = false;
 
-        if (spellEntry->AuraInterruptFlags & AURA_INTERRUPT_FLAG_CAST)
+        if (spellEntry->AuraInterruptFlags & flag)
         {
             if (castedSpellEntry->HasAttribute(SPELL_ATTR_EX_NOT_BREAK_STEALTH))
             {
@@ -6199,7 +6213,7 @@ void Unit::CasterHitTargetWithSpell(Unit* realCaster, Unit* target, SpellEntry c
         {
             if (success)
             {
-                target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
+                target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HOSTILE_ACTION);
 
                 // caster can be detected but have stealth aura
                 if (!spellInfo->HasAttribute(SPELL_ATTR_EX_NOT_BREAK_STEALTH))
@@ -8235,7 +8249,7 @@ bool Unit::Unmount(const Aura* aura/* = nullptr*/)
             return false;
     }
 
-    RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_MOUNTED);
+    RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DISMOUNT);
     SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT); // always remove even if aura for safety
 
@@ -10570,8 +10584,6 @@ void Unit::SetFeignDeath(bool apply, ObjectGuid casterGuid /*= ObjectGuid()*/, u
 {
     if (apply)
     {
-        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
-
         if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
         {
             if (success) // TODO: Determine if IsIgnoringFeignDeath needs to be implemented in threat system too
@@ -10663,7 +10675,7 @@ void Unit::SetStandState(uint8 state, bool acknowledge/* = false*/)
     SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_STAND_STATE, state);
 
     if (!IsSeatedState())
-        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_SEATED);
+        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_STANDING_CANCELS);
 
     if (!acknowledge && GetTypeId() == TYPEID_PLAYER)
     {
@@ -12161,6 +12173,11 @@ void Unit::Uncharm(Unit* charmed, uint32 spellId)
         charmed->GetMotionMaster()->UnMarkFollowMovegens();
     }
 
+    if (GetFormationSlot())
+    {
+        GetFormationSlot()->GetFormationData()->Remove(charmed);
+    }
+
     // Update possessed's client control status after altering flags
     if (const Player* controllingClientPlayer = charmed->GetClientControlling())
         controllingClientPlayer->UpdateClientControl(charmed, true);
@@ -12426,6 +12443,36 @@ float Unit::GetCollisionHeight() const
 
     float const collisionHeight = scaleMod * modelData->CollisionHeight * modelData->Scale * displayInfo->scale;
     return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
+}
+
+float Unit::GetCollisionWidth() const
+{
+    float scaleMod = GetObjectScale(); // 99% sure about this
+
+    if (IsMounted())
+    {
+        if (CreatureDisplayInfoEntry const* mountDisplayInfo = sCreatureDisplayInfoStore.LookupEntry(GetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID)))
+        {
+            if (CreatureModelDataEntry const* mountModelData = sCreatureModelDataStore.LookupEntry(mountDisplayInfo->ModelId))
+            {
+                CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.LookupEntry(GetNativeDisplayId());
+                MANGOS_ASSERT(displayInfo);
+                CreatureModelDataEntry const* modelData = sCreatureModelDataStore.LookupEntry(displayInfo->ModelId);
+                MANGOS_ASSERT(modelData);
+                float const collisionWidth = scaleMod * (mountModelData->MountHeight + modelData->CollisionWidth * modelData->Scale * displayInfo->scale * 0.5f);
+                return collisionWidth == 0.0f ? DEFAULT_COLLISION_WIDTH : collisionWidth;
+            }
+        }
+    }
+
+    //! Dismounting case - use basic default model data
+    CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.LookupEntry(GetNativeDisplayId());
+    MANGOS_ASSERT(displayInfo);
+    CreatureModelDataEntry const* modelData = sCreatureModelDataStore.LookupEntry(displayInfo->ModelId);
+    MANGOS_ASSERT(modelData);
+
+    float const collisionWidth = scaleMod * modelData->CollisionWidth * modelData->Scale * displayInfo->scale;
+    return collisionWidth == 0.0f ? DEFAULT_COLLISION_WIDTH : collisionWidth;
 }
 
 Player* Unit::GetNextRandomRaidMember(float radius, AuraType /*noAuraType*/)
