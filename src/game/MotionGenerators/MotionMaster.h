@@ -16,13 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MANGOS_MOTIONMASTER_H
-#define MANGOS_MOTIONMASTER_H
+#pragma once
 
 #include "Common.h"
 #include "Globals/SharedDefines.h"
 #include "MotionGenerators/WaypointManager.h"
 #include "Entities/ObjectGuid.h"
+#include "Maps/SpawnGroupDefines.h"
 
 #include <stack>
 #include <vector>
@@ -55,26 +55,60 @@ enum MovementGeneratorType
     WAYPOINT_MOTION_TYPE            = 2,                    // WaypointMovementGenerator.h
     PATH_MOTION_TYPE                = 3,                    // PathMovementGenerator.h
 
-    MAX_DB_MOTION_TYPE              = 4,                    // *** this and below motion types can't be set in DB.
+    LINEAR_WP_MOTION_TYPE           = 4,                    // WaypointMovementGenerator.h
 
-    DISTRACT_MOTION_TYPE            = 4,                    // IdleMovementGenerator.h
-    STAY_MOTION_TYPE                = 5,                    // PointMovementGenerator.h
-    FOLLOW_MOTION_TYPE              = 6,                    // TargetedMovementGenerator.h
-    CHASE_MOTION_TYPE               = 7,                    // TargetedMovementGenerator.h
-    RETREAT_MOTION_TYPE             = 8,                    // PointMovementGenerator.h
-    TIMED_FLEEING_MOTION_TYPE       = 9,                    // RandomMovementGenerator.h
-    POINT_MOTION_TYPE               = 10,                   // PointMovementGenerator.h
-    HOME_MOTION_TYPE                = 11,                   // HomeMovementGenerator.h
-    FLEEING_MOTION_TYPE             = 12,                   // RandomMovementGenerator.h
-    CONFUSED_MOTION_TYPE            = 13,                   // RandomMovementGenerator.h
-    EFFECT_MOTION_TYPE              = 14,                   // WrapperMovementGenerator.h
-    TAXI_MOTION_TYPE                = 15,                   // WaypointMovementGenerator.h
-    TIMED_RANDOM_MOTION_TYPE        = 16,                   // RandomMovementGenerator.h
+    MAX_DB_MOTION_TYPE              = 5,                    // *** this and below motion types can't be set in DB.
 
-    EXTERNAL_WAYPOINT_MOVE          = 17,                   // Only used in UnitAI::MovementInform when a waypoint is reached. The pathId >= 0 is added as additonal value
-    EXTERNAL_WAYPOINT_MOVE_START    = 18,                   // Only used in UnitAI::MovementInform when a waypoint is started. The pathId >= 0 is added as additional value
-    EXTERNAL_WAYPOINT_FINISHED_LAST = 19,                   // Only used in UnitAI::MovementInform when the waittime of the last wp is finished The pathId >= 0 is added as additional value
+    DISTRACT_MOTION_TYPE            = 5,                    // IdleMovementGenerator.h
+    STAY_MOTION_TYPE                = 6,                    // PointMovementGenerator.h
+    FOLLOW_MOTION_TYPE              = 7,                    // TargetedMovementGenerator.h
+    CHASE_MOTION_TYPE               = 8,                    // TargetedMovementGenerator.h
+    RETREAT_MOTION_TYPE             = 9,                    // PointMovementGenerator.h
+    TIMED_FLEEING_MOTION_TYPE       = 10,                   // RandomMovementGenerator.h
+    POINT_MOTION_TYPE               = 11,                   // PointMovementGenerator.h
+    HOME_MOTION_TYPE                = 12,                   // HomeMovementGenerator.h
+    FLEEING_MOTION_TYPE             = 13,                   // RandomMovementGenerator.h
+    CONFUSED_MOTION_TYPE            = 14,                   // RandomMovementGenerator.h
+    EFFECT_MOTION_TYPE              = 15,                   // WrapperMovementGenerator.h
+    TAXI_MOTION_TYPE                = 16,                   // WaypointMovementGenerator.h
+    TIMED_RANDOM_MOTION_TYPE        = 17,                   // RandomMovementGenerator.h
+
+    EXTERNAL_WAYPOINT_MOVE          = 18,                   // Only used in UnitAI::MovementInform when a waypoint is reached. The pathId >= 0 is added as additonal value
+    EXTERNAL_WAYPOINT_MOVE_START    = 19,                   // Only used in UnitAI::MovementInform when a waypoint is started. The pathId >= 0 is added as additional value
+    EXTERNAL_WAYPOINT_FINISHED_LAST = 20,                   // Only used in UnitAI::MovementInform when the waittime of the last wp is finished The pathId >= 0 is added as additional value
+
+    FORMATION_MOTION_TYPE           = 21,                   // TargetedMovementGenerator.h
 };
+
+static const char* GetMoveTypeStr(MovementGeneratorType mType)
+{
+    switch (mType)
+    {
+    case IDLE_MOTION_TYPE:                return "IDLE_MOTION_TYPE";
+    case RANDOM_MOTION_TYPE:              return "RANDOM_MOTION_TYPE";
+    case WAYPOINT_MOTION_TYPE:            return "WAYPOINT_MOTION_TYPE";
+    case LINEAR_WP_MOTION_TYPE:           return "LINEAR_WP_MOTION_TYPE";
+    case PATH_MOTION_TYPE:                return "PATH_MOTION_TYPE";
+    case DISTRACT_MOTION_TYPE:            return "DISTRACT_MOTION_TYPE";
+    case STAY_MOTION_TYPE:                return "STAY_MOTION_TYPE";
+    case FOLLOW_MOTION_TYPE:              return "FOLLOW_MOTION_TYPE";
+    case CHASE_MOTION_TYPE:               return "CHASE_MOTION_TYPE";
+    case RETREAT_MOTION_TYPE:             return "RETREAT_MOTION_TYPE";
+    case TIMED_FLEEING_MOTION_TYPE:       return "TIMED_FLEEING_MOTION_TYPE";
+    case POINT_MOTION_TYPE:               return "POINT_MOTION_TYPE";
+    case HOME_MOTION_TYPE:                return "HOME_MOTION_TYPE";
+    case FLEEING_MOTION_TYPE:             return "FLEEING_MOTION_TYPE";
+    case CONFUSED_MOTION_TYPE:            return "CONFUSED_MOTION_TYPE";
+    case EFFECT_MOTION_TYPE:              return "EFFECT_MOTION_TYPE";
+    case TAXI_MOTION_TYPE:                return "TAXI_MOTION_TYPE";
+    case TIMED_RANDOM_MOTION_TYPE:        return "TIMED_RANDOM_MOTION_TYPE";
+    case EXTERNAL_WAYPOINT_MOVE:          return "EXTERNAL_WAYPOINT_MOVE";
+    case EXTERNAL_WAYPOINT_MOVE_START:    return "EXTERNAL_WAYPOINT_MOVE_START";
+    case EXTERNAL_WAYPOINT_FINISHED_LAST: return "EXTERNAL_WAYPOINT_FINISHED_LAST";
+    case FORMATION_MOTION_TYPE:           return "FORMATION_MOTION_TYPE";
+    default:                              return "UKNOWN_MOTION_TYPE";
+    }
+}
 
 enum MMCleanFlag
 {
@@ -134,6 +168,7 @@ class MotionMaster : private std::stack<MovementGenerator*>
         void MoveRandomAroundPoint(float x, float y, float z, float radius, float verticalZ = 0.0f, uint32 timer = 0);
         void MoveTargetedHome(bool runHome = true);
         void MoveFollow(Unit* target, float dist, float angle, bool asMain = false, bool alwaysBoost = false);
+        void MoveInFormation(FormationSlotDataSPtr& sData, bool asMain = false);
         void MoveStay(float x, float y, float z, float o = 0, bool asMain = false);
         void MoveChase(Unit* target, float dist = 0.0f, float angle = 0.0f, bool moveFurther = false, bool walk = false, bool combat = true, bool delayed = false);
         void DistanceYourself(float dist);
@@ -148,6 +183,7 @@ class MotionMaster : private std::stack<MovementGenerator*>
         void MovePath(int32 pathId = 0, WaypointPathOrigin wpOrigin = PATH_NO_PATH, ForcedMovement forcedMovement = FORCED_MOVEMENT_NONE, bool flying = false, float speed = 0.f, bool cyclic = false, ObjectGuid guid = ObjectGuid());
         void MoveRetreat(float x, float y, float z, float o, uint32 delay);
         void MoveWaypoint(uint32 pathId = 0, uint32 source = 0, uint32 initialDelay = 0, uint32 overwriteEntry = 0, ForcedMovement forcedMovement = FORCED_MOVEMENT_NONE, ObjectGuid guid = ObjectGuid());
+        void MoveLinearWP(uint32 pathId = 0, uint32 source = 0, uint32 initialDelay = 0, uint32 overwriteEntry = 0, ForcedMovement forcedMovement = FORCED_MOVEMENT_NONE, ObjectGuid guid = ObjectGuid());
         void MoveTaxi();
         void MoveDistract(uint32 timer);
         void MoveCharge(float x, float y, float z, float speed, uint32 id = EVENT_CHARGE);
@@ -191,4 +227,3 @@ class MotionMaster : private std::stack<MovementGenerator*>
         uint32      m_defaultPathId;
         uint32      m_currentPathId;
 };
-#endif

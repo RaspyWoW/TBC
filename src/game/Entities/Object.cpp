@@ -1675,7 +1675,7 @@ void WorldObject::MovePositionToFirstCollision(Position& pos, float dist, float 
 
     GenericTransport* transport = GetTransport();
 
-    float halfHeight = GetCollisionHeight();
+    const float halfHeight = GetCollisionHeight();
     if (IsUnit())
     {
         PathFinder path(static_cast<Unit*>(this));
@@ -1686,7 +1686,10 @@ void WorldObject::MovePositionToFirstCollision(Position& pos, float dist, float 
             transport->CalculatePassengerOffset(src.x, src.y, src.z);
             transport->CalculatePassengerOffset(dest.x, dest.y, dest.z);
         }
+
+        UpdateAllowedPositionZ(dest.x, dest.y, dest.z);
         path.calculate(src, dest, false, true);
+
         if (path.getPathType())
         {
             G3D::Vector3 result = path.getPath().back();
