@@ -441,6 +441,11 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_UINT32_RESPEC_MAX_MULTIPLIER,                       "Rate.RespecMaxMultiplier",                    10);
     setConfig(CONFIG_BOOL_NO_RESPEC_COSTS,                               "NoRespecCosts",                            false);
 
+    setConfig(CONFIG_BOOL_LOGSDB_CHARACTERS,                             "LogsDB.Characters",                            0);
+    setConfig(CONFIG_BOOL_LOGSDB_CHAT,                                   "LogsDB.Chat",                                  0);
+    setConfig(CONFIG_BOOL_LOGSDB_TRADES,                                 "LogsDB.Trades",                                0);
+    setConfig(CONFIG_BOOL_LOGSDB_TRANSACTIONS,                           "LogsDB.Transactions",                          0);
+
     setConfigPos(CONFIG_FLOAT_RATE_DURABILITY_LOSS_DAMAGE, "DurabilityLossChance.Damage", 0.5f);
     setConfigPos(CONFIG_FLOAT_RATE_DURABILITY_LOSS_ABSORB, "DurabilityLossChance.Absorb", 0.5f);
     setConfigPos(CONFIG_FLOAT_RATE_DURABILITY_LOSS_PARRY,  "DurabilityLossChance.Parry",  0.05f);
@@ -455,8 +460,8 @@ void World::LoadConfigSettings(bool reload)
     setConfigPos(CONFIG_FLOAT_SIGHT_MONSTER,     "MonsterSight",       50.0f);
 
     setConfigPos(CONFIG_FLOAT_CREATURE_FAMILY_ASSISTANCE_RADIUS,      "CreatureFamilyAssistanceRadius",     10.0f);
-    setConfigPos(CONFIG_FLOAT_CREATURE_CHECK_FOR_HELP_RADIUS,         "CreatureCheckForHelpRadius",     5.0f);
-    setConfig(CONFIG_UINT32_CREATURE_CHECK_FOR_HELP_AGGRO_DELAY,      "CreatureCheckForHelpAggroDelay",     2000);
+    setConfigPos(CONFIG_FLOAT_CREATURE_CHECK_FOR_HELP_RADIUS,         "CreatureCheckForHelpRadius",          5.0f);
+    setConfig(CONFIG_UINT32_CREATURE_CHECK_FOR_HELP_AGGRO_DELAY,      "CreatureCheckForHelpAggroDelay",      2000);
     setConfigPos(CONFIG_FLOAT_CREATURE_FAMILY_FLEE_ASSISTANCE_RADIUS, "CreatureFamilyFleeAssistanceRadius", 30.0f);
 
     ///- Read other configuration items from the config file
@@ -576,9 +581,11 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_UINT32_GM_LEVEL_CHANNEL_SILENT_JOIN,   "GM.ChannelSilentJoinLevel",    0);
     setConfig(CONFIG_UINT32_GM_WISPERING_TO,                "GM.WhisperingTo",              2);
 
-    setConfig(CONFIG_UINT32_GM_LEVEL_IN_GM_LIST,  "GM.InGMList.Level",  SEC_ADMINISTRATOR);
-    setConfig(CONFIG_UINT32_GM_LEVEL_IN_WHO_LIST, "GM.InWhoList.Level", SEC_ADMINISTRATOR);
-    setConfig(CONFIG_BOOL_GM_LOG_TRADE,           "GM.LogTrade", false);
+    setConfig(CONFIG_UINT32_GM_LEVEL_IN_GM_LIST,     "GM.InGMList.Level",  SEC_ADMINISTRATOR);
+    setConfig(CONFIG_UINT32_GM_LEVEL_IN_WHO_LIST,    "GM.InWhoList.Level", SEC_ADMINISTRATOR);
+    setConfig(CONFIG_BOOL_GM_LOG_TRADE,              "GM.LogTrade",                    false);
+    setConfig(CONFIG_BOOL_GM_ALLOW_TRADES,           "GM.AllowTrades",                 false);
+    setConfig(CONFIG_BOOL_GMS_ALLOW_PUBLIC_CHANNELS, "GM.AllowPublicChannels",         false);
 
     setConfigMinMax(CONFIG_UINT32_START_GM_LEVEL, "GM.StartLevel", 1, getConfig(CONFIG_UINT32_START_PLAYER_LEVEL), MAX_LEVEL);
     setConfig(CONFIG_BOOL_GM_LOWER_SECURITY, "GM.LowerSecurity", false);
@@ -657,10 +664,28 @@ void World::LoadConfigSettings(bool reload)
 
     setConfig(CONFIG_BOOL_DETECT_POS_COLLISION, "DetectPosCollision", true);
 
-    setConfig(CONFIG_BOOL_CHAT_RESTRICTED_RAID_WARNINGS,        "Chat.RestrictedRaidWarnings", 0);
-    setConfig(CONFIG_UINT32_CHANNEL_RESTRICTED_LANGUAGE_MODE,   "Channel.RestrictedLanguageMode", 0);
-    setConfig(CONFIG_BOOL_CHANNEL_RESTRICTED_LFG,               "Channel.RestrictedLfg", true);
-    setConfig(CONFIG_UINT32_CHANNEL_STATIC_AUTO_TRESHOLD,       "Channel.StaticAutoTreshold", 0);
+    setConfig(CONFIG_BOOL_CHAT_RESTRICTED_RAID_WARNINGS,         "Chat.RestrictedRaidWarnings",       0);
+    setConfig(CONFIG_UINT32_CHANNEL_RESTRICTED_LANGUAGE_MODE,    "Channel.RestrictedLanguageMode",    0);
+    setConfig(CONFIG_BOOL_CHANNEL_RESTRICTED_LFG,                "Channel.RestrictedLfg",          true);
+    setConfig(CONFIG_UINT32_CHANNEL_STATIC_AUTO_TRESHOLD,        "Channel.StaticAutoTreshold",        0);
+    setConfig(CONFIG_UINT32_CHANNEL_INVITE_MIN_LEVEL,            "ChannelInvite.MinLevel",           10);
+    setConfig(CONFIG_BOOL_WHISPER_RESTRICTION,                   "WhisperRestriction",            false);
+    setConfig(CONFIG_UINT32_WORLD_CHAN_MIN_LEVEL,                "WorldChan.MinLevel",                0);
+    setConfig(CONFIG_UINT32_WORLD_CHAN_CD,                       "WorldChan.Cooldown",                0);
+    setConfig(CONFIG_UINT32_WORLD_CHAN_CD_MAX_LEVEL,             "WorldChan.CooldownMaxLevel",        0);
+    setConfig(CONFIG_UINT32_WORLD_CHAN_CD_SCALING,               "WorldChan.CooldownScaling",         0);
+    setConfig(CONFIG_UINT32_WORLD_CHAN_CD_USE_ACCOUNT_MAX_LEVEL, "WorldChan.CooldownUseAccountLevel", 0);
+    setConfig(CONFIG_UINT32_PUB_CHANS_MUTE_VANISH_LEVEL,         "PublicChansMute.BypassLevel",      61);
+    setConfig(CONFIG_UINT32_WHISPER_TARGETS_MAX,                 "WhisperTargets.MaxTargets",         0);
+    setConfig(CONFIG_UINT32_WHISPER_TARGETS_DECAY,               "WhisperTargets.DecayTime",          0);
+    setConfig(CONFIG_UINT32_WHISPER_TARGETS_BYPASS_LEVEL,        "WhisperTargets.BypassLevel",        0);
+    setConfig(CONFIG_UINT32_SAY_MIN_LEVEL,                       "SayMinLevel",                       0);
+    setConfig(CONFIG_UINT32_YELL_MIN_LEVEL,                      "YellMinLevel",                      0);
+    setConfig(CONFIG_UINT32_SAY_EMOTE_MIN_LEVEL,                 "SayEmoteMinLevel",                  0);
+    setConfig(CONFIG_UINT32_WHISP_DIFF_ZONE_MIN_LEVEL,           "WhisperDiffZone.MinLevel",          0);
+    setConfig(CONFIG_UINT32_YELLRANGE_LINEARSCALE_MAXLEVEL,      "YellRange.LinearScale.MaxLevel",    0);
+    setConfig(CONFIG_UINT32_YELLRANGE_QUADRATICSCALE_MAXLEVEL,   "YellRange.QuadraticScale.MaxLevel", 0);
+    setConfig(CONFIG_UINT32_YELLRANGE_MIN,                       "YellRange.Min",                     0);
 
     setConfig(CONFIG_BOOL_TALENTS_INSPECTING,           "TalentsInspecting", true);
     setConfig(CONFIG_BOOL_CHAT_FAKE_MESSAGE_PREVENTING, "ChatFakeMessagePreventing", false);
@@ -740,6 +765,8 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_BOOL_PET_ATTACK_FROM_BEHIND,     "PetAttackFromBehind", true);
 
     setConfig(CONFIG_BOOL_AUTO_DOWNRANK,              "AutoDownrank", true);
+
+    setConfig(CONFIG_UINT32_LOG_MONEY_TRADES_TRESHOLD, "LogMoneyTreshold", 10000);
 
     m_relocation_ai_notify_delay = sConfig.GetIntDefault("Visibility.AIRelocationNotifyDelay", 1000u);
     m_relocation_lower_limit_sq = pow(sConfig.GetFloatDefault("Visibility.RelocationLowerLimit", 10), 2);
@@ -1368,7 +1395,7 @@ void World::SetInitialWorldSettings()
     sBattleGroundMgr.InitAutomaticArenaPointDistribution();
 
     sLog.outString("Deleting expired bans...");
-    LoginDatabase.Execute("DELETE FROM ip_banned WHERE expires_at<=UNIX_TIMESTAMP() AND expires_at<>banned_at");
+    LoginDatabase.Execute("DELETE FROM `ip_banned` WHERE `unbandate` <= UNIX_TIMESTAMP() AND `unbandate` <> `bandate`");
     sLog.outString();
 
     sLog.outString("Calculate next daily quest reset time...");
@@ -2795,4 +2822,179 @@ void World::LoadWorldSafeLocs() const
 {
     sWorldSafeLocsStore.Load(true);
     sLog.outString(">> Loaded %u world safe locs", sWorldSafeLocsStore.GetRecordCount());
+}
+
+void World::LogMoneyTrade(ObjectGuid const sender, ObjectGuid const receiver, const uint32 amount, const char* type, const uint32 dataInt)
+{
+    if (!LogsDatabase || !sWorld.getConfig(CONFIG_BOOL_LOGSDB_TRADES))
+        return;
+
+    static SqlStatementID insLogMoney;
+    SqlStatement logStmt = LogsDatabase.CreateStatement(insLogMoney, "INSERT INTO `logs_trade` SET `sender`=?, `senderType`=?, `senderEntry`=?, `receiver`=?, `amount`=?, `type`=?, `data`=?");
+    
+    logStmt.addUInt32(sender.GetCounter());
+    logStmt.addUInt32(sender.GetHigh());
+    logStmt.addUInt32(sender.GetEntry());
+    logStmt.addUInt32(receiver.GetCounter());
+    logStmt.addUInt32(amount);
+    logStmt.addString(type);
+    logStmt.addUInt32(dataInt);
+    logStmt.Execute();
+}
+
+void World::LogCharacter(Player* character, char const* action)
+{
+    if (!LogsDatabase || !sWorld.getConfig(CONFIG_BOOL_LOGSDB_CHARACTERS))
+        return;
+
+    MANGOS_ASSERT(character);
+
+    static SqlStatementID insLogChar;
+    SqlStatement logStmt = LogsDatabase.CreateStatement(insLogChar, "INSERT INTO `logs_characters` SET `type`=?, `guid`=?, `account`=?, `name`=?, `ip`=?");
+    
+    logStmt.addString(action);
+    logStmt.addUInt32(character->GetGUIDLow());
+    logStmt.addUInt32(character->GetSession()->GetAccountId());
+    logStmt.addString(character->GetName());
+    logStmt.addString(character->GetSession()->GetRemoteAddress());
+    logStmt.Execute();
+}
+
+void World::LogCharacter(WorldSession const* sess, const uint32 lowGuid, std::string const& charName, char const* action)
+{
+    if (!LogsDatabase || !sWorld.getConfig(CONFIG_BOOL_LOGSDB_CHARACTERS))
+        return;
+
+    MANGOS_ASSERT(sess);
+
+    static SqlStatementID insLogChar;
+    SqlStatement logStmt = LogsDatabase.CreateStatement(insLogChar, "INSERT INTO `logs_characters` SET `type`=?, `guid`=?, `account`=?, `name`=?, `ip`=?");
+    logStmt.addString(action);
+    logStmt.addUInt32(lowGuid);
+    logStmt.addUInt32(sess->GetAccountId());
+    logStmt.addString(charName);
+    logStmt.addString(sess->GetRemoteAddress());
+    logStmt.Execute();
+}
+
+void World::LogChat(WorldSession* sess, char const* type, std::string const& msg, ObjectGuid receiver, uint32 chanId, char const* chanStr)
+{
+    MANGOS_ASSERT(sess);
+    Player* target = ObjectAccessor::FindPlayer(receiver);
+    Player* plr = sess->GetPlayer();
+    MANGOS_ASSERT(plr);
+
+    if (target)
+        sLog.out(LOG_CHAT, "[%s] %s:%u -> %s:%u : %s", type, plr->GetName(), plr->GetObjectGuid().GetCounter(), target->GetName(), target->GetObjectGuid().GetCounter(), msg.c_str());
+    else if (chanId)
+        sLog.out(LOG_CHAT, "[%s:%u] %s:%u : %s", type, chanId, plr->GetName(), plr->GetObjectGuid().GetCounter(), msg.c_str());
+    else if (chanStr)
+        sLog.out(LOG_CHAT, "[%s:%s] %s:%u : %s", type, chanStr, plr->GetName(), plr->GetObjectGuid().GetCounter(), msg.c_str());
+    else
+        sLog.out(LOG_CHAT, "[%s] %s:%u : %s", type, plr->GetName(), plr->GetObjectGuid().GetCounter(), msg.c_str());
+
+    if (!LogsDatabase || !sWorld.getConfig(CONFIG_BOOL_LOGSDB_CHAT))
+        return;
+
+    static SqlStatementID insLogChat;
+    SqlStatement logStmt = LogsDatabase.CreateStatement(insLogChat,
+        "INSERT INTO `logs_chat` SET `type`=?, `guid`=?, `target`=?, `channelId`=?, `channelName`=?, `message`=?");
+
+    logStmt.addString(type);
+    logStmt.addUInt32(plr->GetObjectGuid().GetCounter());
+    logStmt.addUInt32(target ? target->GetObjectGuid().GetCounter() : 0);
+    logStmt.addUInt32(chanId);
+    logStmt.addString(chanStr ? chanStr : "");
+    logStmt.addString(msg);
+    logStmt.Execute();
+}
+
+void World::LogChat(WorldSession* sess, char const* type, std::string const& msg, uint32 chanId, char const* chanStr)
+{
+    MANGOS_ASSERT(sess);
+
+    Player* plr = sess->GetPlayer();
+    MANGOS_ASSERT(plr);
+
+    if (chanId)
+        sLog.out(LOG_CHAT, "[%s:%u] %s:%u : %s", type, chanId, plr->GetName(), plr->GetObjectGuid().GetCounter(), msg.c_str());
+    else if (chanStr)
+        sLog.out(LOG_CHAT, "[%s:%s] %s:%u : %s", type, chanStr, plr->GetName(), plr->GetObjectGuid().GetCounter(), msg.c_str());
+    else
+        sLog.out(LOG_CHAT, "[%s] %s:%u : %s", type, plr->GetName(), plr->GetObjectGuid().GetCounter(), msg.c_str());
+
+    if (!LogsDatabase || !sWorld.getConfig(CONFIG_BOOL_LOGSDB_CHAT))
+        return;
+
+    static SqlStatementID insLogChat;
+    SqlStatement logStmt = LogsDatabase.CreateStatement(insLogChat,
+        "INSERT INTO `logs_chat` SET `type`=?, `guid`=?, `target`=?, `channelId`=?, `channelName`=?, `message`=?");
+
+    logStmt.addString(type);
+    logStmt.addUInt32(plr->GetObjectGuid().GetCounter());
+    logStmt.addUInt32(0);
+    logStmt.addUInt32(chanId);
+    logStmt.addString(chanStr ? chanStr : "");
+    logStmt.addString(msg);
+    logStmt.Execute();
+}
+
+
+void World::LogTransaction(PlayerTransactionData const& data)
+{
+    if (!LogsDatabase || !sWorld.getConfig(CONFIG_BOOL_LOGSDB_TRANSACTIONS))
+        return;
+
+    static SqlStatementID insLogTransaction;
+    SqlStatement logStmt = LogsDatabase.CreateStatement(insLogTransaction,
+        "INSERT INTO `logs_transactions` SET `type`=?, `guid1`=?, `money1`=?, `spell1`=?, `items1`=?, `guid2`=?, `money2`=?, `spell2`=?, `items2`=?");
+
+    logStmt.addString(data.type);
+
+    for (const auto& part : data.parts)
+    {
+        logStmt.addUInt32(part.lowGuid);
+        logStmt.addUInt32(part.money);
+        logStmt.addUInt32(part.spell);
+        std::stringstream items;
+        for (auto i = 0; i < TransactionPart::MAX_TRANSACTION_ITEMS; ++i)
+        {
+            if (part.itemsEntries[i])
+            {
+                if (i != 0)
+                    items << ";";
+
+                items << uint32(part.itemsEntries[i]) << ":" << uint32(part.itemsCount[i]) << ":" << part.itemsGuid[i];
+            }
+        }
+
+        logStmt.addString(items.str());
+    }
+
+    logStmt.Execute();
+}
+
+void World::SendGMText(const int32 string_id, ...)
+{
+    va_list ap;
+    va_start(ap, string_id);
+
+    MaNGOS::WorldWorldTextBuilder wt_builder(string_id, &ap);
+    MaNGOS::LocalizedPacketListDo<MaNGOS::WorldWorldTextBuilder> wt_do(wt_builder);
+    for (const auto& itr : m_sessions)
+    {
+        if (WorldSession* session = itr.second)
+        {
+            if (session->GetSecurity() > SEC_PLAYER)
+            {
+                Player* player = session->GetPlayer();
+                if (player && player->IsInWorld())
+                {
+                    wt_do(player);
+                }
+            }
+        }
+    }
+
+    va_end(ap);
 }

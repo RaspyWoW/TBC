@@ -596,7 +596,7 @@ void WorldSession::HandleSellItemOpcode(WorldPacket& recv_data)
         _player->AddItemToBuyBackSlot(pItem, money);
     }
 
-    _player->ModifyMoney(money);
+    _player->LogModifyMoney(money, "SellItem", pCreature->GetObjectGuid(), pItem->GetEntry());
 }
 
 void WorldSession::HandleBuybackItem(WorldPacket& recv_data)

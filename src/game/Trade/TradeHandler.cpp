@@ -290,10 +290,17 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    // not accept if some items now can't be trade (cheating)
-    for (int i = 0; i < TRADE_SLOT_TRADED_COUNT; ++i)
+    if (!sWorld.getConfig(CONFIG_BOOL_GM_ALLOW_TRADES) && (trader->GetSession()->GetSecurity() > SEC_PLAYER || GetSecurity() > SEC_PLAYER))
     {
-        if (Item* item = my_trade->GetItem(TradeSlots(i)))
+        info.Status = TRADE_STATUS_TRADE_CANCELED;
+        SendTradeStatus(info);
+        return;
+    }
+
+    // Not accept if some items now can't be trade (cheating)
+    for (auto i = 0; i < TRADE_SLOT_TRADED_COUNT; ++i)
+    {
+        if (Item const* item = my_trade->GetItem(TradeSlots(i)))
         {
             if (!item->CanBeTraded())
             {
@@ -303,7 +310,7 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& recvPacket)
             }
         }
 
-        if (Item* item  = his_trade->GetItem(TradeSlots(i)))
+        if (Item const* item  = his_trade->GetItem(TradeSlots(i)))
         {
             if (!item->CanBeTraded())
             {
@@ -316,6 +323,12 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& recvPacket)
 
     if (his_trade->IsAccepted())
     {
+        PlayerTransactionData log;
+        log.type = "Trade";
+        my_trade->FillTransactionLog(log.parts[0]);
+        his_trade->FillTransactionLog(log.parts[1]);
+        sWorld.LogTransaction(log);
+
         setAcceptTradeMode(my_trade, his_trade, myItems, hisItems);
 
         Spell* my_spell = nullptr;
@@ -473,9 +486,9 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& recvPacket)
 
         // update money
         _player->ModifyMoney(-int32(my_trade->GetMoney()));
-        _player->ModifyMoney(his_trade->GetMoney());
+        _player->LogModifyMoney(his_trade->GetMoney(), "Trade", trader->GetObjectGuid());
         trader->ModifyMoney(-int32(his_trade->GetMoney()));
-        trader->ModifyMoney(my_trade->GetMoney());
+        trader->LogModifyMoney(my_trade->GetMoney(), "Trade", _player->GetObjectGuid());
 
         if (my_spell)
             my_spell->SpellStart(&my_targets);

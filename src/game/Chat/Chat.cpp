@@ -982,6 +982,7 @@ ChatCommand* ChatHandler::getCommandTable()
         { "maxskill",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleMaxSkillCommand,            "", nullptr },
         { "setskill",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSetSkillCommand,            "", nullptr },
         { "whispers",       SEC_MODERATOR,      false, &ChatHandler::HandleWhispersCommand,            "", nullptr },
+        { "wr",             SEC_PLAYER,         false, &ChatHandler::HandleWhisperRestrictionCommand,  "", nullptr },
         { "pinfo",          SEC_GAMEMASTER,     true,  &ChatHandler::HandlePInfoCommand,               "", nullptr },
         { "respawn",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleRespawnCommand,             "", nullptr },
         { "send",           SEC_MODERATOR,      true,  nullptr,                                        "", sendCommandTable },
@@ -1410,26 +1411,80 @@ void ChatHandler::ExecuteCommand(const char* text)
     {
         case CHAT_COMMAND_OK:
         {
-            SetSentErrorMessage(false);
-            if ((this->*(command->Handler))((char*)text))   // text content destroyed at call
+            std::string realCommandFull = command->FullName;
+
+            if (text[0])
             {
-                if (command->SecurityLevel > SEC_PLAYER)
-                    LogCommand(fullcmd.c_str());
+                realCommandFull += " ";
+                realCommandFull += text;
             }
-            // some commands have custom error messages. Don't send the default one in these cases.
+
+            if (m_session && command->Flags & COMMAND_FLAGS_ONLY_ON_SELF)
+            {
+                ObjectGuid selGuid = m_session->GetPlayer()->GetSelectionGuid();
+                if (!selGuid.IsEmpty() && selGuid != m_session->GetPlayer()->GetObjectGuid())
+                {
+                    PSendSysMessage("|cFF8DE2FFYou can use the command [%s] only on yourself|r", command->FullName.c_str());
+                    return;
+                }
+            }
+
+            SetSentErrorMessage(false);
+
+            // Always log GM commands, regardless of success
+            if (command->SecurityLevel > SEC_PLAYER)
+            {
+                // Chat case
+                if (m_session && m_session->GetPlayer())
+                {
+                    Player const* pPlayer = m_session->GetPlayer();
+                    ObjectGuid const sel_guid = pPlayer->GetSelectionGuid();
+
+                    sLog.outCommand(GetAccountId(), "Command: %s [Player: %s (Group Leader \"%s\", Account: %u) X: %f Y: %f Z: %f Map: %u Selected: %s]",
+                        realCommandFull.c_str(), pPlayer->GetName(), pPlayer->GetGroup() ? pPlayer->GetGroup()->GetLeaderGuid().GetString().c_str() : "NULL", GetAccountId(),
+                        pPlayer->GetPositionX(), pPlayer->GetPositionY(), pPlayer->GetPositionZ(), pPlayer->GetMapId(), sel_guid.GetString().c_str());
+                }
+                else // 0 Account -> Console
+                {
+                    sLog.outCommand(GetAccountId(), "Command: %s [Account: %u from %s]",
+                        realCommandFull.c_str(), GetAccountId(), GetAccountId() ? "RA-connection" : "Console");
+                }
+            }
+
+            if ((this->*(command->Handler))((char*)text)) // Text content destroyed at call
+            {
+                if (m_session && command->Flags & COMMAND_FLAGS_CRITICAL)
+                {
+                    if (Unit* target = getSelectedUnit())
+                        sLog.out(LOG_GM_CRITICAL, "%s: %s. Selected %s. Map %u", m_session->GetAccountName().c_str(), realCommandFull.c_str(),
+                            target->GetObjectGuid().GetString().c_str(), target->GetMapId());
+                    else
+                        sLog.out(LOG_GM_CRITICAL, "%s: %s.", m_session->GetAccountName().c_str(), realCommandFull.c_str());
+                }
+            }
+            // Some commands have custom error messages. Don't send the default one in these cases.
             else if (!HasSentErrorMessage())
             {
                 if (!command->Help.empty())
+                {
                     SendSysMessage(command->Help.c_str());
+                }
                 else
+                {
                     SendSysMessage(LANG_CMD_SYNTAX);
+                }
 
-                if (ChatCommand* showCommand = (command->Name[0] == '\0' && parentCommand ? parentCommand : command))
+                if (ChatCommand const* showCommand = (strlen(command->Name) == 0 && parentCommand ? parentCommand : command))
+                {
                     if (ChatCommand* childs = showCommand->ChildCommands)
+                    {
                         ShowHelpForSubCommands(childs, showCommand->Name);
+                    }
+                }
 
                 SetSentErrorMessage(true);
             }
+
             break;
         }
         case CHAT_COMMAND_UNKNOWN_SUBCOMMAND:

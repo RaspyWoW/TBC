@@ -1260,7 +1260,7 @@ bool ChatHandler::HandleModifyMoneyCommand(char* args)
         if (addmoney >= MAX_MONEY_AMOUNT)
             chr->SetMoney(MAX_MONEY_AMOUNT);
         else
-            chr->ModifyMoney(addmoney);
+            chr->LogModifyMoney(addmoney, "GM", m_session->GetPlayer()->GetObjectGuid());
     }
 
     DETAIL_LOG(GetMangosString(LANG_NEW_MONEY), moneyuser, addmoney, chr->GetMoney());

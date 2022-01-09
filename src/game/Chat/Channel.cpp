@@ -24,7 +24,7 @@
 #include "Anticheat/Anticheat.hpp"
 
 Channel::Channel(const std::string& name, uint32 channel_id/* = 0*/)
-    : m_name(name)
+    : m_name(name), m_levelRestricted(true)
 {
     if (ChatChannelsEntry const* builtin = GetChatChannelsEntryFor(name, channel_id))
     {
@@ -53,6 +53,7 @@ Channel::Channel(const std::string& name, uint32 channel_id/* = 0*/)
 
         // Custom features:
         m_realmzone = sObjectMgr.CheckPublicMessageLanguage(m_name);    // channel language matches channel name
+        m_levelRestricted = false;
     }
 }
 
@@ -665,12 +666,12 @@ void Channel::Say(Player* player, const char* text, uint32 lang)
     if (sWorld.getConfig(CONFIG_BOOL_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
         lang = LANG_UNIVERSAL;
 
-    auto const silenced = player->GetSession()->GetAnticheat()->IsSilenced();
-
     WorldPacket data;
     ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, text, Language(lang), player->GetChatTag(), guid, player->GetName(), ObjectGuid(), "", m_name.c_str());
     // if the source is silenced, send only to them
-    if (silenced)
+    if (player &&
+        player->GetSession()->GetAnticheat()->IsSilenced() &&
+        player->GetSession()->GetAccountMaxLevel() < sWorld.getConfig(CONFIG_UINT32_PUB_CHANS_MUTE_VANISH_LEVEL))
         player->GetSession()->SendPacket(data);
     else
         SendMessage(data, (moderator ? ObjectGuid() : guid));

@@ -209,6 +209,24 @@ enum eConfigUInt32Values
     CONFIG_UINT32_RESPEC_MIN_MULTIPLIER,
     CONFIG_UINT32_RESPEC_MAX_MULTIPLIER,
     CONFIG_UINT32_XP_PERSONAL_BONUS_REQ_ACCOUNT_LEVEL,
+    CONFIG_UINT32_WHISPER_TARGETS_MAX,
+    CONFIG_UINT32_WHISPER_TARGETS_BYPASS_LEVEL,
+    CONFIG_UINT32_WHISPER_TARGETS_DECAY,
+    CONFIG_UINT32_WORLD_CHAN_MIN_LEVEL,
+    CONFIG_UINT32_WORLD_CHAN_CD,
+    CONFIG_UINT32_WORLD_CHAN_CD_MAX_LEVEL,
+    CONFIG_UINT32_WORLD_CHAN_CD_SCALING,
+    CONFIG_UINT32_WORLD_CHAN_CD_USE_ACCOUNT_MAX_LEVEL,
+    CONFIG_UINT32_PUB_CHANS_MUTE_VANISH_LEVEL,
+    CONFIG_UINT32_SAY_MIN_LEVEL,
+    CONFIG_UINT32_SAY_EMOTE_MIN_LEVEL,
+    CONFIG_UINT32_YELL_MIN_LEVEL,
+    CONFIG_UINT32_WHISP_DIFF_ZONE_MIN_LEVEL,
+    CONFIG_UINT32_CHANNEL_INVITE_MIN_LEVEL,
+    CONFIG_UINT32_YELLRANGE_LINEARSCALE_MAXLEVEL,
+    CONFIG_UINT32_YELLRANGE_QUADRATICSCALE_MAXLEVEL,
+    CONFIG_UINT32_YELLRANGE_MIN,
+    CONFIG_UINT32_LOG_MONEY_TRADES_TRESHOLD,
     CONFIG_UINT32_VALUE_COUNT
 };
 
@@ -328,6 +346,7 @@ enum eConfigBoolValues
     CONFIG_BOOL_INSTANCE_IGNORE_RAID,
     CONFIG_BOOL_INSTANCE_STRICT_COMBAT_LOCKDOWN,
     CONFIG_BOOL_CAST_UNSTUCK,
+    CONFIG_BOOL_GM_ALLOW_TRADES,
     CONFIG_BOOL_GM_LOG_TRADE,
     CONFIG_BOOL_GM_LOWER_SECURITY,
     CONFIG_BOOL_GM_TICKETS_QUEUE_STATUS,
@@ -383,6 +402,12 @@ enum eConfigBoolValues
     CONFIG_BOOL_PATH_FIND_NORMALIZE_Z,
     CONFIG_BOOL_ACCOUNT_DATA,
     CONFIG_BOOL_NO_RESPEC_COSTS,
+    CONFIG_BOOL_LOGSDB_CHAT,
+    CONFIG_BOOL_LOGSDB_TRADES,
+    CONFIG_BOOL_LOGSDB_CHARACTERS,
+    CONFIG_BOOL_LOGSDB_TRANSACTIONS,
+    CONFIG_BOOL_GMS_ALLOW_PUBLIC_CHANNELS,
+    CONFIG_BOOL_WHISPER_RESTRICTION,
     CONFIG_BOOL_VALUE_COUNT
 };
 
@@ -475,6 +500,28 @@ struct CliCommandHolder
     }
 };
 
+struct TransactionPart
+{
+    static int const MAX_TRANSACTION_ITEMS = 6;
+    TransactionPart()
+    {
+        memset(this, 0, sizeof(TransactionPart));
+    }
+
+    uint32 lowGuid;
+    uint32 money;
+    uint32 spell;
+    uint16 itemsEntries[MAX_TRANSACTION_ITEMS];
+    uint8 itemsCount[MAX_TRANSACTION_ITEMS];
+    uint32 itemsGuid[MAX_TRANSACTION_ITEMS];
+};
+
+struct PlayerTransactionData
+{
+    char const* type;
+    TransactionPart parts[2];
+};
+
 /// The World
 class World
 {
@@ -561,6 +608,8 @@ class World
         void SendZoneUnderAttackMessage(uint32 zoneId, Team team);
         void SendDefenseMessage(uint32 zoneId, int32 textId);
         void SendDefenseMessageBroadcastText(uint32 zoneId, uint32 textId);
+
+        void SendGMText(const int32 string_id, ...);
 
         /// Are we in the middle of a shutdown?
         bool IsShutdowning() const { return m_ShutdownTimer > 0; }
@@ -669,6 +718,15 @@ class World
         GraveyardManager& GetGraveyardManager() { return m_graveyardManager; }
 
         void SendGMTextFlags(uint32 accountFlag, int32 stringId, std::string type, const char* message);
+
+         // Database logs system
+        void LogMoneyTrade(ObjectGuid const sender, ObjectGuid const receiver, const uint32 amount, char const* type, const uint32 dataInt);
+        void LogCharacter(Player* character, char const* action);
+        void LogCharacter(WorldSession const* sess, const uint32 lowGuid, std::string const& charName, char const* action);
+        void LogChat(WorldSession* sess, char const* type, std::string const& msg, ObjectGuid receiver, uint32 chanId = 0, char const* chanStr = nullptr);
+        void LogChat(WorldSession* sess, char const* type, std::string const& msg, uint32 chanId = 0, char const* chanStr = nullptr);
+        void LogTransaction(PlayerTransactionData const& data);
+
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters

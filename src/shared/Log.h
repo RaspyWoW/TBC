@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MANGOSSERVER_LOG_H
-#define MANGOSSERVER_LOG_H
+#pragma once
 
 #include "Common.h"
 #include "Policies/Singleton.h"
@@ -60,7 +59,7 @@ enum LogFilters
     LOG_FILTER_DB_SCRIPT          = 0x080000,               // 19 Db scripts
 };
 
-#define LOG_FILTER_COUNT            20
+constexpr auto LOG_FILTER_COUNT = 20;
 
 struct LogFilterData
 {
@@ -90,7 +89,27 @@ enum Color
     WHITE
 };
 
-const int Color_count = int(WHITE) + 1;
+enum LogFile
+{
+    LOG_CHAT = 0,
+    LOG_LOOTS,
+    LOG_LEVELUP,
+    LOG_PERFORMANCE,
+    LOG_MONEY_TRADES,
+    LOG_GM_CRITICAL,
+    LOG_MAX_FILES
+};
+
+enum LogType
+{
+    LogNormal = 0,
+    LogDetails,
+    LogDebug,
+    LogError,
+    LOG_TYPE_MAX // add new entries *before* this value!
+};
+
+constexpr auto Color_count = int(WHITE) + 1;
 
 class Log : public MaNGOS::Singleton<Log, MaNGOS::ClassLevelLockable<Log, std::mutex> >
 {
@@ -134,11 +153,21 @@ class Log : public MaNGOS::Singleton<Log, MaNGOS::ClassLevelLockable<Log, std::m
             if (customLogFile != nullptr)
                 fclose(customLogFile);
             customLogFile = nullptr;
+
+            for (auto& logFile : logFiles)
+            {
+                if (logFile != nullptr)
+                {
+                    fclose(logFile);
+                    logFile = nullptr;
+                }
+            }
         }
     public:
         void Initialize();
         void InitColors(const std::string& str);
 
+        void out(LogFile t, char const* format, ...) ATTR_PRINTF(3, 4);
         void outCommand(uint32 account, const char* str, ...) ATTR_PRINTF(3, 4);
         void outString();                                   // any log level
         // any log level
@@ -174,7 +203,7 @@ class Log : public MaNGOS::Singleton<Log, MaNGOS::ClassLevelLockable<Log, std::m
         uint32 GetLogLevel() const { return m_logLevel; }
         void SetLogLevel(char* level);
         void SetLogFileLevel(char* level);
-        void SetColor(bool stdout_stream, Color color);
+        void SetColor(const bool stdout_stream, Color color);
         void ResetColor(bool stdout_stream);
         void outTime() const;
         static void outTimestamp(FILE* file);
@@ -206,6 +235,10 @@ class Log : public MaNGOS::Singleton<Log, MaNGOS::ClassLevelLockable<Log, std::m
         FILE* scriptErrLogFile;
         FILE* worldLogfile;
         FILE* customLogFile;
+        FILE* logFiles[LOG_MAX_FILES];
+        bool  timestampPrefix[LOG_MAX_FILES];
+
+        bool m_bIsChatLogFileActivated;
 
         std::mutex m_worldLogMtx;
         std::mutex m_traceLogMtx;
@@ -215,7 +248,7 @@ class Log : public MaNGOS::Singleton<Log, MaNGOS::ClassLevelLockable<Log, std::m
         LogLevel m_logFileLevel;
         bool m_colored;
         bool m_includeTime;
-        Color m_colors[4];
+        Color m_colors[LOG_TYPE_MAX];
         uint32 m_logFilter;
 
         // cache values for after initilization use (like gm log per account case)
@@ -288,5 +321,3 @@ void error_log(const char* str, ...) ATTR_PRINTF(1, 2);
 void error_db_log(const char* str, ...) ATTR_PRINTF(1, 2);
 void setScriptLibraryErrorFile(char const* fname, char const* libName);
 void script_error_log(const char* str, ...) ATTR_PRINTF(1, 2);
-
-#endif

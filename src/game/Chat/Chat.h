@@ -46,6 +46,12 @@ class Pet;
 class Player;
 class Unit;
 
+enum CommandFlags
+{
+    COMMAND_FLAGS_ONLY_ON_SELF = 0x1,
+    COMMAND_FLAGS_CRITICAL = 0x2,
+};
+
 class ChatCommand
 {
     public:
@@ -55,6 +61,8 @@ class ChatCommand
         bool (ChatHandler::*Handler)(char* args);
         std::string        Help;
         ChatCommand*       ChildCommands;
+        uint8              Flags;
+        std::string        FullName;
 };
 
 enum ChatCommandSearchResult
@@ -831,6 +839,8 @@ class ChatHandler
         bool HandleSendItemsHelper(MailDraft& draft, char* args);
         bool HandleSendMailHelper(MailDraft& draft, char* args);
         bool HandleSendMoneyHelper(MailDraft& draft, char* args);
+
+        bool HandleWhisperRestrictionCommand(char* args);
 
         template<typename T>
         void ShowNpcOrGoSpawnInformation(uint32 guid);

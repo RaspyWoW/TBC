@@ -31,6 +31,7 @@
 #include "Entities/Item.h"
 #include "WorldSocket.h"
 #include "Multithreading/Messager.h"
+#include "Chat/WhisperTargetLimits.h"
 
 #include <map>
 #include <deque>
@@ -422,6 +423,7 @@ class WorldSession
 
         // Account mute time
         time_t m_muteTime;
+        time_t m_lastPubChannelMsgTime;
         // Ticket squelch timer: prevent ticket spam
         ShortTimeTracker m_ticketSquelchTimer;
 
@@ -429,6 +431,11 @@ class WorldSession
         LocaleConstant GetSessionDbcLocale() const { return m_sessionDbcLocale; }
         int GetSessionDbLocaleIndex() const { return m_sessionDbLocaleIndex; }
         const char* GetMangosString(int32 entry) const;
+
+        // Public chat cooldown restriction functionality
+        // Intentionally session-based to avoid login/logout hijinks
+        time_t GetLastPubChanMsgTime() const { return m_lastPubChannelMsgTime; }
+        void SetLastPubChanMsgTime(const time_t time) { m_lastPubChannelMsgTime = time; }
 
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
@@ -461,6 +468,8 @@ class WorldSession
         void SendAuthOk() const;
         void SendAuthQueued() const;
         void SendKickReason(uint8 reason, std::string const& string) const;
+
+        WhisperTargetLimits& GetWhisperTargets() { return m_whisper_targets; }
 
         // opcodes handlers
         void Handle_NULL(WorldPacket& recvPacket);          // not used
@@ -740,13 +749,15 @@ class WorldSession
         void HandlePushQuestToParty(WorldPacket& recvPacket);
         void HandleQuestPushResult(WorldPacket& recvPacket);
 
-        bool CheckChatMessage(std::string&, bool addon = false);
+        bool ProcessChatMessageAfterSecurityCheck(std::string&, const uint32, const uint32);
+        static bool IsLanguageAllowedForChatType(const uint32 lang, const uint32 msgType);
         void SendPlayerNotFoundNotice(const std::string& name) const;
         void SendWrongFactionNotice() const;
         void SendChatRestrictedNotice(ChatRestrictionType restriction) const;
         void HandleMessagechatOpcode(WorldPacket& recvPacket);
         void HandleTextEmoteOpcode(WorldPacket& recvPacket);
         void HandleChatIgnoredOpcode(WorldPacket& recvPacket);
+        uint32_t ChatCooldown();
 
         void HandleReclaimCorpseOpcode(WorldPacket& recvPacket);
         void HandleCorpseQueryOpcode(WorldPacket& recvPacket);
@@ -932,6 +943,8 @@ class WorldSession
         uint8 m_expansion;
         std::string m_accountName;
         uint32 m_accountFlags;
+
+        WhisperTargetLimits m_whisper_targets;
 
         // anticheat
         ClientOSType m_clientOS;

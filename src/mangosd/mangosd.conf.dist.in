@@ -402,6 +402,24 @@ CharLogTimestamp = 0
 CharLogDump = 0
 
 #
+#    ChatLogEnable
+#        Enable or disable logging of player chat.
+
+ChatLogFile = ""
+
+#
+#    ChatLogFile
+#        Log file for player chat.
+
+ChatLogEnable = 0
+
+#
+#    ChatLogTimestamp
+#        Add time stamp to logged chat messages.
+
+ChatLogTimestamp = 0
+
+#
 #    GmLogFile
 #        GM Log file of gm commands.
 
@@ -421,6 +439,47 @@ GmLogTimestamp = 0
 GmLogPerAccount = 0
 
 #
+#    CriticalCommandsLogFile
+#        Log file for commands marked as critical, when used on own character within the same IP.
+
+CriticalCommandsLogFile = ""
+
+#
+#    LootsLogFile
+#        Log file for loot.
+
+LootsLogFile = ""
+
+#
+#    LevelupLogFile
+#        Log file for level ups.
+
+LevelupLogFile = ""
+
+#
+#    LogMoneyTrades
+#    LogMoneyTreshold
+#        Log file for trades. (In copper)
+
+LogMoneyTrades = ""
+LogMoneyTreshold = 0
+
+#
+#    PerformanceLog
+#        Log file for performance.
+
+PerformanceLog.File = ""
+PerformanceLog.SlowWorldUpdate = 250
+PerformanceLog.SlowMapSystemUpdate = 200
+PerformanceLog.SlowSessionsUpdate = 200
+PerformanceLog.SlowUniqueSessionUpdate = 100
+PerformanceLog.SlowMapUpdate = 200
+PerformanceLog.SlowAsynQueries = 200
+PerformanceLog.SlowPackets = 100
+PerformanceLog.SlowMapPackets = 100
+PerformanceLog.SlowPacketBroadcast = 0
+
+#
 #    RaLogFile
 #        Log file of RA commands.
 
@@ -433,6 +492,30 @@ RaLogFile = ""
 #                8 - YELLOW, 9 - LRED, 10 - LGREEN, 11 - LBLUE, 12 - LMAGENTA, 13 - LCYAN, 14 - WHITE
 
 LogColors = ""
+
+#
+#    LogsDB.Chat
+#        Enable or disable database chat logs.
+
+LogsDB.Chat = 0
+
+#
+#    LogsDB.Characters
+#        Enable or disable database character logs.
+
+LogsDB.Characters = 0
+
+#
+#    LogsDB.Trades
+#        Enable or disable database trade logs.
+
+LogsDB.Trades = 0
+
+#
+#    LogsDB.Transactions
+#        Enable or disable database transaction logs.
+
+LogsDB.Transactions = 0
 
 #
 ###################################################################################################################
@@ -1207,6 +1290,85 @@ Channel.RestrictedLfg = 1
 Channel.StaticAutoTreshold = 0
 
 #
+#    WorldChan.MinLevel
+#        Minimum level to use world channel.
+
+WorldChan.MinLevel = 1
+
+#
+#    WorldChan.Cooldown
+#    WorldChan.CooldownMaxLevel
+#    WorldChan.CooldownScaling
+#        Cooldown between messages on world channel. (Seconds)
+
+WorldChan.Cooldown = 0
+WorldChan.CooldownMaxLevel = 0
+WorldChan.CooldownScaling = 0
+
+#
+#    WhisperDiffZone.MinLevel
+#        Minimum level to whisper players in other zones.
+
+WhisperDiffZone.MinLevel = 1
+
+#
+#    YellMinLevel
+#        Minimum level to /yell in chat.
+
+YellMinLevel = 1
+
+#
+#    YellRange.LinearScale.MaxLevel 
+#    YellRange.QuadraticScale.MaxLevel
+#        Limit yell range based on level.
+
+YellRange.LinearScale.MaxLevel = 0
+YellRange.QuadraticScale.MaxLevel = 0
+
+#
+#    ChannelInvite.MinLevel
+#        Minimum level to invite other players into private channels.
+
+ChannelInvite.MinLevel = 1
+
+#
+#    PublicChansMute.BypassLevel
+#        Required character level on account to bypass all chat restrictions.
+
+PublicChansMute.BypassLevel = 71
+
+#
+#    WhisperRestriction
+#        Allow players to disable whispers with .wr command.
+
+WhisperRestriction = 1
+
+#
+#    SayMinLevel
+#        Minimum level to /say in chat.
+
+SayMinLevel = 1
+
+#
+#    SayEmoteMinLevel
+#        Minimum level to /me in chat.
+
+SayEmoteMinLevel = 1
+
+#    WhisperTargets.MaxTargets
+#    WhisperTargets.DecayTime (Seconds)
+#        Sets how many different players can be whispered in a specific time window.
+
+WhisperTargets.MaxTargets = 0
+WhisperTargets.DecayTime = 0
+
+#
+#    WhisperTargets.BypassLevel
+#        Checking for the highest toon on the players account if there is a toon which is on level (WhisperTargets.BypassLevel), skip this mechanic.
+
+WhisperTargets.BypassLevel = 71
+
+#
 ###################################################################################################################
 # GAME MASTER SETTINGS
 #
@@ -1316,6 +1478,18 @@ GM.StartLevel = 1
 #        Disallow a lower security member to interact with a higher one using commands.
 
 GM.LowerSecurity = 0
+
+#
+#    GM.AllowTrades
+#        Allow trades incl. mails, AH, etc.
+
+GM.AllowTrades = 1
+
+#
+#    GM.AllowPublicChannels
+#        Allow to speak in /general & /world channels.
+
+GM.AllowPublicChannels = 1
 
 #
 #    GM.InvisibleAura

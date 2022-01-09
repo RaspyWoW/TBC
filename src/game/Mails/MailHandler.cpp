@@ -110,6 +110,10 @@ void WorldSession::HandleSendMail(WorldPacket& recv_data)
 
     // packet read complete, now do check
 
+    // Do not allow GMs to send money / items
+    if (!sWorld.getConfig(CONFIG_BOOL_GM_ALLOW_TRADES) && GetSecurity() > SEC_PLAYER)
+        return;
+
     if (!CheckMailBox(mailboxGuid))
         return;
 
@@ -459,8 +463,22 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recv_data)
         return;
     }
 
+    // Prevent spoofed packet accessing mail that doesn't actually have items
+    if (!m->HasItems() || m->items.empty())
+    {
+        pl->SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_ERR_INTERNAL_ERROR);
+        return;
+    }
+
     // prevent cheating with skip client money check
     if (pl->GetMoney() < m->COD)
+    {
+        pl->SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_ERR_NOT_ENOUGH_MONEY);
+        return;
+    }
+
+    // Do not allow GMs to send COD
+    if (!sWorld.getConfig(CONFIG_BOOL_GM_ALLOW_TRADES) && GetSecurity() > SEC_PLAYER && m->COD)
     {
         pl->SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_ERR_NOT_ENOUGH_MONEY);
         return;
@@ -475,10 +493,26 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recv_data)
         m->RemoveItem(itemId);
         m->removedItems.push_back(itemId);
 
-        if (m->COD > 0)                                     // if there is COD, take COD money from player and send them to sender by mail
+        if (m->COD > 0) // If there is COD, take COD money from player and send them to sender by mail
         {
             ObjectGuid sender_guid = ObjectGuid(HIGHGUID_PLAYER, m->sender);
             Player* sender = sObjectMgr.GetPlayer(sender_guid);
+
+            // Transaction log
+            PlayerTransactionData data;
+            data.type = "MailCOD";
+            data.parts[0].lowGuid = sender_guid.GetCounter();
+            
+            if (it)
+            {
+                data.parts[0].itemsEntries[0] = it->GetEntry();
+                data.parts[0].itemsCount[0] = it->GetCount();
+                data.parts[0].itemsGuid[0] = it->GetGUIDLow();
+            }
+
+            data.parts[1].lowGuid = _player->GetGUIDLow();
+            data.parts[1].money = m->COD;
+            sWorld.LogTransaction(data);
 
             uint32 sender_accId = 0;
 
@@ -557,7 +591,7 @@ void WorldSession::HandleMailTakeMoney(WorldPacket& recv_data)
 
     pl->SendMailResult(mailId, MAIL_MONEY_TAKEN, MAIL_OK);
 
-    pl->ModifyMoney(m->money);
+    pl->LogModifyMoney(m->money, "Mail", ObjectGuid(HIGHGUID_PLAYER, m->sender));
     m->money = 0;
     m->state = MAIL_STATE_CHANGED;
     pl->m_mailsUpdated = true;

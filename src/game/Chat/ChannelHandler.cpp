@@ -18,6 +18,7 @@
 
 #include "Globals/ObjectMgr.h"                                      // for normalizePlayerName
 #include "Chat/ChannelMgr.h"
+#include "World/World.h"
 
 bool WorldSession::CheckChatChannelNameAndPassword(std::string& name, std::string& pass)
 {
@@ -234,6 +235,10 @@ void WorldSession::HandleChannelInviteOpcode(WorldPacket& recvPacket)
     recvPacket >> otp;
 
     if (!normalizePlayerName(otp))
+        return;
+
+    Player* pPlayer = GetPlayer();
+    if (pPlayer->GetLevel() < sWorld.getConfig(CONFIG_UINT32_CHANNEL_INVITE_MIN_LEVEL))
         return;
 
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))

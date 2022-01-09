@@ -514,7 +514,8 @@ enum PlayerExtraFlags
     PLAYER_EXTRA_AUCTION_ENEMY      = 0x0080,               // overwrite PLAYER_EXTRA_AUCTION_NEUTRAL
 
     // other states
-    PLAYER_EXTRA_PVP_DEATH          = 0x0100                // store PvP death status until corpse creating.
+    PLAYER_EXTRA_PVP_DEATH          = 0x0100,               // store PvP death status until corpse creating.
+    PLAYER_EXTRA_WHISP_RESTRICTION  = 0x0200
 };
 
 // 2^n values
@@ -887,6 +888,8 @@ struct TradeStatusInfo
     uint8 Slot;
 };
 
+struct TransactionPart;
+
 class TradeData
 {
     public:                                                 // constructors
@@ -905,6 +908,8 @@ class TradeData
         bool HasSpellCastItem() const { return !m_spellCastItem.IsEmpty(); }
 
         uint32 GetMoney() const { return m_money; }
+
+        void FillTransactionLog(TransactionPart& log) const;
 
         bool IsAccepted() const { return m_accepted; }
         bool IsInAcceptProcess() const { return m_acceptProccess; }
@@ -936,7 +941,7 @@ class TradeData
         ObjectGuid m_items[TRADE_SLOT_COUNT];               // traded itmes from m_player side including non-traded slot
 };
 
-class Player : public Unit
+class Player final : public Unit
 {
         friend class WorldSession;
         friend class CinematicMgr;
@@ -1005,7 +1010,10 @@ class Player : public Unit
 
         bool isAcceptTickets() const;
         void SetAcceptTicket(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_GM_ACCEPT_TICKETS; else m_ExtraFlags &= ~PLAYER_EXTRA_GM_ACCEPT_TICKETS; }
+        bool IsAllowedWhisperFrom(ObjectGuid guid) const;
         bool isAcceptWhispers() const { return (m_ExtraFlags & PLAYER_EXTRA_ACCEPT_WHISPERS) != 0; }
+        bool IsEnabledWhisperRestriction() const { return m_ExtraFlags & PLAYER_EXTRA_WHISP_RESTRICTION; }
+        void SetWhisperRestriction(const bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_WHISP_RESTRICTION; else m_ExtraFlags &= ~PLAYER_EXTRA_WHISP_RESTRICTION; }
         void SetAcceptWhispers(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_ACCEPT_WHISPERS; else m_ExtraFlags &= ~PLAYER_EXTRA_ACCEPT_WHISPERS; }
         bool IsGameMaster() const { return m_ExtraFlags & PLAYER_EXTRA_GM_ON; }
         void SetGameMaster(bool on);
@@ -1081,6 +1089,7 @@ class Player : public Unit
 
         void RemovePet(PetSaveMode mode);
 
+        float GetYellRange() const;
         void Say(const std::string& text, const uint32 language) const;
         void Yell(const std::string& text, const uint32 language) const;
         void TextEmote(const std::string& text) const;
@@ -1455,18 +1464,23 @@ class Player : public Unit
         void setRegenTimer(uint32 time) {m_regenTimer = time;}
 
         uint32 GetMoney() const { return GetUInt32Value(PLAYER_FIELD_COINAGE); }
-        void ModifyMoney(int32 d)
+        void LogModifyMoney(const int32 money, char const* type, ObjectGuid const fromGuid = ObjectGuid(), const uint32 data = 0);
+        void ModifyMoney(const int32 money)
         {
-            if (d < 0)
-                SetMoney(GetMoney() > uint32(-d) ? GetMoney() + d : 0);
+            if (money < 0)
+                SetMoney(GetMoney() > uint32(-money) ? GetMoney() + money : 0);
             else
-                SetMoney(GetMoney() < uint32(MAX_MONEY_AMOUNT - d) ? GetMoney() + d : MAX_MONEY_AMOUNT);
+                SetMoney(GetMoney() < uint32(MAX_MONEY_AMOUNT - money) ? GetMoney() + money : MAX_MONEY_AMOUNT);
 
             // "At Gold Limit"
             if (GetMoney() >= MAX_MONEY_AMOUNT)
                 SendEquipError(EQUIP_ERR_TOO_MUCH_GOLD, nullptr, nullptr);
         }
-        void SetMoney(uint32 value)
+
+        void LootMoney(const int32 money, Loot const* loot);
+        std::string GetShortDescription() const;
+
+        void SetMoney(const uint32 value)
         {
             SetUInt32Value(PLAYER_FIELD_COINAGE, value);
             MoneyChanged(value);

@@ -57,20 +57,17 @@ LogFilterData logFilterData[LOG_FILTER_COUNT] =
     { "db_scripts_dev",      "LogFilter_DbScriptDev",        true  },
 };
 
-enum LogType
-{
-    LogNormal = 0,
-    LogDetails,
-    LogDebug,
-    LogError
-};
-
-const int LogType_count = int(LogError) + 1;
-
 Log::Log() :
     raLogfile(nullptr), logfile(nullptr), gmLogfile(nullptr), charLogfile(nullptr), dberLogfile(nullptr),
-    eventAiErLogfile(nullptr), scriptErrLogFile(nullptr), worldLogfile(nullptr), customLogFile(nullptr), m_colored(false), m_includeTime(false), m_gmlog_per_account(false), m_scriptLibName(nullptr)
+    eventAiErLogfile(nullptr), scriptErrLogFile(nullptr), worldLogfile(nullptr), customLogFile(nullptr),
+    m_colored(false), m_includeTime(false), m_gmlog_per_account(false), m_scriptLibName(nullptr)
 {
+    for (auto i = 0; i < LOG_MAX_FILES; ++i)
+    {
+        logFiles[i] = nullptr;
+        timestampPrefix[i] = true;
+    }
+
     Initialize();
 }
 
@@ -82,28 +79,28 @@ void Log::InitColors(const std::string& str)
         return;
     }
 
-    int color[4];
+    uint8 color[LOG_TYPE_MAX];
 
     std::istringstream ss(str);
 
-    for (int& i : color)
+    for (auto i = 0; i < LOG_TYPE_MAX; ++i)
     {
-        ss >> i;
+        ss >> color[i];
 
         if (!ss)
             return;
 
-        if (i < 0 || i >= Color_count)
+        if (color[i] < 0 || color[i] >= Color_count)
             return;
     }
 
-    for (int i = 0; i < LogType_count; ++i)
+    for (auto i = 0; i < LOG_TYPE_MAX; ++i)
         m_colors[i] = Color(color[i]);
 
     m_colored = true;
 }
 
-void Log::SetColor(bool stdout_stream, Color color)
+void Log::SetColor(const bool stdout_stream, Color color)
 {
 #if PLATFORM == PLATFORM_WINDOWS
 
@@ -227,6 +224,8 @@ void Log::Initialize()
             m_logsDir.append("/");
     }
 
+    m_bIsChatLogFileActivated = sConfig.GetBoolDefault("ChatLogEnable", false);
+
     m_logsTimestamp = "_" + GetTimestampStr();
 
     /// Open specific log files
@@ -263,12 +262,19 @@ void Log::Initialize()
         }
     }
 
-    charLogfile = openLogFile("CharLogFile", "CharLogTimestamp", "a");
-    dberLogfile = openLogFile("DBErrorLogFile", nullptr, "a");
-    eventAiErLogfile = openLogFile("EventAIErrorLogFile", nullptr, "a");
-    raLogfile = openLogFile("RaLogFile", nullptr, "a");
-    worldLogfile = openLogFile("WorldLogFile", "WorldLogTimestamp", "a");
-    customLogFile = openLogFile("CustomLogFile", nullptr, "a");
+    charLogfile                = openLogFile("CharLogFile", "CharLogTimestamp", "a");
+    dberLogfile                = openLogFile("DBErrorLogFile", nullptr, "a");
+    eventAiErLogfile           = openLogFile("EventAIErrorLogFile", nullptr, "a");
+    raLogfile                  = openLogFile("RaLogFile", nullptr, "a");
+    worldLogfile               = openLogFile("WorldLogFile", "WorldLogTimestamp", "a");
+    customLogFile              = openLogFile("CustomLogFile", nullptr, "a");
+
+    logFiles[LOG_CHAT]         = openLogFile("ChatLogFile", "ChatLogTimestamp", "a");
+    logFiles[LOG_LOOTS]        = openLogFile("LootsLogFile", nullptr, "a"); // ... for later usage
+    logFiles[LOG_LEVELUP]      = openLogFile("LevelupLogFile", nullptr, "a");
+    logFiles[LOG_PERFORMANCE]  = openLogFile("PerformanceLog.File", nullptr, "a"); // ... for later usage
+    logFiles[LOG_MONEY_TRADES] = openLogFile("LogMoneyTrades", nullptr, "a");
+    logFiles[LOG_GM_CRITICAL]  = openLogFile("CriticalCommandsLogFile", nullptr, "a");
 
     // Main log file settings
     m_includeTime  = sConfig.GetBoolDefault("LogTime", false);
@@ -277,10 +283,16 @@ void Log::Initialize()
     InitColors(sConfig.GetStringDefault("LogColors"));
 
     m_logFilter = 0;
-    for (int i = 0; i < LOG_FILTER_COUNT; ++i)
+    for (auto i = 0; i < LOG_FILTER_COUNT; ++i)
+    {
         if (*logFilterData[i].name)
+        {
             if (sConfig.GetBoolDefault(logFilterData[i].configName, logFilterData[i].defaultState))
+            {
                 m_logFilter |= (1 << i);
+            }
+        }
+    }
 
     // Char log settings
     m_charLog_Dump = sConfig.GetBoolDefault("CharLogDump", false);
@@ -360,7 +372,9 @@ void Log::outString()
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
     if (m_includeTime)
         outTime();
+
     printf("\n");
+
     if (logfile)
     {
         outTimestamp(logfile);
@@ -405,6 +419,32 @@ void Log::outString(const char* str, ...)
         va_end(ap);
 
         fflush(logfile);
+    }
+
+    fflush(stdout);
+}
+
+void Log::out(LogFile type, char const* str, ...)
+{
+    MANGOS_ASSERT(type < LOG_MAX_FILES)
+    if (!str)
+        return;
+
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
+
+    if (logFiles[type])
+    {
+        if (timestampPrefix[type])
+            outTimestamp(logFiles[type]);
+
+        va_list ap;
+        va_start(ap, str);
+        vfprintf(logFiles[type], str, ap);
+        fprintf(logFiles[type], "\n");
+        fflush(logFiles[type]);
+        va_end(ap);
+
+        fflush(logFiles[type]);
     }
 
     fflush(stdout);
@@ -612,6 +652,7 @@ void Log::outBasic(const char* str, ...)
         return;
 
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
+
     if (m_logLevel >= LOG_LVL_BASIC)
     {
         if (m_colored)
@@ -651,6 +692,7 @@ void Log::outDetail(const char* str, ...)
         return;
 
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
+
     if (m_logLevel >= LOG_LVL_DETAIL)
     {
         if (m_colored)
@@ -692,6 +734,7 @@ void Log::outDebug(const char* str, ...)
         return;
 
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
+
     if (m_logLevel >= LOG_LVL_DEBUG)
     {
         if (m_colored)
@@ -811,6 +854,7 @@ void Log::outChar(const char* str, ...)
 void Log::outErrorScriptLib()
 {
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
+
     if (m_includeTime)
         outTime();
 
@@ -842,6 +886,7 @@ void Log::outErrorScriptLib(const char* err, ...)
         return;
 
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
+
     if (m_colored)
         SetColor(false, m_colors[LogError]);
 
@@ -934,6 +979,7 @@ void Log::outRALog(const char* str, ...)
         return;
 
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
+
     if (raLogfile)
     {
         va_list ap;
@@ -954,6 +1000,7 @@ void Log::outCustomLog(const char* str, ...)
         return;
 
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
+
     if (customLogFile)
     {
         va_list ap;
@@ -970,7 +1017,7 @@ void Log::outCustomLog(const char* str, ...)
 
 void Log::WaitBeforeContinueIfNeed()
 {
-    int mode = sConfig.GetIntDefault("WaitAtStartupError", 0);
+    const auto mode = sConfig.GetIntDefault("WaitAtStartupError", 0);
 
     if (mode < 0)
     {

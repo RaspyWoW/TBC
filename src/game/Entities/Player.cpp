@@ -383,6 +383,22 @@ bool TradeData::HasItem(ObjectGuid item_guid) const
     return false;
 }
 
+void TradeData::FillTransactionLog(TransactionPart& log) const
+{
+    log.money = m_money;
+    log.lowGuid = m_player->GetGUIDLow();
+    log.spell = m_spell;
+
+    for (auto i = 0; i < log.MAX_TRANSACTION_ITEMS && i < TRADE_SLOT_COUNT; ++i)
+    {
+        if (Item const* item = GetItem(TradeSlots(i)))
+        {
+            log.itemsCount[i] = item->GetCount();
+            log.itemsEntries[i] = item->GetEntry();
+            log.itemsGuid[i] = item->GetGUIDLow();
+        }
+    }
+}
 
 Item* TradeData::GetSpellCastItem() const
 {
@@ -875,7 +891,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     learnDefaultSpells();
 
     // original action bar
-    for (auto action_itr : info->action)
+    for (const auto& action_itr : info->action)
         addActionButton(action_itr.button, action_itr.action, action_itr.type);
 
     // original items
@@ -2720,6 +2736,70 @@ void Player::GiveLevel(uint32 level)
 
     uint32 plClass = getClass();
 
+    auto numInstanceMembers = 0;
+    auto numGroupMembers = 0;
+
+    // Record who is in the group
+    std::stringstream groupInfo;
+    if (Group* group = GetGroup())
+    {
+        bool first = true;
+        numGroupMembers = group->GetMembersCount();
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            if (Player* player = itr->getSource())
+            {
+                if (!first)
+                    groupInfo << ", ";
+
+                groupInfo << player->GetName();
+                first = false;
+            }
+        }
+    }
+    else
+        groupInfo << "None";
+
+    // Record who is in the instance if we're in one
+    std::stringstream instanceInfo;
+    if (GetMap()->IsDungeon() || GetMap()->IsRaid())
+    {
+        bool first = true;
+        for (auto itr = GetMap()->GetPlayers().getFirst(); itr != nullptr; itr = itr->next())
+        {
+            if (const auto player = itr->getSource())
+            {
+                if (!first)
+                    instanceInfo << ", ";
+
+                instanceInfo << player->GetName();
+                first = false;
+            }
+
+            // This is a raid. Don't log anymore
+            if (++numInstanceMembers >= 10)
+                break;
+        }
+    }
+    else
+        instanceInfo << "None";
+
+    sLog.out(LOG_LEVELUP, "Character %s:%u [c%u r%u] reaches level %2u, zone %u, pos: [%0.2f, %0.2f, %0.2f] [Group: %s] [Instance: %s]",
+        GetName(), GetGUIDLow(), plClass, getRace(), level, GetZoneId(), GetPositionX(), GetPositionY(), GetPositionZ(),
+        groupInfo.str().c_str(), instanceInfo.str().c_str());
+
+    // If we have instance members, and the number of players in the instance is not
+    // equal to the number of group members, then the player is likely mob tagging
+    // and dropping group. Or they are soloing a dungeon, which is questionable.
+    // Alert GMs
+    if (!!numInstanceMembers && numInstanceMembers > numGroupMembers)
+    {
+        std::stringstream message;
+        message << GetGuidStr() << " levelup in dungeon with " << numInstanceMembers << " instance members, but " << numGroupMembers << " group members";
+
+        sWorld.SendGMText(LANG_GM_ANNOUNCE_COLOR, "LevelUpAlert", message.str().c_str());
+    }
+
     PlayerLevelInfo info;
     sObjectMgr.GetPlayerLevelInfo(getRace(), plClass, level, &info);
 
@@ -2747,6 +2827,7 @@ void Player::GiveLevel(uint32 level)
     // update level, max level of skills
     if (GetLevel() != level)
         m_Played_time[PLAYED_TIME_LEVEL] = 0;               // Level Played Time reset
+
     SetLevel(level);
     UpdateSkillsForLevel();
 
@@ -2765,8 +2846,10 @@ void Player::GiveLevel(uint32 level)
     // set current level health and mana/energy to maximum after applying all mods.
     if (IsAlive())
         SetHealth(GetMaxHealth());
+
     SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
     SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
+
     if (GetPower(POWER_RAGE) > GetMaxPower(POWER_RAGE))
         SetPower(POWER_RAGE, GetMaxPower(POWER_RAGE));
 
@@ -2779,7 +2862,9 @@ void Player::GiveLevel(uint32 level)
 
     // Refer-A-Friend
     if (!GetSession()->IsARecruiter() && GetSession()->GetRecruitingFriendId())
+    {
         if (level < sWorld.getConfig(CONFIG_UINT32_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL))
+        {
             if (level % 2 == 0)
             {
                 ++m_grantableLevels;
@@ -2787,6 +2872,8 @@ void Player::GiveLevel(uint32 level)
                 if (!HasByteFlag(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTES_OFFSET_RAF_GRANTABLE_LEVEL, 0x01))
                     SetByteFlag(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTES_OFFSET_RAF_GRANTABLE_LEVEL, 0x01);
             }
+        }
+    }
 
     // resend quests status directly
     GetSession()->SetCurrentPlayerLevel(level);
@@ -6692,6 +6779,22 @@ void Player::UpdateHonorFields()
     }
 
     m_lastHonorUpdateTime = now;
+}
+
+std::string Player::GetShortDescription() const
+{
+    std::stringstream oss;
+    oss << GetName() << ":" << GetGUIDLow() << " [" << GetSession()->GetAccountName().c_str() << ":" << GetSession()->GetAccountId() << "@" << GetSession()->GetRemoteAddress().c_str() << "]";
+    return oss.str();
+}
+
+void Player::LootMoney(const int32 money, Loot const* loot) // ... for later usage
+{
+    WorldObject const* target = loot->GetLootTarget();
+    sLog.out(LOG_LOOTS, "%s gets %ug%us%uc [loot from %s]",
+        GetShortDescription().c_str(), money / 100000, (money / 100) % 100, money % 100, target ? target->GetGuidStr().c_str() : "NULL");
+
+    LogModifyMoney(money, "Loot", target ? target->GetObjectGuid() : ObjectGuid());
 }
 
 /// Calculate the amount of honor gained based on the victim
@@ -13322,10 +13425,10 @@ void Player::RewardQuest(Quest const* pQuest, const uint32 reward, Object* quest
     if (GetLevel() < GetMaxAttainableLevel())
         GiveXP(xp, nullptr);
     else
-        ModifyMoney(int32(pQuest->GetRewMoneyMaxLevel() * sWorld.getConfig(CONFIG_FLOAT_RATE_DROP_MONEY)));
+        LogModifyMoney(int32(pQuest->GetRewMoneyMaxLevel() * sWorld.getConfig(CONFIG_FLOAT_RATE_DROP_MONEY)), "QuestMaxLevel", questGiver->GetObjectGuid(), quest_id);
 
     // Give player extra money if GetRewOrReqMoney > 0 and get ReqMoney if negative
-    ModifyMoney(pQuest->GetRewOrReqMoney());
+    LogModifyMoney(pQuest->GetRewOrReqMoney(), "Quest", questGiver->GetObjectGuid(), quest_id);
 
     // honor reward
     uint32 honor = 0;
@@ -14378,6 +14481,21 @@ void Player::TalkedToCreature(uint32 entry, ObjectGuid guid)
             }
         }
     }
+}
+
+void Player::LogModifyMoney(const int32 money, char const* type, ObjectGuid const fromGuid, const uint32 data)
+{
+    // Always log GM transactions regardless of threshold
+    if (uint32(abs(money)) > sWorld.getConfig(CONFIG_UINT32_LOG_MONEY_TRADES_TRESHOLD) || GetSession()->GetSecurity() > SEC_PLAYER)
+    {
+        sLog.out(LOG_MONEY_TRADES, "[%s] %s gets %ic (data: %u|%s)", type, GetShortDescription().c_str(), money, data, fromGuid.GetString().c_str());
+        if (money > 0)
+            sWorld.LogMoneyTrade(fromGuid, GetObjectGuid(), money, type, data);
+        else
+            sWorld.LogMoneyTrade(GetObjectGuid(), fromGuid, -money, type, data);
+    }
+
+    ModifyMoney(money);
 }
 
 void Player::MoneyChanged(uint32 count)
@@ -15512,6 +15630,9 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
                 break;
         }
     }
+
+    if (extraflags & PLAYER_EXTRA_WHISP_RESTRICTION)
+        SetWhisperRestriction(true);
 
     _LoadDeclinedNames(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES));
 
@@ -17601,10 +17722,34 @@ void Player::Say(const std::string& text, const uint32 language) const
 {
     WorldPacket data;
     ChatHandler::BuildChatPacket(data, CHAT_MSG_SAY, text.c_str(), Language(language), GetChatTag(), GetObjectGuid(), GetName());
+
     if (m_session->GetAnticheat()->IsSilenced())
+    {
         m_session->SendPacket(data);
+    }
     else
-        SendMessageToSetInRange(data, sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_SAY), true);
+    {
+        const float range = std::min(sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_SAY), GetYellRange());
+        SendMessageToSetInRange(data, range, true);
+    }
+}
+
+float Player::GetYellRange() const
+{
+    float range = sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_YELL);
+    const uint32 linearScaleMaxLevel = sWorld.getConfig(CONFIG_UINT32_YELLRANGE_LINEARSCALE_MAXLEVEL);
+    const uint32 quadraticScaleMaxLevel = sWorld.getConfig(CONFIG_UINT32_YELLRANGE_QUADRATICSCALE_MAXLEVEL);
+
+    if (GetLevel() < linearScaleMaxLevel)
+        range *= GetLevel() / float(linearScaleMaxLevel);
+
+    if (GetLevel() < quadraticScaleMaxLevel)
+        range *= GetLevel() * GetLevel() / float(quadraticScaleMaxLevel * quadraticScaleMaxLevel);
+
+    if (range < sWorld.getConfig(CONFIG_UINT32_YELLRANGE_MIN))
+        range = sWorld.getConfig(CONFIG_UINT32_YELLRANGE_MIN);
+
+    return range;
 }
 
 void Player::Yell(const std::string& text, const uint32 language) const
@@ -17614,7 +17759,7 @@ void Player::Yell(const std::string& text, const uint32 language) const
     if (m_session->GetAnticheat()->IsSilenced())
         m_session->SendPacket(data);
     else
-        SendMessageToSetInRange(data, sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_YELL), true);
+        SendMessageToSetInRange(data, GetYellRange(), true);
 }
 
 void Player::TextEmote(const std::string& text) const
@@ -18771,7 +18916,7 @@ bool Player::BuyItemFromVendor(ObjectGuid vendorGuid, uint32 item, uint8 count, 
             return false;
         }
 
-        ModifyMoney(-int32(price));
+        LogModifyMoney(-int32(price), "BuyItem", vendorGuid, item);
 
         if (crItem->ExtendedCost)
             TakeExtendedCost(crItem->ExtendedCost, count);
@@ -18794,7 +18939,7 @@ bool Player::BuyItemFromVendor(ObjectGuid vendorGuid, uint32 item, uint8 count, 
             return false;
         }
 
-        ModifyMoney(-int32(price));
+        LogModifyMoney(-int32(price), "BuyItem", vendorGuid, item);
 
         if (crItem->ExtendedCost)
             TakeExtendedCost(crItem->ExtendedCost, count);
@@ -20641,6 +20786,19 @@ Player* Player::GetNextRaidMemberWithLowestLifePercentage(float radius, AuraType
     }
 
     return lowestPercentagePlayer;
+}
+
+bool Player::IsAllowedWhisperFrom(ObjectGuid guid) const
+{
+    if (Group const* group = GetGroup())
+        if (group->IsMember(guid))
+            return true;
+
+    if (Guild* guild = sGuildMgr.GetGuildById(GetGuildId()))
+        if (guild->GetMemberSlot(guid))
+            return true;
+
+    return false;
 }
 
 PartyResult Player::CanUninviteFromGroup() const

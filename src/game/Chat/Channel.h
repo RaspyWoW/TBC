@@ -155,6 +155,7 @@ class Channel
         void Kick(Player* player, const char* targetName) { KickOrBan(player, targetName, false); }
         void Ban(Player* player, const char* targetName) { KickOrBan(player, targetName, true); }
         void UnBan(Player* player, const char* targetName);
+        bool IsLevelRestricted() const { return m_levelRestricted; }
         void SetPassword(Player* player, const char* password);
         void SetModeFlags(Player* player, const char* targetName, ChannelMemberFlags flags, bool set);
         inline void SetModerator(Player* player, const char* targetName, bool set) { SetModeFlags(player, targetName, MEMBER_FLAG_MODERATOR, set); }
@@ -249,5 +250,6 @@ class Channel
         // Custom features:
         bool                        m_static = false;
         bool                        m_realmzone = false;
+        bool                        m_levelRestricted;
 };
 #endif
