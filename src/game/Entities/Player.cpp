@@ -20718,12 +20718,14 @@ void Player::SetOriginalGroup(Group* group, int8 subgroup)
 void Player::UpdateTerainEnvironmentFlags(Map* m, float x, float y, float z)
 {
     GridMapLiquidData liquid_status;
-    GridMapLiquidStatus res = m->GetTerrain()->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
+    GridMapLiquidStatus res = m->GetTerrain()->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status, GetCollisionHeight());
+
     if (!res)
     {
         SetEnvironmentFlags(ENVIRONMENT_MASK_LIQUID_FLAGS, false);
         if (m_lastLiquid && m_lastLiquid->SpellId)
             RemoveAurasDueToSpell(m_lastLiquid->SpellId == 37025 ? 37284 : m_lastLiquid->SpellId);
+
         m_lastLiquid = nullptr;
         return;
     }
@@ -20753,7 +20755,7 @@ void Player::UpdateTerainEnvironmentFlags(Map* m, float x, float y, float z)
 
     // All liquid types: check under surface level
     if (liquid_status.type_flags & (MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN | MAP_LIQUID_TYPE_MAGMA | MAP_LIQUID_TYPE_SLIME))
-        SetEnvironmentFlags(ENVIRONMENT_FLAG_UNDERWATER, (res & LIQUID_MAP_UNDER_WATER));
+        SetEnvironmentFlags(EnvironmentFlags(ENVIRONMENT_FLAG_UNDERWATER | ENVIRONMENT_FLAG_HIGH_LIQUID), (res & LIQUID_MAP_UNDER_WATER));
 
     // In water: on or under surface level
     if (liquid_status.type_flags & (MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN))
@@ -20769,9 +20771,6 @@ void Player::UpdateTerainEnvironmentFlags(Map* m, float x, float y, float z)
 
     // In deep water: on, under, above surface level
     SetEnvironmentFlags(ENVIRONMENT_FLAG_HIGH_SEA, (liquid_status.type_flags & MAP_LIQUID_TYPE_DEEP_WATER));
-
-    // All liquid types: check if deep enough level for swimming
-    SetEnvironmentFlags(ENVIRONMENT_FLAG_HIGH_LIQUID, ((res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER)) && liquid_status.level > (liquid_status.depth_level + 1.5f)));
 }
 
 bool ItemPosCount::isContainedIn(ItemPosCountVec const& vec) const
