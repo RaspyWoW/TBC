@@ -14,12 +14,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/* ScriptData
-SDName: Darkshore
-SD%Complete: 100
-SDComment: Quest support: 731, 945, 994, 995, 2078, 2118, 4763, 5321
-SDCategory: Darkshore
-EndScriptData */
+ /* ScriptData
+ SDName: Darkshore
+ SD%Complete: 100
+ SDComment: Quest support: 731, 945, 994, 995, 2078, 2118, 4763, 5321
+ SDCategory: Darkshore
+ EndScriptData */
 
 #include "AI/ScriptDevAI/include/sc_common.h"
 #include "Grids/GridNotifiers.h"
@@ -28,51 +28,51 @@ EndScriptData */
 #include "AI/ScriptDevAI/base/follower_ai.h"
 #include "Entities/UpdateData.h"
 
-/* ContentData
-npc_kerlonian
-npc_prospector_remtravel
-npc_threshwackonator
-npc_volcor
-npc_therylune
-npc_rabid_bear
-npc_corrupted_furbolg
-npc_blackwood_warrior
-npc_blackwood_totemic
-event_purify_food
-go_furbolg_food
-EndContentData */
+ /* ContentData
+ npc_kerlonian
+ npc_prospector_remtravel
+ npc_threshwackonator
+ npc_volcor
+ npc_therylune
+ npc_rabid_bear
+ npc_corrupted_furbolg
+ npc_blackwood_warrior
+ npc_blackwood_totemic
+ event_purify_food
+ go_furbolg_food
+ EndContentData */
 
-/*####
-# npc_kerlonian
-####*/
+ /*####
+ # npc_kerlonian
+ ####*/
 
 enum
 {
-    SAY_KER_START               = -1000434,
+    SAY_KER_START = -1000434,
 
-    EMOTE_KER_SLEEP_1           = -1000435,
-    EMOTE_KER_SLEEP_2           = -1000436,
-    EMOTE_KER_SLEEP_3           = -1000437,
+    EMOTE_KER_SLEEP_1 = -1000435,
+    EMOTE_KER_SLEEP_2 = -1000436,
+    EMOTE_KER_SLEEP_3 = -1000437,
 
-    SAY_KER_SLEEP_1             = -1000438,
-    SAY_KER_SLEEP_2             = -1000439,
-    SAY_KER_SLEEP_3             = -1000440,
-    SAY_KER_SLEEP_4             = -1000441,
+    SAY_KER_SLEEP_1 = -1000438,
+    SAY_KER_SLEEP_2 = -1000439,
+    SAY_KER_SLEEP_3 = -1000440,
+    SAY_KER_SLEEP_4 = -1000441,
 
-    EMOTE_KER_AWAKEN            = -1000445,
+    EMOTE_KER_AWAKEN = -1000445,
 
-    SAY_KER_ALERT_1             = -1000442,
-    SAY_KER_ALERT_2             = -1000443,
+    SAY_KER_ALERT_1 = -1000442,
+    SAY_KER_ALERT_2 = -1000443,
 
-    SAY_KER_END                 = -1000444,
+    SAY_KER_END = -1000444,
 
-    SPELL_BEAR_FORM             = 18309,
-    SPELL_SLEEP_VISUAL          = 25148,
-    SPELL_AWAKEN                = 17536,
+    SPELL_BEAR_FORM = 18309,
+    SPELL_SLEEP_VISUAL = 25148,
+    SPELL_AWAKEN = 17536,
 
-    QUEST_SLEEPER_AWAKENED      = 5321,
+    QUEST_SLEEPER_AWAKENED = 5321,
 
-    NPC_LILADRIS                = 11219                     // attackers entries unknown
+    NPC_LILADRIS = 11219                     // attackers entries unknown
 };
 
 // TODO: make concept similar as "ringo" -escort. Find a way to run the scripted attacks, _if_ player are choosing road.
@@ -132,17 +132,17 @@ struct npc_kerlonianAI : public FollowerAI
 
         switch (urand(0, 2))
         {
-            case 0: DoScriptText(EMOTE_KER_SLEEP_1, m_creature); break;
-            case 1: DoScriptText(EMOTE_KER_SLEEP_2, m_creature); break;
-            case 2: DoScriptText(EMOTE_KER_SLEEP_3, m_creature); break;
+        case 0: DoScriptText(EMOTE_KER_SLEEP_1, m_creature); break;
+        case 1: DoScriptText(EMOTE_KER_SLEEP_2, m_creature); break;
+        case 2: DoScriptText(EMOTE_KER_SLEEP_3, m_creature); break;
         }
 
         switch (urand(0, 3))
         {
-            case 0: DoScriptText(SAY_KER_SLEEP_1, m_creature); break;
-            case 1: DoScriptText(SAY_KER_SLEEP_2, m_creature); break;
-            case 2: DoScriptText(SAY_KER_SLEEP_3, m_creature); break;
-            case 3: DoScriptText(SAY_KER_SLEEP_4, m_creature); break;
+        case 0: DoScriptText(SAY_KER_SLEEP_1, m_creature); break;
+        case 1: DoScriptText(SAY_KER_SLEEP_2, m_creature); break;
+        case 2: DoScriptText(SAY_KER_SLEEP_3, m_creature); break;
+        case 3: DoScriptText(SAY_KER_SLEEP_4, m_creature); break;
         }
 
         if (DoCastSpellIfCan(m_creature, SPELL_SLEEP_VISUAL) == CAST_OK)
@@ -224,24 +224,24 @@ bool EffectDummyCreature_awaken_kerlonian(Unit* pCaster, uint32 uiSpellId, Spell
 
 enum
 {
-    SAY_REM_START               = -1000327,
-    SAY_REM_AGGRO               = -1000339,
-    SAY_REM_RAMP1_1             = -1000328,
-    SAY_REM_RAMP1_2             = -1000329,
-    SAY_REM_BOOK                = -1000330,
-    SAY_REM_TENT1_1             = -1000331,
-    SAY_REM_TENT1_2             = -1000332,
-    SAY_REM_MOSS                = -1000333,
-    EMOTE_REM_MOSS              = -1000334,
-    SAY_REM_MOSS_PROGRESS       = -1000335,
-    SAY_REM_PROGRESS            = -1000336,
-    SAY_REM_REMEMBER            = -1000337,
-    EMOTE_REM_END               = -1000338,
+    SAY_REM_START = -1000327,
+    SAY_REM_AGGRO = -1000339,
+    SAY_REM_RAMP1_1 = -1000328,
+    SAY_REM_RAMP1_2 = -1000329,
+    SAY_REM_BOOK = -1000330,
+    SAY_REM_TENT1_1 = -1000331,
+    SAY_REM_TENT1_2 = -1000332,
+    SAY_REM_MOSS = -1000333,
+    EMOTE_REM_MOSS = -1000334,
+    SAY_REM_MOSS_PROGRESS = -1000335,
+    SAY_REM_PROGRESS = -1000336,
+    SAY_REM_REMEMBER = -1000337,
+    EMOTE_REM_END = -1000338,
 
-    QUEST_ABSENT_MINDED_PT2     = 731,
-    NPC_GRAVEL_SCOUT            = 2158,
-    NPC_GRAVEL_BONE             = 2159,
-    NPC_GRAVEL_GEO              = 2160
+    QUEST_ABSENT_MINDED_PT2 = 731,
+    NPC_GRAVEL_SCOUT = 2158,
+    NPC_GRAVEL_BONE = 2159,
+    NPC_GRAVEL_GEO = 2160
 };
 
 struct npc_prospector_remtravelAI : public npc_escortAI
@@ -257,57 +257,57 @@ struct npc_prospector_remtravelAI : public npc_escortAI
 
         switch (uiPointId)
         {
-            case 1:
-                DoScriptText(SAY_REM_START, m_creature, pPlayer);
-                break;
-            case 6:
-                DoScriptText(SAY_REM_RAMP1_1, m_creature, pPlayer);
-                break;
-            case 7:
-                m_creature->SummonCreature(NPC_GRAVEL_SCOUT, -10.0f, 5.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
-                m_creature->SummonCreature(NPC_GRAVEL_BONE, -10.0f, 7.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
-                break;
-            case 10:
-                DoScriptText(SAY_REM_RAMP1_2, m_creature, pPlayer);
-                break;
-            case 15:
-                // depend quest rewarded?
-                DoScriptText(SAY_REM_BOOK, m_creature, pPlayer);
-                break;
-            case 16:
-                DoScriptText(SAY_REM_TENT1_1, m_creature, pPlayer);
-                break;
-            case 17:
-                m_creature->SummonCreature(NPC_GRAVEL_SCOUT, -10.0f, 5.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
-                m_creature->SummonCreature(NPC_GRAVEL_BONE, -10.0f, 7.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
-                break;
-            case 18:
-                DoScriptText(SAY_REM_TENT1_2, m_creature, pPlayer);
-                break;
-            case 27:
-                DoScriptText(SAY_REM_MOSS, m_creature, pPlayer);
-                break;
-            case 28:
-                DoScriptText(EMOTE_REM_MOSS, m_creature, pPlayer);
-                break;
-            case 29:
-                DoScriptText(SAY_REM_MOSS_PROGRESS, m_creature, pPlayer);
-                break;
-            case 30:
-                m_creature->SummonCreature(NPC_GRAVEL_SCOUT, -15.0f, 3.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
-                m_creature->SummonCreature(NPC_GRAVEL_BONE, -15.0f, 5.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
-                m_creature->SummonCreature(NPC_GRAVEL_GEO, -15.0f, 7.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
-                break;
-            case 32:
-                DoScriptText(SAY_REM_PROGRESS, m_creature, pPlayer);
-                break;
-            case 42:
-                DoScriptText(SAY_REM_REMEMBER, m_creature, pPlayer);
-                break;
-            case 43:
-                DoScriptText(EMOTE_REM_END, m_creature, pPlayer);
-                pPlayer->RewardPlayerAndGroupAtEventExplored(QUEST_ABSENT_MINDED_PT2, m_creature);
-                break;
+        case 1:
+            DoScriptText(SAY_REM_START, m_creature, pPlayer);
+            break;
+        case 6:
+            DoScriptText(SAY_REM_RAMP1_1, m_creature, pPlayer);
+            break;
+        case 7:
+            m_creature->SummonCreature(NPC_GRAVEL_SCOUT, -10.0f, 5.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
+            m_creature->SummonCreature(NPC_GRAVEL_BONE, -10.0f, 7.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
+            break;
+        case 10:
+            DoScriptText(SAY_REM_RAMP1_2, m_creature, pPlayer);
+            break;
+        case 15:
+            // depend quest rewarded?
+            DoScriptText(SAY_REM_BOOK, m_creature, pPlayer);
+            break;
+        case 16:
+            DoScriptText(SAY_REM_TENT1_1, m_creature, pPlayer);
+            break;
+        case 17:
+            m_creature->SummonCreature(NPC_GRAVEL_SCOUT, -10.0f, 5.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
+            m_creature->SummonCreature(NPC_GRAVEL_BONE, -10.0f, 7.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
+            break;
+        case 18:
+            DoScriptText(SAY_REM_TENT1_2, m_creature, pPlayer);
+            break;
+        case 27:
+            DoScriptText(SAY_REM_MOSS, m_creature, pPlayer);
+            break;
+        case 28:
+            DoScriptText(EMOTE_REM_MOSS, m_creature, pPlayer);
+            break;
+        case 29:
+            DoScriptText(SAY_REM_MOSS_PROGRESS, m_creature, pPlayer);
+            break;
+        case 30:
+            m_creature->SummonCreature(NPC_GRAVEL_SCOUT, -15.0f, 3.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
+            m_creature->SummonCreature(NPC_GRAVEL_BONE, -15.0f, 5.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
+            m_creature->SummonCreature(NPC_GRAVEL_GEO, -15.0f, 7.0f, 0.0f, 0.0f, TEMPSPAWN_TIMED_OOC_DESPAWN, 30000);
+            break;
+        case 32:
+            DoScriptText(SAY_REM_PROGRESS, m_creature, pPlayer);
+            break;
+        case 42:
+            DoScriptText(SAY_REM_REMEMBER, m_creature, pPlayer);
+            break;
+        case 43:
+            DoScriptText(EMOTE_REM_END, m_creature, pPlayer);
+            pPlayer->RewardPlayerAndGroupAtEventExplored(QUEST_ABSENT_MINDED_PT2, m_creature);
+            break;
         }
     }
 
@@ -350,16 +350,16 @@ bool QuestAccept_npc_prospector_remtravel(Player* pPlayer, Creature* pCreature, 
 
 enum
 {
-    EMOTE_START             = -1000325,
-    SAY_AT_CLOSE            = -1000326,
-    QUEST_GYROMAST_REV      = 2078,
-    NPC_GELKAK              = 6667,
-    FACTION_HOSTILE         = 14,
+    EMOTE_START = -1000325,
+    SAY_AT_CLOSE = -1000326,
+    QUEST_GYROMAST_REV = 2078,
+    NPC_GELKAK = 6667,
+    FACTION_HOSTILE = 14,
 
-    TEXT_ID_THRESH_DEFAULT  = 718,
-    TEXT_ID_KEY_READY       = 758,
+    TEXT_ID_THRESH_DEFAULT = 718,
+    TEXT_ID_KEY_READY = 758,
 
-    GOSSIP_ITEM_TURN_KEY    = -3000112,
+    GOSSIP_ITEM_TURN_KEY = -3000112,
 };
 
 struct npc_threshwackonatorAI : public FollowerAI
@@ -433,25 +433,25 @@ bool GossipSelect_npc_threshwackonator(Player* pPlayer, Creature* pCreature, uin
 
 enum
 {
-    SAY_START                       = -1000789,
-    SAY_END                         = -1000790,
-    SAY_FIRST_AMBUSH                = -1000791,
-    SAY_AGGRO_1                     = -1000792,
-    SAY_AGGRO_2                     = -1000793,
-    SAY_AGGRO_3                     = -1000794,
+    SAY_START = -1000789,
+    SAY_END = -1000790,
+    SAY_FIRST_AMBUSH = -1000791,
+    SAY_AGGRO_1 = -1000792,
+    SAY_AGGRO_2 = -1000793,
+    SAY_AGGRO_3 = -1000794,
 
-    SAY_ESCAPE                      = -1000195,
+    SAY_ESCAPE = -1000195,
 
-    NPC_BLACKWOOD_SHAMAN            = 2171,
-    NPC_BLACKWOOD_URSA              = 2170,
+    NPC_BLACKWOOD_SHAMAN = 2171,
+    NPC_BLACKWOOD_URSA = 2170,
 
-    SPELL_MOONSTALKER_FORM          = 10849,
+    SPELL_MOONSTALKER_FORM = 10849,
 
-    WAYPOINT_ID_QUEST_STEALTH       = 16,
-    FACTION_FRIENDLY                = 35,
+    WAYPOINT_ID_QUEST_STEALTH = 16,
+    FACTION_FRIENDLY = 35,
 
-    QUEST_ESCAPE_THROUGH_FORCE      = 994,
-    QUEST_ESCAPE_THROUGH_STEALTH    = 995,
+    QUEST_ESCAPE_THROUGH_FORCE = 994,
+    QUEST_ESCAPE_THROUGH_STEALTH = 995,
 };
 
 struct SummonLocation
@@ -487,9 +487,9 @@ struct npc_volcorAI : public npc_escortAI
         // shouldn't always use text on agro
         switch (urand(0, 4))
         {
-            case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO_3, m_creature); break;
+        case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
+        case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
+        case 2: DoScriptText(SAY_AGGRO_3, m_creature); break;
         }
     }
 
@@ -532,45 +532,45 @@ struct npc_volcorAI : public npc_escortAI
     {
         switch (uiPointId)
         {
-            case 2:
-                DoScriptText(SAY_START, m_creature);
-                break;
-            case 5:
-                m_creature->SummonCreature(NPC_BLACKWOOD_SHAMAN, aVolcorSpawnLocs[0].m_fX, aVolcorSpawnLocs[0].m_fY, aVolcorSpawnLocs[0].m_fZ, aVolcorSpawnLocs[0].m_fO, TEMPSPAWN_TIMED_OOC_DESPAWN, 20000);
-                m_creature->SummonCreature(NPC_BLACKWOOD_URSA, aVolcorSpawnLocs[1].m_fX, aVolcorSpawnLocs[1].m_fY, aVolcorSpawnLocs[1].m_fZ, aVolcorSpawnLocs[1].m_fO, TEMPSPAWN_TIMED_OOC_DESPAWN, 20000);
-                break;
-            case 6:
-                DoScriptText(SAY_FIRST_AMBUSH, m_creature);
-                break;
-            case 11:
-                m_creature->SummonCreature(NPC_BLACKWOOD_SHAMAN, aVolcorSpawnLocs[2].m_fX, aVolcorSpawnLocs[2].m_fY, aVolcorSpawnLocs[2].m_fZ, aVolcorSpawnLocs[2].m_fO, TEMPSPAWN_TIMED_OOC_DESPAWN, 20000);
-                m_creature->SummonCreature(NPC_BLACKWOOD_URSA, aVolcorSpawnLocs[3].m_fX, aVolcorSpawnLocs[3].m_fY, aVolcorSpawnLocs[3].m_fZ, aVolcorSpawnLocs[3].m_fO, TEMPSPAWN_TIMED_OOC_DESPAWN, 20000);
-            case 13:
-                m_creature->SummonCreature(NPC_BLACKWOOD_URSA, aVolcorSpawnLocs[4].m_fX, aVolcorSpawnLocs[4].m_fY, aVolcorSpawnLocs[4].m_fZ, aVolcorSpawnLocs[4].m_fO, TEMPSPAWN_TIMED_OOC_DESPAWN, 20000);
-                m_creature->SummonCreature(NPC_BLACKWOOD_URSA, aVolcorSpawnLocs[5].m_fX, aVolcorSpawnLocs[5].m_fY, aVolcorSpawnLocs[5].m_fZ, aVolcorSpawnLocs[5].m_fO, TEMPSPAWN_TIMED_OOC_DESPAWN, 20000);
-                break;
-            case 15:
-                DoScriptText(SAY_END, m_creature);
-                if (Player* pPlayer = GetPlayerForEscort())
-                    pPlayer->RewardPlayerAndGroupAtEventExplored(QUEST_ESCAPE_THROUGH_FORCE, m_creature);
-                SetEscortPaused(true);
-                m_creature->ForcedDespawn(10000);
-                break;
+        case 2:
+            DoScriptText(SAY_START, m_creature);
+            break;
+        case 5:
+            m_creature->SummonCreature(NPC_BLACKWOOD_SHAMAN, aVolcorSpawnLocs[0].m_fX, aVolcorSpawnLocs[0].m_fY, aVolcorSpawnLocs[0].m_fZ, aVolcorSpawnLocs[0].m_fO, TEMPSPAWN_TIMED_OOC_DESPAWN, 20000);
+            m_creature->SummonCreature(NPC_BLACKWOOD_URSA, aVolcorSpawnLocs[1].m_fX, aVolcorSpawnLocs[1].m_fY, aVolcorSpawnLocs[1].m_fZ, aVolcorSpawnLocs[1].m_fO, TEMPSPAWN_TIMED_OOC_DESPAWN, 20000);
+            break;
+        case 6:
+            DoScriptText(SAY_FIRST_AMBUSH, m_creature);
+            break;
+        case 11:
+            m_creature->SummonCreature(NPC_BLACKWOOD_SHAMAN, aVolcorSpawnLocs[2].m_fX, aVolcorSpawnLocs[2].m_fY, aVolcorSpawnLocs[2].m_fZ, aVolcorSpawnLocs[2].m_fO, TEMPSPAWN_TIMED_OOC_DESPAWN, 20000);
+            m_creature->SummonCreature(NPC_BLACKWOOD_URSA, aVolcorSpawnLocs[3].m_fX, aVolcorSpawnLocs[3].m_fY, aVolcorSpawnLocs[3].m_fZ, aVolcorSpawnLocs[3].m_fO, TEMPSPAWN_TIMED_OOC_DESPAWN, 20000);
+        case 13:
+            m_creature->SummonCreature(NPC_BLACKWOOD_URSA, aVolcorSpawnLocs[4].m_fX, aVolcorSpawnLocs[4].m_fY, aVolcorSpawnLocs[4].m_fZ, aVolcorSpawnLocs[4].m_fO, TEMPSPAWN_TIMED_OOC_DESPAWN, 20000);
+            m_creature->SummonCreature(NPC_BLACKWOOD_URSA, aVolcorSpawnLocs[5].m_fX, aVolcorSpawnLocs[5].m_fY, aVolcorSpawnLocs[5].m_fZ, aVolcorSpawnLocs[5].m_fO, TEMPSPAWN_TIMED_OOC_DESPAWN, 20000);
+            break;
+        case 15:
+            DoScriptText(SAY_END, m_creature);
+            if (Player* pPlayer = GetPlayerForEscort())
+                pPlayer->RewardPlayerAndGroupAtEventExplored(QUEST_ESCAPE_THROUGH_FORCE, m_creature);
+            SetEscortPaused(true);
+            m_creature->ForcedDespawn(10000);
+            break;
             // Quest 995 waypoints
-            case 16:
-                m_creature->HandleEmote(EMOTE_ONESHOT_BOW);
-                break;
-            case 17:
-                if (Player* pPlayer = GetPlayerForEscort())
-                    DoScriptText(SAY_ESCAPE, m_creature, pPlayer);
-                break;
-            case 18:
-                DoCastSpellIfCan(m_creature, SPELL_MOONSTALKER_FORM);
-                break;
-            case 24:
-                if (Player* pPlayer = GetPlayerForEscort())
-                    pPlayer->RewardPlayerAndGroupAtEventExplored(QUEST_ESCAPE_THROUGH_STEALTH, m_creature);
-                break;
+        case 16:
+            m_creature->HandleEmote(EMOTE_ONESHOT_BOW);
+            break;
+        case 17:
+            if (Player* pPlayer = GetPlayerForEscort())
+                DoScriptText(SAY_ESCAPE, m_creature, pPlayer);
+            break;
+        case 18:
+            DoCastSpellIfCan(m_creature, SPELL_MOONSTALKER_FORM);
+            break;
+        case 24:
+            if (Player* pPlayer = GetPlayerForEscort())
+                pPlayer->RewardPlayerAndGroupAtEventExplored(QUEST_ESCAPE_THROUGH_STEALTH, m_creature);
+            break;
         }
     }
 };
@@ -597,12 +597,12 @@ bool QuestAccept_npc_volcor(Player* pPlayer, Creature* pCreature, const Quest* p
 
 enum
 {
-    SAY_THERYLUNE_START              = -1000905,
-    SAY_THERYLUNE_FINISH             = -1000906,
+    SAY_THERYLUNE_START = -1000905,
+    SAY_THERYLUNE_FINISH = -1000906,
 
-    NPC_THERYSIL                     = 3585,
+    NPC_THERYSIL = 3585,
 
-    QUEST_ID_THERYLUNE_ESCAPE        = 945,
+    QUEST_ID_THERYLUNE_ESCAPE = 945,
 };
 
 struct npc_theryluneAI : public npc_escortAI
@@ -622,15 +622,15 @@ struct npc_theryluneAI : public npc_escortAI
     {
         switch (uiPointId)
         {
-            case 18:
-                if (Player* pPlayer = GetPlayerForEscort())
-                    pPlayer->RewardPlayerAndGroupAtEventExplored(QUEST_ID_THERYLUNE_ESCAPE, m_creature);
-                break;
-            case 20:
-                if (Player* pPlayer = GetPlayerForEscort())
-                    DoScriptText(SAY_THERYLUNE_FINISH, m_creature, pPlayer);
-                SetRun();
-                break;
+        case 18:
+            if (Player* pPlayer = GetPlayerForEscort())
+                pPlayer->RewardPlayerAndGroupAtEventExplored(QUEST_ID_THERYLUNE_ESCAPE, m_creature);
+            break;
+        case 20:
+            if (Player* pPlayer = GetPlayerForEscort())
+                DoScriptText(SAY_THERYLUNE_FINISH, m_creature, pPlayer);
+            SetRun();
+            break;
         }
     }
 };
@@ -661,14 +661,14 @@ bool QuestAccept_npc_therylune(Player* pPlayer, Creature* pCreature, const Quest
 
 enum
 {
-    QUEST_PLAGUED_LANDS             = 2118,
+    QUEST_PLAGUED_LANDS = 2118,
 
     NPC_CAPTURED_RABID_THISTLE_BEAR = 11836,
-    NPC_THARNARIUN_TREETENDER       = 3701,                 // Npc related to quest-outro
-    GO_NIGHT_ELVEN_BEAR_TRAP        = 111148,               // This is actually the (visual) spell-focus GO
+    NPC_THARNARIUN_TREETENDER = 3701,                 // Npc related to quest-outro
+    GO_NIGHT_ELVEN_BEAR_TRAP = 111148,               // This is actually the (visual) spell-focus GO
 
-    SPELL_RABIES                    = 3150,                 // Spell used in comabt
-    SPELL_BEAR_CAPTURED             = 9439
+    SPELL_RABIES = 3150,                 // Spell used in comabt
+    SPELL_BEAR_CAPTURED = 9439
 };
 
 struct npc_rabid_bearAI : public ScriptedAI
@@ -697,7 +697,7 @@ struct npc_rabid_bearAI : public ScriptedAI
     void MoveInLineOfSight(Unit* pWho) override
     {
         if (!m_uiCheckTimer && pWho->GetTypeId() == TYPEID_UNIT && pWho->GetEntry() == NPC_THARNARIUN_TREETENDER &&
-                pWho->IsWithinDist(m_creature, 2 * INTERACTION_DISTANCE, false))
+            pWho->IsWithinDist(m_creature, 2 * INTERACTION_DISTANCE, false))
         {
             // Possible related spell: 9455 9372
             m_creature->ForcedDespawn(1000);
@@ -776,49 +776,87 @@ enum {
     NPC_BLACKWOOD_WARRIOR = 2168,
     NPC_BLACKWOOD_TOTEMIC = 2169,
 
-    GO_PURIFIED_FOOD      = 175336,
+    GO_PURIFIED_FOOD = 175336,
 
-    FACTION_BLACKWOOD     = 35,         // Faction guessed
+    FACTION_BLACKWOOD = 35,         // Faction guessed
 
-    EMOTE_LURED           = -1010027,
-    EMOTE_PURIFIED        = -1010028,
-    EMOTE_GENERIC_FLEE    = -1000007,
+    EMOTE_LURED = -1010027,
+    EMOTE_PURIFIED = -1010028,
+    EMOTE_GENERIC_FLEE = -1000007,
 
-    SPELL_BATTLE_STANCE   = 7165,
-    SPELL_THUNDERCLAP     = 8078,
-    SPELL_HEALING_WARD    = 5605,
+    SPELL_BATTLE_STANCE = 7165,
+    SPELL_THUNDERCLAP = 8078,
+    SPELL_HEALING_WARD = 5605,
+    EVENT_BECOME_PURIFIED = 1,
+    EVENT_FURBOLG_RESET = 2,
+    EVENT_START_PURIFICATION = 3,
+    BOWL_DISTANCE = 5,
 };
 
-static const uint32 furbolgList[2] = { NPC_BLACKWOOD_WARRIOR, NPC_BLACKWOOD_TOTEMIC };
+static const std::vector<uint32> furbolgList = { NPC_BLACKWOOD_WARRIOR, NPC_BLACKWOOD_TOTEMIC };
+Position bowlCoords;
 
 struct npc_corrupted_furbolgAI : public ScriptedAI
 {
-    npc_corrupted_furbolgAI(Creature* creature) : ScriptedAI(creature) { Reset(); }
+    bool m_isFirst;
+    bool m_hasFled;
 
-    bool m_isMovementActive;
-    bool m_hasFleed;
-    uint32 m_purifyTimer;
+    npc_corrupted_furbolgAI(Creature* creature) : ScriptedAI(creature)
+    {
+        AddCustomAction(EVENT_BECOME_PURIFIED, true, [&]()
+            {
+                if (m_isFirst)
+                    DoScriptText(EMOTE_PURIFIED, m_creature);
+                m_creature->SetFactionTemporary(FACTION_BLACKWOOD, TEMPFACTION_RESTORE_COMBAT_STOP);
+                m_creature->GetMotionMaster()->MoveRandomAroundPoint(bowlCoords.GetPositionX(), bowlCoords.GetPositionY(), bowlCoords.GetPositionZ(), 40.f);
+                m_creature->SetWalk(true);
+                ResetTimer(EVENT_FURBOLG_RESET, 1.5 * MINUTE * IN_MILLISECONDS);
+            });
+        AddCustomAction(EVENT_FURBOLG_RESET, true, [&]()
+            {
+                m_creature->GetMotionMaster()->Initialize();
+                EnterEvadeMode();
+                if (m_creature->GetDefaultMovementType() == IDLE_MOTION_TYPE)
+                    m_creature->GetMotionMaster()->MoveTargetedHome(false);
+            });
+        AddCustomAction(EVENT_START_PURIFICATION, true, [&]()
+            {
+                if (!bowlCoords.IsEmpty() && sqrt(bowlCoords.GetDistance(m_creature->GetPosition())) <= 60.f)
+                {
+                    if (m_isFirst)
+                        DoScriptText(EMOTE_LURED, m_creature);
+                    SetCombatScriptStatus(true);
+                    SetReactState(REACT_PASSIVE);
+                    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PLAYER);
+                    m_creature->CombatStop();
+
+                    float x, y, z, angle;
+                    angle = m_creature->GetAngle(bowlCoords.GetPositionX(), bowlCoords.GetPositionY());
+                    m_creature->GetNearPointAt(bowlCoords.GetPositionX(), bowlCoords.GetPositionY(), bowlCoords.GetPositionZ(),
+                        m_creature, x, y, z, m_creature->GetObjectBoundingRadius(), CONTACT_DISTANCE * 2.f, angle + M_PI);
+                    m_creature->SetWalk(false);
+                    m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
+                }
+            });
+        Reset();
+    }
 
     void Reset() override
     {
-        m_isMovementActive  = false;
-        m_hasFleed          = false;
-        m_purifyTimer       = 0;
+        SetCombatScriptStatus(false);
+        m_hasFled = false;
+        m_isFirst = false;
         SetReactState(REACT_AGGRESSIVE);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PLAYER);
     }
 
-    void SeekPurification()
+    void SeekPurification(bool isFirst)
     {
-        if (GameObject* bowl = GetClosestGameObjectWithEntry(m_creature, GO_PURIFIED_FOOD, 60.0f))
-        {
-            m_isMovementActive = true;
-            SetReactState(REACT_PASSIVE);
-            DoScriptText(EMOTE_LURED, m_creature);
-            float x, y, z;
-            bowl->GetContactPoint(m_creature, x, y, z, 1.0f);
-            m_creature->SetWalk(false);
-            m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
-        }
+        m_isFirst = isFirst;
+        if (m_isFirst)
+            ResetTimer(EVENT_START_PURIFICATION, 0);
+        else
+            ResetTimer(EVENT_START_PURIFICATION, urand(0, 5 * IN_MILLISECONDS));
     }
 
     void MovementInform(uint32 moveType, uint32 pointId) override
@@ -827,8 +865,7 @@ struct npc_corrupted_furbolgAI : public ScriptedAI
             return;
 
         m_creature->GetMotionMaster()->MoveIdle();
-        m_isMovementActive  = false;
-        m_purifyTimer = 5 * IN_MILLISECONDS;
+        ResetTimer(EVENT_BECOME_PURIFIED, 5 * IN_MILLISECONDS);
     }
 
     // Return true to handle shared timers and MeleeAttack
@@ -836,38 +873,19 @@ struct npc_corrupted_furbolgAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff) override
     {
-        if (m_isMovementActive)
-            return;
-
-        if (m_purifyTimer)
-        {
-            if (m_purifyTimer < diff)
-            {
-                m_purifyTimer = 0;
-                DoScriptText(EMOTE_PURIFIED, m_creature);
-                m_isMovementActive = false;
-                m_creature->SetFactionTemporary(FACTION_BLACKWOOD, TEMPFACTION_RESTORE_RESPAWN);
-                m_creature->GetMotionMaster()->MoveTargetedHome();
-                m_creature->SetWalk(true);
-                m_creature->ForcedDespawn(2 * MINUTE * IN_MILLISECONDS);
-            }
-            else
-            {
-                m_purifyTimer -= diff;
-                return;
-            }
-        }
+        UpdateTimers(diff, m_creature->GetVictim());
+        ExecuteActions();
 
         // Return since we have no target
         if (!m_creature->SelectHostileTarget() || !m_creature->GetVictim())
             return;
 
         // Flee at 15% HP
-        if (m_creature->GetHealthPercent() <= 10.0f && !m_hasFleed)
+        if (m_creature->GetHealthPercent() <= 10.0f && !m_hasFled)
         {
             DoScriptText(EMOTE_GENERIC_FLEE, m_creature);
-            if (m_creature->AI()->DoFlee())
-                m_hasFleed = true;
+            if (DoFlee())
+                m_hasFled = true;
         }
 
         // Call furbolg specific virtual function
@@ -963,33 +981,30 @@ bool ProcessEventId_event_purify_food(uint32 /*eventId*/, Object* source, Object
 {
     if (source->GetTypeId() == TYPEID_PLAYER && target->GetTypeId() == TYPEID_GAMEOBJECT)
     {
-        GameObject* bowl = (GameObject*)target;
+        GameObject* bonfire = (GameObject*)target;
+        Player* player = (Player*)source;
         CreatureList furbolgs;
         // Get all nearby Blackwood Furbolgs
-        for (auto entry : furbolgList)
-        {
-            MaNGOS::AllCreaturesOfEntryInRangeCheck check(((GameObject*)target), entry, 40.0f);
-            MaNGOS::CreatureListSearcher<MaNGOS::AllCreaturesOfEntryInRangeCheck> searcher(furbolgs, check);
-            Cell::VisitGridObjects(((Player*)source), searcher, 40.0f);
-        }
+        GetCreatureListWithEntryInGrid(furbolgs, bonfire, furbolgList, 40.f);
+        player->GetFirstCollisionPosition(bowlCoords, float(BOWL_DISTANCE), player->GetOrientation());
 
         // Spawn two extra Blackwood Warriors
         float x, y, z;
         for (int8 i = 0; i < 2; ++i)
         {
-            bowl->GetRandomPoint(bowl->GetPositionX(), bowl->GetPositionY(), bowl->GetPositionZ(), 30.0f, x, y, z);
-            if (Creature* warrior = bowl->SummonCreature(NPC_BLACKWOOD_WARRIOR, x, y, z, 0.0f, TEMPSPAWN_TIMED_OOC_OR_CORPSE_DESPAWN, 120000))
+            bonfire->GetRandomPoint(bonfire->GetPositionX(), bonfire->GetPositionY(), bonfire->GetPositionZ(), 30.0f, x, y, z);
+            if (Creature* warrior = bonfire->SummonCreature(NPC_BLACKWOOD_WARRIOR, x, y, z, 0.0f, TEMPSPAWN_TIMED_OOC_OR_DEAD_DESPAWN, 120000))
                 furbolgs.push_back(warrior);
         }
 
         // Activate the purification sequence for all hostile furbolgs (prevent attracting already purified ones)
         for (auto& furbolg : furbolgs)
         {
-            if (furbolg->IsInCombat() || !furbolg->IsAlive() || !((Unit*)source)->IsEnemy(furbolg))
+            if (furbolg->IsInCombat() || !furbolg->IsAlive() || !furbolg->CanAttack((Unit*)source))
                 continue;
 
             if (auto* furbolgAI = dynamic_cast<npc_corrupted_furbolgAI*>(furbolg->AI()))
-                furbolgAI->SeekPurification();
+                furbolgAI->SeekPurification(furbolg == furbolgs.back());
         }
 
         return false;
@@ -1007,7 +1022,7 @@ bool GOUse_go_furbolg_food(Player* player, GameObject* go)
     // Search for a nearby Blackwood Warrior and make it attack
     if (Creature* warrior = GetClosestCreatureWithEntry(go, NPC_BLACKWOOD_WARRIOR, 20.0f))
     {
-        if (warrior->IsInCombat() || !warrior->IsAlive() || !player->IsEnemy(warrior))
+        if (!warrior->IsInCombat() && warrior->IsAlive() && warrior->CanAttack(player))
             warrior->AI()->AttackStart(player);
     }
     // Else spawn a new one (and make it attack)
@@ -1015,7 +1030,7 @@ bool GOUse_go_furbolg_food(Player* player, GameObject* go)
     {
         float x, y, z;
         go->GetRandomPoint(go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), 20.0f, x, y, z);
-        if (Creature* warrior = go->SummonCreature(NPC_BLACKWOOD_WARRIOR, x, y, z, 0.0f, TEMPSPAWN_TIMED_OOC_OR_CORPSE_DESPAWN, 120000))
+        if (Creature* warrior = go->SummonCreature(NPC_BLACKWOOD_WARRIOR, x, y, z, 0.0f, TEMPSPAWN_TIMED_OOC_OR_DEAD_DESPAWN, 120000))
             warrior->AI()->AttackStart(player);
     }
 
@@ -1070,7 +1085,7 @@ void AddSC_darkshore()
     pNewScript->Name = "npc_blackwood_totemic";
     pNewScript->GetAI = &GetAI_npc_blackwood_totemic;
     pNewScript->RegisterSelf();
-    
+
     pNewScript = new Script;
     pNewScript->Name = "event_purify_food";
     pNewScript->pProcessEventId = &ProcessEventId_event_purify_food;
