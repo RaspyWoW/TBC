@@ -7630,194 +7630,194 @@ void Spell::EffectActivateObject(SpellEffectIndex effIdx)
 
     switch (action)
     {
-    case GameObjectActions::ANIMATE_CUSTOM_0:
-    case GameObjectActions::ANIMATE_CUSTOM_1:
-    case GameObjectActions::ANIMATE_CUSTOM_2:
-    case GameObjectActions::ANIMATE_CUSTOM_3:
-        gameObjTarget->SendGameObjectCustomAnim(gameObjTarget->GetObjectGuid(), uint32(action) - uint32(GameObjectActions::ANIMATE_CUSTOM_0));
-        break;
-    case GameObjectActions::DISTURB: // What's the difference with Open?
-    case GameObjectActions::OPEN:
-        switch (m_spellInfo->Id)
-        {
-        case 17731:         // Onyxia - Eruption
-        case 24731:
-        case 40964:         // Fel Crystalforge: Create 1 Flask
-        case 40965:         // Fel Crystalforge: Create 5 Flasks
-        case 40968:         // Bash'ir Crystalforge: Create 1 Flask
-        case 40970:         // Bash'ir Crystalforge: Create 5 Flasks
-        case 42868:
-        case 45222:         // Zul'Aman Object Visual - This spell is a custom GO cast spell and similar to Ritual of Souls where only channel start should be sent
-            gameObjTarget->SendGameObjectCustomAnim(gameObjTarget->GetObjectGuid());
+        case GameObjectActions::ANIMATE_CUSTOM_0:
+        case GameObjectActions::ANIMATE_CUSTOM_1:
+        case GameObjectActions::ANIMATE_CUSTOM_2:
+        case GameObjectActions::ANIMATE_CUSTOM_3:
+            gameObjTarget->SendGameObjectCustomAnim(gameObjTarget->GetObjectGuid(), uint32(action) - uint32(GameObjectActions::ANIMATE_CUSTOM_0));
             break;
-        case 36546:         // no delay meant to happen - activate trap immediately
-        case 38054:
-        case 39844:
-            gameObjTarget->Use(m_caster, m_spellInfo);
-            break;
-        case 46638:         // Brutallus SWP - closes door
-            gameObjTarget->ResetDoorOrButton();
-            break;
-        default:
-            if (m_caster)
-                gameObjTarget->Use(m_caster);
-            break;
-        }
-        break;
-    case GameObjectActions::OPEN_AND_UNLOCK:
-        gameObjTarget->UseDoorOrButton(0, false);
-        [[fallthrough]];
-    case GameObjectActions::UNLOCK:
-    case GameObjectActions::LOCK:
-        gameObjTarget->ApplyModFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED, action == GameObjectActions::LOCK);
-        break;
-    case GameObjectActions::CLOSE:
-    case GameObjectActions::REBUILD:
-        if (m_spellInfo->Id == 46610)
-            gameObjTarget->Use(m_caster, m_spellInfo);
-        else
-            gameObjTarget->ResetDoorOrButton();
-        break;
-    case GameObjectActions::DESPAWN:
-        gameObjTarget->ForcedDespawn();
-        break;
-    case GameObjectActions::MAKE_INERT:
-    case GameObjectActions::MAKE_ACTIVE:
-        switch (m_spellInfo->Id)
-        {
-        case 24734:         // Summon Templar Random
-        case 24744:         // Summon Templar (fire)
-        case 24756:         // Summon Templar (air)
-        case 24758:         // Summon Templar (earth)
-        case 24760:         // Summon Templar (water)
-        case 24763:         // Summon Duke Random
-        case 24765:         // Summon Duke (fire)
-        case 24768:         // Summon Duke (air)
-        case 24770:         // Summon Duke (earth)
-        case 24772:         // Summon Duke (water)
-        case 24784:         // Summon Royal Random
-        case 24786:         // Summon Royal (fire)
-        case 24788:         // Summon Royal (air)
-        case 24789:         // Summon Royal (earth)
-        case 24790:         // Summon Royal (water)
-        {
-            uint32 npcEntry = 0;
-            uint32 templars[] = { 15209, 15211, 15212, 15307 };
-            uint32 dukes[] = { 15206, 15207, 15208, 15220 };
-            uint32 royals[] = { 15203, 15204, 15205, 15305 };
-
+        case GameObjectActions::DISTURB: // What's the difference with Open?
+        case GameObjectActions::OPEN:
             switch (m_spellInfo->Id)
             {
-            case 24734: npcEntry = templars[urand(0, 3)]; break;
-            case 24763: npcEntry = dukes[urand(0, 3)];    break;
-            case 24784: npcEntry = royals[urand(0, 3)];   break;
-            case 24744: npcEntry = 15209;                 break;
-            case 24756: npcEntry = 15212;                 break;
-            case 24758: npcEntry = 15307;                 break;
-            case 24760: npcEntry = 15211;                 break;
-            case 24765: npcEntry = 15206;                 break;
-            case 24768: npcEntry = 15220;                 break;
-            case 24770: npcEntry = 15208;                 break;
-            case 24772: npcEntry = 15207;                 break;
-            case 24786: npcEntry = 15203;                 break;
-            case 24788: npcEntry = 15204;                 break;
-            case 24789: npcEntry = 15205;                 break;
-            case 24790: npcEntry = 15305;                 break;
+                case 17731:         // Onyxia - Eruption
+                case 24731:
+                case 40964:         // Fel Crystalforge: Create 1 Flask
+                case 40965:         // Fel Crystalforge: Create 5 Flasks
+                case 40968:         // Bash'ir Crystalforge: Create 1 Flask
+                case 40970:         // Bash'ir Crystalforge: Create 5 Flasks
+                case 42868:
+                case 45222:         // Zul'Aman Object Visual - This spell is a custom GO cast spell and similar to Ritual of Souls where only channel start should be sent
+                    gameObjTarget->SendGameObjectCustomAnim(gameObjTarget->GetObjectGuid());
+                    break;
+                case 36546:         // no delay meant to happen - activate trap immediately
+                case 38054:
+                case 39844:
+                    gameObjTarget->Use(m_caster, m_spellInfo);
+                    break;
+                case 46638:         // Brutallus SWP - closes door
+                    gameObjTarget->ResetDoorOrButton();
+                    break;
+                default:
+                    if (m_caster)
+                        gameObjTarget->Use(m_caster);
+                    break;
             }
-
-            gameObjTarget->SummonCreature(npcEntry, gameObjTarget->GetPositionX(), gameObjTarget->GetPositionY(), gameObjTarget->GetPositionZ(), gameObjTarget->GetAngle(m_caster), TEMPSPAWN_TIMED_OOC_OR_DEAD_DESPAWN, MINUTE * IN_MILLISECONDS);
-            gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
             break;
-        }
-        case 40176:         // Simon Game pre-game Begin, blue
-        case 40177:         // Simon Game pre-game Begin, green
-        case 40178:         // Simon Game pre-game Begin, red
-        case 40179:         // Simon Game pre-game Begin, yellow
-        case 40283:         // Simon Game END, blue
-        case 40284:         // Simon Game END, green
-        case 40285:         // Simon Game END, red
-        case 40286:         // Simon Game END, yellow
-        case 40494:         // Simon Game, switched ON
-        case 40495:         // Simon Game, switched OFF
-        case 40512:         // Simon Game, switch...disable Off switch
-            gameObjTarget->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NO_INTERACT);
+        case GameObjectActions::OPEN_AND_UNLOCK:
+            gameObjTarget->UseDoorOrButton(0, false);
+            [[fallthrough]];
+        case GameObjectActions::UNLOCK:
+        case GameObjectActions::LOCK:
+            gameObjTarget->ApplyModFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED, action == GameObjectActions::LOCK);
             break;
-        case 40632:         // Summon Gezzarak the Huntress
-        case 40640:         // Summon Karrog
-        case 40642:         // Summon Darkscreecher Akkarai
-        case 40644:         // Summon Vakkiz the Windrager
-        case 41004:         // Summon Terokk
-            gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
+        case GameObjectActions::CLOSE:
+        case GameObjectActions::REBUILD:
+            if (m_spellInfo->Id == 46610)
+                gameObjTarget->Use(m_caster, m_spellInfo);
+            else
+                gameObjTarget->ResetDoorOrButton();
             break;
-        case 46592:         // Summon Ahune Lieutenant
-        {
-            uint32 npcEntry = 0;
-
-            switch (gameObjTarget->GetEntry())
+        case GameObjectActions::DESPAWN:
+            gameObjTarget->ForcedDespawn();
+            break;
+        case GameObjectActions::MAKE_INERT:
+        case GameObjectActions::MAKE_ACTIVE:
+            switch (m_spellInfo->Id)
             {
-            case 188049:
-            case 188137:
-            case 188138:
-                npcEntry = 26116; break;       // Frostwave Lieutenant (Ashenvale)
-            case 188134:
-            case 188135:
-            case 188139:
-                npcEntry = 26178; break;       // Hailstone Lieutenant (Desolace)
-            case 188143:
-            case 188144:
-                npcEntry = 26204; break;       // Chillwind Lieutenant (Stranglethorn)
-            case 188145:
-            case 188146:
-            case 188147:
-                npcEntry = 26214; break;       // Frigid Lieutenant (Searing Gorge)
-            case 188148:
-            case 188149:
-            case 188150:
-                npcEntry = 26215; break;       // Glacial Lieutenant (Silithus)
-            case 188151:
-            case 188152:
-            case 188153:
-            case 188154:
-                npcEntry = 26216; break;       // Glacial Templar (Hellfire Peninsula)
-            }
+                case 24734:         // Summon Templar Random
+                case 24744:         // Summon Templar (fire)
+                case 24756:         // Summon Templar (air)
+                case 24758:         // Summon Templar (earth)
+                case 24760:         // Summon Templar (water)
+                case 24763:         // Summon Duke Random
+                case 24765:         // Summon Duke (fire)
+                case 24768:         // Summon Duke (air)
+                case 24770:         // Summon Duke (earth)
+                case 24772:         // Summon Duke (water)
+                case 24784:         // Summon Royal Random
+                case 24786:         // Summon Royal (fire)
+                case 24788:         // Summon Royal (air)
+                case 24789:         // Summon Royal (earth)
+                case 24790:         // Summon Royal (water)
+                {
+                    uint32 npcEntry = 0;
+                    uint32 templars[] = { 15209, 15211, 15212, 15307 };
+                    uint32 dukes[] = { 15206, 15207, 15208, 15220 };
+                    uint32 royals[] = { 15203, 15204, 15205, 15305 };
 
-            gameObjTarget->SummonCreature(npcEntry, gameObjTarget->GetPositionX(), gameObjTarget->GetPositionY(), gameObjTarget->GetPositionZ(), gameObjTarget->GetAngle(m_caster), TEMPSPAWN_TIMED_OOC_OR_DEAD_DESPAWN, MINUTE * IN_MILLISECONDS);
-            gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
+                    switch (m_spellInfo->Id)
+                    {
+                        case 24734: npcEntry = templars[urand(0, 3)]; break;
+                        case 24763: npcEntry = dukes[urand(0, 3)];    break;
+                        case 24784: npcEntry = royals[urand(0, 3)];   break;
+                        case 24744: npcEntry = 15209;                 break;
+                        case 24756: npcEntry = 15212;                 break;
+                        case 24758: npcEntry = 15307;                 break;
+                        case 24760: npcEntry = 15211;                 break;
+                        case 24765: npcEntry = 15206;                 break;
+                        case 24768: npcEntry = 15220;                 break;
+                        case 24770: npcEntry = 15208;                 break;
+                        case 24772: npcEntry = 15207;                 break;
+                        case 24786: npcEntry = 15203;                 break;
+                        case 24788: npcEntry = 15204;                 break;
+                        case 24789: npcEntry = 15205;                 break;
+                        case 24790: npcEntry = 15305;                 break;
+                    }
+
+                    gameObjTarget->SummonCreature(npcEntry, gameObjTarget->GetPositionX(), gameObjTarget->GetPositionY(), gameObjTarget->GetPositionZ(), gameObjTarget->GetAngle(m_caster), TEMPSPAWN_TIMED_OOC_OR_DEAD_DESPAWN, MINUTE * IN_MILLISECONDS);
+                    gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
+                    break;
+                }
+                case 40176:         // Simon Game pre-game Begin, blue
+                case 40177:         // Simon Game pre-game Begin, green
+                case 40178:         // Simon Game pre-game Begin, red
+                case 40179:         // Simon Game pre-game Begin, yellow
+                case 40283:         // Simon Game END, blue
+                case 40284:         // Simon Game END, green
+                case 40285:         // Simon Game END, red
+                case 40286:         // Simon Game END, yellow
+                case 40494:         // Simon Game, switched ON
+                case 40495:         // Simon Game, switched OFF
+                case 40512:         // Simon Game, switch...disable Off switch
+                    gameObjTarget->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NO_INTERACT);
+                    break;
+                case 40632:         // Summon Gezzarak the Huntress
+                case 40640:         // Summon Karrog
+                case 40642:         // Summon Darkscreecher Akkarai
+                case 40644:         // Summon Vakkiz the Windrager
+                case 41004:         // Summon Terokk
+                    gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
+                    break;
+                case 46592:         // Summon Ahune Lieutenant
+                {
+                    uint32 npcEntry = 0;
+
+                    switch (gameObjTarget->GetEntry())
+                    {
+                        case 188049:
+                        case 188137:
+                        case 188138:
+                            npcEntry = 26116; break;       // Frostwave Lieutenant (Ashenvale)
+                        case 188134:
+                        case 188135:
+                        case 188139:
+                            npcEntry = 26178; break;       // Hailstone Lieutenant (Desolace)
+                        case 188143:
+                        case 188144:
+                            npcEntry = 26204; break;       // Chillwind Lieutenant (Stranglethorn)
+                        case 188145:
+                        case 188146:
+                        case 188147:
+                            npcEntry = 26214; break;       // Frigid Lieutenant (Searing Gorge)
+                        case 188148:
+                        case 188149:
+                        case 188150:
+                            npcEntry = 26215; break;       // Glacial Lieutenant (Silithus)
+                        case 188151:
+                        case 188152:
+                        case 188153:
+                        case 188154:
+                            npcEntry = 26216; break;       // Glacial Templar (Hellfire Peninsula)
+                    }
+
+                    gameObjTarget->SummonCreature(npcEntry, gameObjTarget->GetPositionX(), gameObjTarget->GetPositionY(), gameObjTarget->GetPositionZ(), gameObjTarget->GetAngle(m_caster), TEMPSPAWN_TIMED_OOC_OR_DEAD_DESPAWN, MINUTE * IN_MILLISECONDS);
+                    gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
+                    break;
+                }
+            }
+            gameObjTarget->ApplyModFlag(GAMEOBJECT_FLAGS, GO_FLAG_NO_INTERACT, action == GameObjectActions::MAKE_INERT);
+            break;
+        case GameObjectActions::CLOSE_AND_LOCK:
+            gameObjTarget->ResetDoorOrButton();
+            gameObjTarget->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED);
+            break;
+        case GameObjectActions::DESTROY:
+            gameObjTarget->UseDoorOrButton(0, true);
+            break;
+        case GameObjectActions::USE_ART_KIT_0:
+        case GameObjectActions::USE_ART_KIT_1:
+        case GameObjectActions::USE_ART_KIT_2:
+        case GameObjectActions::USE_ART_KIT_3:
+        {
+            GameObjectTemplateAddon const* templateAddon = gameObjTarget->GetTemplateAddon();
+
+            uint32 artKitIndex = uint32(action) - uint32(GameObjectActions::USE_ART_KIT_0);
+
+            uint32 artKitValue = 0;
+            if (templateAddon != nullptr)
+                artKitValue = templateAddon->artKits[artKitIndex];
+
+            if (artKitValue == 0)
+                sLog.outError("GameObject %d hit by spell %d needs `artkit%d` in `gameobject_template_addon`", gameObjTarget->GetEntry(), m_spellInfo->Id, artKitIndex);
+            else
+                gameObjTarget->SetGoArtKit(artKitValue);
+
             break;
         }
-        }
-        gameObjTarget->ApplyModFlag(GAMEOBJECT_FLAGS, GO_FLAG_NO_INTERACT, action == GameObjectActions::MAKE_INERT);
-        break;
-    case GameObjectActions::CLOSE_AND_LOCK:
-        gameObjTarget->ResetDoorOrButton();
-        gameObjTarget->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED);
-        break;
-    case GameObjectActions::DESTROY:
-        gameObjTarget->UseDoorOrButton(0, true);
-        break;
-    case GameObjectActions::USE_ART_KIT_0:
-    case GameObjectActions::USE_ART_KIT_1:
-    case GameObjectActions::USE_ART_KIT_2:
-    case GameObjectActions::USE_ART_KIT_3:
-    {
-        GameObjectTemplateAddon const* templateAddon = gameObjTarget->GetTemplateAddon();
-
-        uint32 artKitIndex = uint32(action) - uint32(GameObjectActions::USE_ART_KIT_0);
-
-        uint32 artKitValue = 0;
-        if (templateAddon != nullptr)
-            artKitValue = templateAddon->artKits[artKitIndex];
-
-        if (artKitValue == 0)
-            sLog.outError("GameObject %d hit by spell %d needs `artkit%d` in `gameobject_template_addon`", gameObjTarget->GetEntry(), m_spellInfo->Id, artKitIndex);
-        else
-            gameObjTarget->SetGoArtKit(artKitValue);
-
-        break;
-    }
-    default:
-        sLog.outError("Spell %d has unhandled action %d in effect %d", m_spellInfo->Id, int32(action), int32(effIdx));
-        break;
+        default:
+            sLog.outError("Spell %d has unhandled action %d in effect %d", m_spellInfo->Id, int32(action), int32(effIdx));
+            break;
     }
 }
 

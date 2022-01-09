@@ -31,7 +31,7 @@
 
 #include <cassert>
 
- //-----------------------------------------------//
+//-----------------------------------------------//
 void WaypointMovementGenerator<Creature>::LoadPath(Creature& creature, int32 pathId, WaypointPathOrigin wpOrigin, uint32 overwriteEntry)
 {
     DETAIL_FILTER_LOG(LOG_FILTER_AI_AND_MOVEGENSS, "LoadPath: loading waypoint path for %s", creature.GetGuidStr().c_str());
@@ -281,7 +281,7 @@ bool WaypointMovementGenerator<Creature>::GetNodeAfter(WaypointPath::const_itera
 // minimum time that will take the unit to travel the path (much higher value have been seen in sniff)
 static const uint32 MinimumPathTime = 6000;
 // client need to receive new path before the end of previous path (much higher value have been seen in sniff)
-static const uint32 PreSendTime = 1500;
+static const uint32 PreSendTime     = 1500;
 
 // build and send path to next node
 void WaypointMovementGenerator<Creature>::SendNextWayPointPath(Creature& creature)

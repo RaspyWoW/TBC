@@ -214,10 +214,10 @@ enum UnitNameSummonTitle
 // SummonProperties.dbc, col 5          == Flags            (m_flags)
 enum SummonPropFlags
 {
-    SUMMON_PROP_FLAG_NONE = 0x0000,
-    SUMMON_PROP_FLAG_ATTACK_SUMMONER = 0x0001,
-    SUMMON_PROP_FLAG_HELP_WHEN_SUMMONED_IN_COMBAT = 0x0002,
-    SUMMON_PROP_FLAG_USE_LEVEL_OFFSET = 0x0004, // Implemented differently in tbc core
+    SUMMON_PROP_FLAG_NONE                           = 0x0000,
+    SUMMON_PROP_FLAG_ATTACK_SUMMONER                = 0x0001,
+    SUMMON_PROP_FLAG_HELP_WHEN_SUMMONED_IN_COMBAT   = 0x0002,
+    SUMMON_PROP_FLAG_USE_LEVEL_OFFSET               = 0x0004, // Implemented differently in tbc core
 };
 
 enum SpellEffectIndex

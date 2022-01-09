@@ -23,11 +23,11 @@
 
 enum WaypointPathOrigin
 {
-    PATH_NO_PATH = 0,
-    PATH_FROM_GUID = 1,
-    PATH_FROM_ENTRY = 2,
-    PATH_FROM_EXTERNAL = 3,
-    PATH_FROM_WAYPOINT_PATH = 4,
+    PATH_NO_PATH                = 0,
+    PATH_FROM_GUID              = 1,
+    PATH_FROM_ENTRY             = 2,
+    PATH_FROM_EXTERNAL          = 3,
+    PATH_FROM_WAYPOINT_PATH     = 4,
 };
 
 struct WaypointNode
@@ -184,11 +184,11 @@ class WaypointManager
         {
             switch (origin)
             {
-                case PATH_NO_PATH: return nullptr;
-                case PATH_FROM_GUID: return &m_pathMap;
-                case PATH_FROM_ENTRY: return &m_pathTemplateMap;
-                case PATH_FROM_EXTERNAL: return &m_externalPathTemplateMap;
-                case PATH_FROM_WAYPOINT_PATH: return &m_pathMovementTemplateMap;
+                case PATH_NO_PATH                   : return nullptr;
+                case PATH_FROM_GUID                 : return &m_pathMap;
+                case PATH_FROM_ENTRY                : return &m_pathTemplateMap;
+                case PATH_FROM_EXTERNAL             : return &m_externalPathTemplateMap;
+                case PATH_FROM_WAYPOINT_PATH    : return &m_pathMovementTemplateMap;
                 default:                    return nullptr;
             }
         }
@@ -197,6 +197,7 @@ class WaypointManager
         WaypointPathMap m_pathTemplateMap;
         WaypointPathMap m_externalPathTemplateMap;
         WaypointPathMap m_pathMovementTemplateMap;
+
         std::string m_externalTable;
 };
 

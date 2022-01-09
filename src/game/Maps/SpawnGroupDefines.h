@@ -16,13 +16,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#pragma once
+#ifndef MANGOS_SPAWN_GROUP_DEFINE_H
+#define MANGOS_SPAWN_GROUP_DEFINE_H
 
 #include "Platform/Define.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <memory>
+
 
  // uncomment this if you want mirroring at start and end of the LINEAR_WP_MOTION_TYPE movement
  //#define ENABLE_SPAWNGROUP_FORMATION_MIRRORING
@@ -105,15 +107,15 @@ struct SpawnGroupEntry
 // Formation defines
 enum SpawnGroupFormationType : uint32
 {
-    SPAWN_GROUP_FORMATION_TYPE_RANDOM = 0,
-    SPAWN_GROUP_FORMATION_TYPE_SINGLE_FILE = 1,
-    SPAWN_GROUP_FORMATION_TYPE_SIDE_BY_SIDE = 2,
-    SPAWN_GROUP_FORMATION_TYPE_LIKE_GEESE = 3,
-    SPAWN_GROUP_FORMATION_TYPE_FANNED_OUT_BEHIND = 4,
+    SPAWN_GROUP_FORMATION_TYPE_RANDOM              = 0,
+    SPAWN_GROUP_FORMATION_TYPE_SINGLE_FILE         = 1,
+    SPAWN_GROUP_FORMATION_TYPE_SIDE_BY_SIDE        = 2,
+    SPAWN_GROUP_FORMATION_TYPE_LIKE_GEESE          = 3,
+    SPAWN_GROUP_FORMATION_TYPE_FANNED_OUT_BEHIND   = 4,
     SPAWN_GROUP_FORMATION_TYPE_FANNED_OUT_IN_FRONT = 5,
-    SPAWN_GROUP_FORMATION_TYPE_CIRCLE_THE_LEADER = 6,
+    SPAWN_GROUP_FORMATION_TYPE_CIRCLE_THE_LEADER   = 6,
 
-    SPAWN_GROUP_FORMATION_TYPE_COUNT = 7
+    SPAWN_GROUP_FORMATION_TYPE_COUNT               = 7
 };
 
 enum SpawnGroupFormationSlotType : uint32
@@ -125,9 +127,9 @@ enum SpawnGroupFormationSlotType : uint32
 
 enum SpawGroupFormationOptions : uint32
 {
-    SPAWN_GROUP_FORMATION_OPTION_NONE = 0x00,
-    SPAWN_GROUP_FORMATION_OPTION_FOLLOWERS_WILL_NOT_PATHFIND_TO_LOCATION = 0x01, // NYI - need examples where used vs normal
-    SPAWN_GROUP_FORMATION_OPTION_KEEP_CONPACT = 0x02,
+    SPAWN_GROUP_FORMATION_OPTION_NONE                                       = 0x00,
+    SPAWN_GROUP_FORMATION_OPTION_FOLLOWERS_WILL_NOT_PATHFIND_TO_LOCATION    = 0x01, // NYI - need examples where used vs normal
+    SPAWN_GROUP_FORMATION_OPTION_KEEP_CONPACT                               = 0x02,
 };
 
 struct FormationEntry
@@ -146,3 +148,5 @@ struct SpawnGroupEntryContainer
     std::map<uint32, SpawnGroupEntry> spawnGroupMap;
     std::map<std::pair<uint32, uint32>, SpawnGroupEntry*> spawnGroupByGuidMap;
 };
+
+#endif

@@ -181,10 +181,10 @@ enum EnchantmentOffset
 
 enum EnchantmentSlotMask
 {
-    ENCHANTMENT_SOULBOUND = 0x01,
-    ENCHANTMENT_DO_NOT_LOG = 0x02,
-    ENCHANTMENT_MAINHAND_ONLY = 0x04, // Not actually implemented - spells target only MH
-    ENCHANTMENT_ALLOW_ENTERING_ARENA = 0x08
+    ENCHANTMENT_SOULBOUND               = 0x01,
+    ENCHANTMENT_DO_NOT_LOG              = 0x02,
+    ENCHANTMENT_MAINHAND_ONLY           = 0x04, // Not actually implemented - spells target only MH
+    ENCHANTMENT_ALLOW_ENTERING_ARENA    = 0x08
 };
 
 enum ItemUpdateState

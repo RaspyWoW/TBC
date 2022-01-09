@@ -4848,7 +4848,7 @@ void Aura::HandleAuraModEffectImmunity(bool apply, bool /*Real*/)
     Unit* target = GetTarget();
 
     // when removing flag aura, handle flag drop
-    if (target->GetTypeId() == TYPEID_PLAYER && (GetSpellProto()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_STEALTH_INVIS_CANCELS))
+    if (target->GetTypeId() == TYPEID_PLAYER && (GetSpellProto()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_INVULNERABILITY_BUFF_CANCELS))
     {
         Player* player = static_cast<Player*>(target);
 
@@ -4909,7 +4909,7 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
 
     // remove all flag auras (they are positive, but they must be removed when you are immune)
     if (GetSpellProto()->HasAttribute(SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY) && GetSpellProto()->HasAttribute(SPELL_ATTR_EX2_DAMAGE_REDUCED_SHIELD))
-        target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_STEALTH_INVIS_CANCELS);
+        target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_INVULNERABILITY_BUFF_CANCELS);
 
     // TODO: optimalize this cycle - use RemoveAurasWithInterruptFlags call or something else
     if (Real && apply
