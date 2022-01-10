@@ -59,7 +59,7 @@ enum LogFilters
     LOG_FILTER_DB_SCRIPT          = 0x080000,               // 19 Db scripts
 };
 
-constexpr auto LOG_FILTER_COUNT = 20;
+constexpr auto LOG_FILTER_COUNT{ 20 };
 
 struct LogFilterData
 {

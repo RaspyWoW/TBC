@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the CMaNGOS Project. See AUTHORS file for Copyright information
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,47 +28,61 @@ Channel::Channel(const std::string& name, uint32 channel_id/* = 0*/)
 {
     if (ChatChannelsEntry const* builtin = GetChatChannelsEntryFor(name, channel_id))
     {
-        m_entry = builtin;                                              // built-in channel entry
-        m_announcements = false;                                        // no join/leave announcements by default
-        m_flags = CHANNEL_FLAG_GENERAL;                                 // default for all built-in channels
+        m_entry = builtin; // built-in channel entry
+        m_announcements = false; // no join/leave announcements by default
+        m_flags = CHANNEL_FLAG_GENERAL; // default for all built-in channels
 
-        if (builtin->flags & CHANNEL_DBC_FLAG_TRADE)                    // for trade channel
+        if (builtin->flags & CHANNEL_DBC_FLAG_TRADE) // for trade channel
             m_flags |= CHANNEL_FLAG_TRADE;
 
-        if (builtin->flags & CHANNEL_DBC_FLAG_CITY_ONLY2)               // for city only channels
+        if (builtin->flags & CHANNEL_DBC_FLAG_CITY_ONLY2) // for city only channels
             m_flags |= CHANNEL_FLAG_CITY;
 
-        if (builtin->flags & CHANNEL_DBC_FLAG_LFG)                      // for LFG channel
+        if (builtin->flags & CHANNEL_DBC_FLAG_LFG) // for LFG channel
             m_flags |= CHANNEL_FLAG_LFG;
-        else                                                            // for all other channels
+        else // for all other channels
             m_flags |= CHANNEL_FLAG_NOT_LFG;
-
-        // Custom features:
-        m_realmzone = true;                                             // channel language matches realm zone
     }
-    else // it's custom channel
+    else // Custom channel
     {
-        m_announcements = true;                                         // join/leave announcements enabled by default
-        m_flags = CHANNEL_FLAG_CUSTOM;                                  // default for all custom channels
+        if (!normalizePlayerName(m_name, (size_t)128))
+        {
+            m_name = "INVALIDCHANNEL";
+            m_announcements = false;
+        }
 
-        // Custom features:
-        m_realmzone = sObjectMgr.CheckPublicMessageLanguage(m_name);    // channel language matches channel name
-        m_levelRestricted = false;
+        if (m_name == u8"World")
+        {
+            m_flags |= CHANNEL_FLAG_GENERAL;
+            m_announcements = false;
+        }
+        else if (m_name == u8"China" || m_name == u8"中国")
+        {
+            m_flags |= CHANNEL_FLAG_CUSTOM;
+            m_announcements = false;
+        }
+        else
+        {
+            m_flags |= CHANNEL_FLAG_CUSTOM; // Default for all custom channels
+            m_levelRestricted = false;
+            m_announcements = true; // join/leave announcements enabled by default
+        }
     }
 }
 
 void Channel::Join(Player* player, const char* password)
 {
     ObjectGuid guid = player->GetObjectGuid();
-
     WorldPacket data;
+
     if (IsOn(guid))
     {
-        if (!IsConstant())                                  // non send error message for built-in channels
+        if (!IsConstant()) // non send error message for built-in channels
         {
             MakePlayerAlreadyMember(data, m_name, guid);
             SendToOne(data, guid);
         }
+
         return;
     }
 
@@ -105,7 +119,7 @@ void Channel::Join(Player* player, const char* password)
     if (player->GetGuildId() && (GetFlags() == 0x38))
         return;
 
-    // join channel
+    // Join channel
     player->JoinedChannel(this);
 
     const uint32 level = sWorld.getConfig(CONFIG_UINT32_GM_LEVEL_CHANNEL_SILENT_JOIN);
@@ -148,10 +162,11 @@ void Channel::Leave(Player* player, bool send)
             MakeNotMember(data, m_name);
             SendToOne(data, guid);
         }
+
         return;
     }
 
-    // leave channel
+    // Leave channel
     if (send)
     {
         WorldPacket data;
@@ -161,7 +176,7 @@ void Channel::Leave(Player* player, bool send)
         data.clear();
     }
 
-    bool changeowner = m_players[guid].IsOwner();
+    const bool changeowner = m_players[guid].IsOwner();
 
     m_players.erase(guid);
 
@@ -222,7 +237,7 @@ void Channel::KickOrBan(Player* player, const char* targetName, bool ban)
         return;
     }
 
-    bool changeowner = m_ownerGuid == targetGuid;
+    const bool changeowner = m_ownerGuid == targetGuid;
 
     if (!gm && changeowner && guid != m_ownerGuid)
     {
@@ -331,7 +346,7 @@ void Channel::SetPassword(Player* player, const char* password)
     SendToAll(data);
 }
 
-void Channel::SetModeFlags(Player* player, const char* targetName, ChannelMemberFlags flags, bool set)
+void Channel::SetModeFlags(Player* player, const char* targetName, ChannelMemberFlags flags, const bool set)
 {
     // Restrict input flags to currently supported by this method
     flags = ChannelMemberFlags(uint8(flags) & (MEMBER_FLAG_MODERATOR | MEMBER_FLAG_MUTED));
@@ -454,6 +469,9 @@ void Channel::SetOwner(Player* player, const char* targetName)
         return;
     }
 
+    if (HasFlag(CHANNEL_FLAG_GENERAL) && target->GetSession()->GetSecurity() < SEC_GAMEMASTER)
+        return;
+
     // set channel owner
     SetOwner(targetGuid, (m_players.size() > 1));
 }
@@ -526,7 +544,7 @@ void Channel::SendChannelListResponse(Player* player, bool display/*= false*/)
                 continue;
 
             data << ObjectGuid(i->first);
-            data << uint8(i->second.flags);                 // flags seems to be changed...
+            data << uint8(i->second.flags); // flags seems to be changed...
             ++count;
         }
     }
@@ -642,15 +660,21 @@ void Channel::Say(Player* player, const char* text, uint32 lang)
         return;
     }
 
-    if (uint32 restriction = sWorld.getConfig(CONFIG_UINT32_CHANNEL_RESTRICTED_LANGUAGE_MODE))
+    if (const uint32 restriction = sWorld.getConfig(CONFIG_UINT32_CHANNEL_RESTRICTED_LANGUAGE_MODE))
     {
         bool restricted = false;
 
         switch (restriction)
         {
-            case 1: restricted = IsConstant();                  break;
-            case 2: restricted = (IsPublic() && m_realmzone);   break;
-            case 3: restricted = true;                          break;
+            case 1:
+                restricted = IsConstant();
+                break;
+            case 2:
+                restricted = IsPublic();
+                break;
+            case 3:
+                restricted = true;
+                break;
         }
 
         if (restricted && !sObjectMgr.CheckPublicMessageLanguage(text))
@@ -1058,12 +1082,14 @@ void Channel::SetOwner(ObjectGuid guid, bool exclaim)
             // old owner retains own moderator powers on transfer to another player only
             p_itr->second.SetModerator(bool(guid));
 
-            uint8 oldFlag = p_itr->second.flags;
+            /*
+            const uint8 oldFlag = p_itr->second.flags;
             p_itr->second.SetOwner(false);
 
             WorldPacket data;
             MakeModeChange(data, m_name, guid, oldFlag, GetPlayerFlags(guid));
             SendToAll(data);
+            */
         }
     }
 
@@ -1074,7 +1100,7 @@ void Channel::SetOwner(ObjectGuid guid, bool exclaim)
         // new owner receives moderator powers as well
         m_players[m_ownerGuid].SetModerator(true);
 
-        uint8 oldFlag = GetPlayerFlags(m_ownerGuid);
+        const uint8 oldFlag = GetPlayerFlags(m_ownerGuid);
         m_players[m_ownerGuid].SetOwner(true);
 
         WorldPacket data;

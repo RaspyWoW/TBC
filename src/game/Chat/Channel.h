@@ -157,7 +157,7 @@ class Channel
         void UnBan(Player* player, const char* targetName);
         bool IsLevelRestricted() const { return m_levelRestricted; }
         void SetPassword(Player* player, const char* password);
-        void SetModeFlags(Player* player, const char* targetName, ChannelMemberFlags flags, bool set);
+        void SetModeFlags(Player* player, const char* targetName, ChannelMemberFlags flags, const bool set);
         inline void SetModerator(Player* player, const char* targetName, bool set) { SetModeFlags(player, targetName, MEMBER_FLAG_MODERATOR, set); }
         inline void SetMute(Player* player, const char* targetName, bool set) { SetModeFlags(player, targetName, MEMBER_FLAG_MUTED, set); }
         void SetOwner(Player* player, const char* targetName);
@@ -249,7 +249,6 @@ class Channel
         uint8                       m_flags = CHANNEL_FLAG_NONE;
         // Custom features:
         bool                        m_static = false;
-        bool                        m_realmzone = false;
         bool                        m_levelRestricted;
 };
 #endif

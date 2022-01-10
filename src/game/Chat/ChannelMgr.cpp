@@ -26,10 +26,11 @@ INSTANTIATE_SINGLETON_1(HordeChannelMgr);
 ChannelMgr* channelMgr(Team team)
 {
     if (sWorld.getConfig(CONFIG_BOOL_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
-        return &MaNGOS::Singleton<AllianceChannelMgr>::Instance();        // cross-faction
+        return &MaNGOS::Singleton<AllianceChannelMgr>::Instance(); // cross-faction
 
     if (team == ALLIANCE)
         return &MaNGOS::Singleton<AllianceChannelMgr>::Instance();
+
     if (team == HORDE)
         return &MaNGOS::Singleton<HordeChannelMgr>::Instance();
 
@@ -38,13 +39,13 @@ ChannelMgr* channelMgr(Team team)
 
 ChannelMgr::~ChannelMgr()
 {
-    for (auto& channel : channels)
+    for (auto const& channel : channels)
         delete channel.second;
 
     channels.clear();
 }
 
-Channel* ChannelMgr::GetJoinChannel(const std::string& name, uint32 channel_id)
+Channel* ChannelMgr::GetJoinChannel(const std::string& name, const uint32 channel_id)
 {
     std::wstring wname;
     Utf8toWStr(name, wname);
@@ -60,7 +61,7 @@ Channel* ChannelMgr::GetJoinChannel(const std::string& name, uint32 channel_id)
     return channels[wname];
 }
 
-Channel* ChannelMgr::GetChannel(const std::string& name, Player* p, bool pkt)
+Channel* ChannelMgr::GetChannel(const std::string& name, Player* p, const bool pkt)
 {
     std::wstring wname;
     Utf8toWStr(name, wname);
@@ -79,6 +80,7 @@ Channel* ChannelMgr::GetChannel(const std::string& name, Player* p, bool pkt)
 
         return nullptr;
     }
+
     return i->second;
 }
 
