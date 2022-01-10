@@ -308,7 +308,10 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recv_data)
         case CHAT_MSG_BATTLEGROUND:
         case CHAT_MSG_BATTLEGROUND_LEADER:
         {
-            recv_data >> msg;
+            if (type == CHAT_MSG_WHISPER && lang == LANG_ADDON)
+                recv_data.read(msg, false);
+            else
+                recv_data >> msg;
 
             if (!ProcessChatMessageAfterSecurityCheck(msg, lang, type))
             {
@@ -538,7 +541,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recv_data)
 
                 if (toPlayer->IsGameMaster() || allowSendWhisper)
                 {
-                    _player->Whisper(msg, lang, player->GetObjectGuid());
+                    GetPlayer()->Whisper(msg, lang, player->GetObjectGuid());
                 }
                 else
                 {
