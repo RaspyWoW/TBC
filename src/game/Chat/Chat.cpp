@@ -1187,7 +1187,6 @@ void ChatHandler::SendGlobalSysMessage(const char* str) const
     // need copy to prevent corruption by strtok call in LineFromMessage original string
     char* buf = mangos_strdup(str);
     char* pos = buf;
-    ObjectGuid const guid = m_session ? m_session->GetPlayer()->GetObjectGuid() : ObjectGuid();
 
     while (char* line = LineFromMessage(pos))
     {
@@ -2769,7 +2768,7 @@ char* ChatHandler::ExtractLinkArg(char** args, char const* const* linkTypes /*= 
     tail += 2;                                              // skip |h
 
     // [name]|h|r
-    if (!*tail || *tail != '[')
+    if (*tail != '[')
         return nullptr;
 
     while (*tail && (*tail != ']' || *(tail + 1) != '|'))   // skip name part
@@ -2778,13 +2777,13 @@ char* ChatHandler::ExtractLinkArg(char** args, char const* const* linkTypes /*= 
     tail += 2;                                              // skip ]|
 
     // h|r
-    if (!*tail || *tail != 'h'  || *(tail + 1) != '|')
+    if (*tail != 'h'  || *(tail + 1) != '|')
         return nullptr;
 
     tail += 2;                                              // skip h|
 
     // r
-    if (!*tail || *tail != 'r' || (*(tail + 1) && !isWhiteSpace(*(tail + 1))))
+    if (*tail != 'r' || (*(tail + 1) && !isWhiteSpace(*(tail + 1))))
         return nullptr;
 
     ++tail;                                                 // skip r

@@ -490,7 +490,7 @@ void Channel::SendChannelOwnerResponse(Player* player) const
 
     ObjectGuid ownerGuid = m_ownerGuid;
 
-    if (const bool visibilityCheck = (player->GetSession()->GetSecurity() == SEC_PLAYER))
+    if (player->GetSession()->GetSecurity() == SEC_PLAYER)
     {
         // PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
         // MODERATOR, GAME MASTER, ADMINISTRATOR can see all

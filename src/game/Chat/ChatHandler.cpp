@@ -569,7 +569,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recv_data)
                 return;
             }
 
-            if (group && group->IsBattleGroup())
+            if (group->IsBattleGroup())
             {
                 group = _player->GetOriginalGroup();
             }

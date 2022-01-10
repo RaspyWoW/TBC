@@ -17,6 +17,7 @@
  */
 
 #include "Chat/ChannelMgr.h"
+#include "Globals/ObjectMgr.h"
 #include "World/World.h"
 
 bool WorldSession::CheckChatChannelNameAndPassword(std::string& name, std::string& pass)
