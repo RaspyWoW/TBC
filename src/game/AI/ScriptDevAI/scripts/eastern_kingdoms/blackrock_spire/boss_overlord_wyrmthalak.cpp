@@ -128,10 +128,11 @@ struct boss_overlordwyrmthalakAI : public ScriptedAI
                 pGuard1->SetWalk(false);
                 pGuard1->GetMotionMaster()->MovePoint(0, afLocations[2][0], afLocations[2][1], afLocations[2][2]);
             }
+
             if (pGuard2)
             {
-                pGuard1->SetWalk(false);
-                pGuard1->GetMotionMaster()->MovePoint(0, afLocations[3][0], afLocations[3][1], afLocations[3][2]);
+                pGuard2->SetWalk(false);
+                pGuard2->GetMotionMaster()->MovePoint(0, afLocations[3][0], afLocations[3][1], afLocations[3][2]);
             }
 
             m_bSummoned = true;
