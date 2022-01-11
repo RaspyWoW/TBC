@@ -1270,12 +1270,6 @@ ChatFlood.MuteTime = 10
 Chat.RestrictedRaidWarnings = 0
 
 #
-#    Channel.RestrictedLanguageMode
-#        Restrict usage of non-latin characters according to RealmZone
-
-Channel.RestrictedLanguageMode = 0
-
-#
 #    Channel.RestrictedLfg
 #        Restrict use LookupForGroup channel only registered in LFG tool players
 

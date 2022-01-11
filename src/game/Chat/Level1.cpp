@@ -1964,6 +1964,7 @@ bool ChatHandler::HandleGMChatCommand(char* args)
             m_session->SendNotification(LANG_GM_CHAT_ON);
         else
             m_session->SendNotification(LANG_GM_CHAT_OFF);
+
         return true;
     }
 

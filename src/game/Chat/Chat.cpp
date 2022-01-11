@@ -3777,12 +3777,6 @@ void ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg const msgtype, char
         }
         default:
         {
-            if (isGM)
-            {
-                data << uint32(strlen(senderName) + 1);
-                data << senderName;
-            }
-
             if (msgtype == CHAT_MSG_CHANNEL)
             {
                 MANGOS_ASSERT(strlen(senderName) > 0);
@@ -3793,6 +3787,12 @@ void ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg const msgtype, char
             data << uint32(strlen(message) + 1);
             data << message;
             data << uint8(chatTag);
+
+            if (isGM)
+            {
+                data << uint32(strlen(senderName) + 1);
+                data << senderName;
+            }
 
             break;
         }

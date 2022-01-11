@@ -1917,7 +1917,7 @@ ChatTagFlags Player::GetChatTag() const
 
 bool Player::isAcceptTickets() const
 {
-    AccountTypes level = GetSession()->GetSecurity();
+    AccountTypes const level = GetSession()->GetSecurity();
 
     if (level > SEC_PLAYER && level >= sWorld.getConfig(CONFIG_UINT32_GM_LEVEL_ACCEPT_TICKETS))
         return (m_ExtraFlags & PLAYER_EXTRA_GM_ACCEPT_TICKETS);
@@ -1927,7 +1927,7 @@ bool Player::isAcceptTickets() const
 
 bool Player::isGMChat() const
 {
-    AccountTypes level = GetSession()->GetSecurity();
+    AccountTypes const level = GetSession()->GetSecurity();
 
     if (level > SEC_PLAYER && level >= sWorld.getConfig(CONFIG_UINT32_GM_LEVEL_CHAT))
         return (m_ExtraFlags & PLAYER_EXTRA_GM_CHAT);
@@ -2540,7 +2540,7 @@ struct SetGameMasterOffHelper
     uint32 faction;
 };
 
-void Player::SetGameMaster(bool on)
+void Player::SetGameMaster(const bool on)
 {
     if (on)
     {
@@ -2595,11 +2595,11 @@ void Player::SetGameMaster(bool on)
     UpdateEverything();
 }
 
-void Player::SetGMVisible(bool on)
+void Player::SetGMVisible(const bool on)
 {
     if (on)
     {
-        m_ExtraFlags &= ~PLAYER_EXTRA_GM_INVISIBLE;         // remove flag
+        m_ExtraFlags &= ~PLAYER_EXTRA_GM_INVISIBLE; // Remove flag
 
         // Reapply stealth/invisibility if active or show if not any
         if (HasAuraType(SPELL_AURA_MOD_STEALTH))
@@ -2611,7 +2611,7 @@ void Player::SetGMVisible(bool on)
     }
     else
     {
-        m_ExtraFlags |= PLAYER_EXTRA_GM_INVISIBLE;          // add flag
+        m_ExtraFlags |= PLAYER_EXTRA_GM_INVISIBLE; // Add flag
 
         SetAcceptWhispers(false);
         SetGameMaster(true);
@@ -20799,7 +20799,7 @@ Player* Player::GetNextRaidMemberWithLowestLifePercentage(float radius, AuraType
     return lowestPercentagePlayer;
 }
 
-bool Player::IsAllowedWhisperFrom(ObjectGuid guid) const
+bool Player::IsAllowedWhisperFrom(ObjectGuid const guid) const
 {
     if (Group const* group = GetGroup())
         if (group->IsMember(guid))

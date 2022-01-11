@@ -30,7 +30,7 @@ Channel::Channel(const std::string& name, uint32 channel_id/* = 0*/)
     {
         m_entry = builtin; // built-in channel entry
         m_announcements = false; // no join/leave announcements by default
-        m_flags = CHANNEL_FLAG_GENERAL; // default for all built-in channels
+        m_flags |= CHANNEL_FLAG_GENERAL; // default for all built-in channels
 
         if (builtin->flags & CHANNEL_DBC_FLAG_TRADE) // for trade channel
             m_flags |= CHANNEL_FLAG_TRADE;
@@ -660,32 +660,6 @@ void Channel::Say(Player* player, const char* text, uint32 lang)
         return;
     }
 
-    if (const uint32 restriction = sWorld.getConfig(CONFIG_UINT32_CHANNEL_RESTRICTED_LANGUAGE_MODE))
-    {
-        bool restricted = false;
-
-        switch (restriction)
-        {
-            case 1:
-                restricted = IsConstant();
-                break;
-            case 2:
-                restricted = IsPublic();
-                break;
-            case 3:
-                restricted = true;
-                break;
-        }
-
-        if (restricted && !sObjectMgr.CheckPublicMessageLanguage(text))
-        {
-            WorldPacket data;
-            MakeMuted(data, m_name);
-            SendToOne(data, guid);
-            return;
-        }
-    }
-
     // send channel message
     if (sWorld.getConfig(CONFIG_BOOL_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
         lang = LANG_UNIVERSAL;
@@ -1082,14 +1056,12 @@ void Channel::SetOwner(ObjectGuid guid, bool exclaim)
             // old owner retains own moderator powers on transfer to another player only
             p_itr->second.SetModerator(bool(guid));
 
-            /*
             const uint8 oldFlag = p_itr->second.flags;
             p_itr->second.SetOwner(false);
 
             WorldPacket data;
             MakeModeChange(data, m_name, guid, oldFlag, GetPlayerFlags(guid));
             SendToAll(data);
-            */
         }
     }
 
