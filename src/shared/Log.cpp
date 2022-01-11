@@ -79,7 +79,7 @@ void Log::InitColors(const std::string& str)
         return;
     }
 
-    uint8 color[LOG_TYPE_MAX];
+    int color[LOG_TYPE_MAX];
 
     std::istringstream ss(str);
 
@@ -103,7 +103,6 @@ void Log::InitColors(const std::string& str)
 void Log::SetColor(const bool stdout_stream, Color color)
 {
 #if PLATFORM == PLATFORM_WINDOWS
-
     static WORD WinColorFG[Color_count] =
     {
         0,                                                  // BLACK
@@ -111,21 +110,21 @@ void Log::SetColor(const bool stdout_stream, Color color)
         FOREGROUND_GREEN,                                   // GREEN
         FOREGROUND_RED | FOREGROUND_GREEN,                  // BROWN
         FOREGROUND_BLUE,                                    // BLUE
-        FOREGROUND_RED |                    FOREGROUND_BLUE,// MAGENTA
+        FOREGROUND_RED | FOREGROUND_BLUE,                   // MAGENTA
         FOREGROUND_GREEN | FOREGROUND_BLUE,                 // CYAN
         FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,// WHITE
-        // YELLOW
-        FOREGROUND_RED | FOREGROUND_GREEN |                   FOREGROUND_INTENSITY,
-        // RED_BOLD
-        FOREGROUND_RED |                                      FOREGROUND_INTENSITY,
-        // GREEN_BOLD
-        FOREGROUND_GREEN |                   FOREGROUND_INTENSITY,
+                                                            // YELLOW
+        FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+                                                            // RED_BOLD
+        FOREGROUND_RED | FOREGROUND_INTENSITY,
+                                                            // GREEN_BOLD
+        FOREGROUND_GREEN | FOREGROUND_INTENSITY,
         FOREGROUND_BLUE | FOREGROUND_INTENSITY,             // BLUE_BOLD
-        // MAGENTA_BOLD
-        FOREGROUND_RED |                    FOREGROUND_BLUE | FOREGROUND_INTENSITY,
-        // CYAN_BOLD
+                                                            // MAGENTA_BOLD
+        FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
+                                                            // CYAN_BOLD
         FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
-        // WHITE_BOLD
+                                                            // WHITE_BOLD
         FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY
     };
 
@@ -143,14 +142,14 @@ void Log::SetColor(const bool stdout_stream, Color color)
 
     enum ANSIFgTextAttr
     {
-        FG_BLACK = 30, FG_RED,  FG_GREEN, FG_BROWN, FG_BLUE,
-        FG_MAGENTA,  FG_CYAN, FG_WHITE, FG_YELLOW
+        FG_BLACK = 30, FG_RED, FG_GREEN, FG_BROWN, FG_BLUE,
+        FG_MAGENTA, FG_CYAN, FG_WHITE, FG_YELLOW
     };
 
     enum ANSIBgTextAttr
     {
-        BG_BLACK = 40, BG_RED,  BG_GREEN, BG_BROWN, BG_BLUE,
-        BG_MAGENTA,  BG_CYAN, BG_WHITE
+        BG_BLACK = 40, BG_RED, BG_GREEN, BG_BROWN, BG_BLUE,
+        BG_MAGENTA, BG_CYAN, BG_WHITE
     };
 
     static uint8 UnixColorFG[Color_count] =
@@ -176,7 +175,7 @@ void Log::SetColor(const bool stdout_stream, Color color)
 #endif
 }
 
-void Log::ResetColor(bool stdout_stream)
+void Log::ResetColor(const bool stdout_stream)
 {
 #if PLATFORM == PLATFORM_WINDOWS
     HANDLE hConsole = GetStdHandle(stdout_stream ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE);
@@ -197,7 +196,7 @@ void Log::SetLogLevel(char* level)
 
     m_logLevel = LogLevel(newLevel);
 
-    printf("LogLevel is %u\n", m_logLevel);
+    printf("LogLevel is %d\n", m_logLevel);
 }
 
 void Log::SetLogFileLevel(char* level)
@@ -211,13 +210,13 @@ void Log::SetLogFileLevel(char* level)
 
     m_logFileLevel = LogLevel(newLevel);
 
-    printf("LogFileLevel is %u\n", m_logFileLevel);
+    printf("LogFileLevel is %d\n", m_logFileLevel);
 }
 
 void Log::Initialize()
 {
     /// Common log files data
-    m_logsDir = sConfig.GetStringDefault("LogsDir");
+    m_logsDir = sConfig.GetStringDefault("LogsDir", "");
     if (!m_logsDir.empty())
     {
         if ((m_logsDir.at(m_logsDir.length() - 1) != '/') && (m_logsDir.at(m_logsDir.length() - 1) != '\\'))
@@ -237,13 +236,13 @@ void Log::Initialize()
     else
     {
         // GM log settings for per account case
-        m_gmlog_filename_format = sConfig.GetStringDefault("GMLogFile");
+        m_gmlog_filename_format = sConfig.GetStringDefault("GMLogFile", "");
         if (!m_gmlog_filename_format.empty())
         {
             bool m_gmlog_timestamp = sConfig.GetBoolDefault("GmLogTimestamp", false);
 
             size_t dot_pos = m_gmlog_filename_format.find_last_of('.');
-            if (dot_pos != std::string::npos)
+            if (dot_pos != m_gmlog_filename_format.npos)
             {
                 if (m_gmlog_timestamp)
                     m_gmlog_filename_format.insert(dot_pos, m_logsTimestamp);
@@ -281,7 +280,7 @@ void Log::Initialize()
     m_includeTime  = sConfig.GetBoolDefault("LogTime", false);
     m_logLevel     = LogLevel(sConfig.GetIntDefault("LogLevel", 0));
     m_logFileLevel = LogLevel(sConfig.GetIntDefault("LogFileLevel", 0));
-    InitColors(sConfig.GetStringDefault("LogColors"));
+    InitColors(sConfig.GetStringDefault("LogColors", ""));
 
     m_logFilter = 0;
     for (auto i = 0; i < LOG_FILTER_COUNT; ++i)
@@ -307,8 +306,8 @@ FILE* Log::openLogFile(char const* configFileName, char const* configTimeStampFl
 
     if (configTimeStampFlag && sConfig.GetBoolDefault(configTimeStampFlag, false))
     {
-        size_t dot_pos = logfn.find_last_of('.');
-        if (dot_pos != std::string::npos)
+        const size_t dot_pos = logfn.find_last_of('.');
+        if (dot_pos != logfn.npos)
             logfn.insert(dot_pos, m_logsTimestamp);
         else
             logfn += m_logsTimestamp;
@@ -317,7 +316,7 @@ FILE* Log::openLogFile(char const* configFileName, char const* configTimeStampFl
     return fopen((m_logsDir + logfn).c_str(), mode);
 }
 
-FILE* Log::openGmlogPerAccount(uint32 account)
+FILE* Log::openGmlogPerAccount(const uint32 account)
 {
     if (m_gmlog_filename_format.empty())
         return nullptr;
@@ -340,7 +339,7 @@ void Log::outTimestamp(FILE* file)
     fprintf(file, "%-4d-%02d-%02d %02d:%02d:%02d ", aTm->tm_year + 1900, aTm->tm_mon + 1, aTm->tm_mday, aTm->tm_hour, aTm->tm_min, aTm->tm_sec);
 }
 
-void Log::outTime() const
+void Log::outTime(FILE* where) const
 {
     time_t t = time(nullptr);
     tm* aTm = localtime(&t);
@@ -364,8 +363,10 @@ std::string Log::GetTimestampStr()
     //       MM     minutes (2 digits 00-59)
     //       SS     seconds (2 digits 00-59)
     char buf[20];
+
     if (snprintf(buf, 20, "%04d-%02d-%02d_%02d-%02d-%02d", aTm->tm_year + 1900, aTm->tm_mon + 1, aTm->tm_mday, aTm->tm_hour, aTm->tm_min, aTm->tm_sec))
         return "";
+
     return std::string(buf);
 }
 
@@ -373,7 +374,7 @@ void Log::outString()
 {
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
     if (m_includeTime)
-        outTime();
+        outTime(stdout);
 
     printf("\n");
 
@@ -398,7 +399,7 @@ void Log::outString(const char* str, ...)
         SetColor(true, m_colors[LogNormal]);
 
     if (m_includeTime)
-        outTime();
+        outTime(stdout);
 
     va_list ap;
 
@@ -463,7 +464,7 @@ void Log::outError(const char* err, ...)
         SetColor(false, m_colors[LogError]);
 
     if (m_includeTime)
-        outTime();
+        outTime(stderr);
 
     va_list ap;
 
@@ -496,7 +497,7 @@ void Log::outErrorDb()
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
 
     if (m_includeTime)
-        outTime();
+        outTime(stderr);
 
     fprintf(stderr, "\n");
 
@@ -528,7 +529,7 @@ void Log::outErrorDb(const char* err, ...)
         SetColor(false, m_colors[LogError]);
 
     if (m_includeTime)
-        outTime();
+        outTime(stderr);
 
     va_list ap;
 
@@ -575,7 +576,7 @@ void Log::outErrorEventAI()
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
 
     if (m_includeTime)
-        outTime();
+        outTime(stderr);
 
     fprintf(stderr, "\n");
 
@@ -606,7 +607,7 @@ void Log::outErrorEventAI(const char* err, ...)
         SetColor(false, m_colors[LogError]);
 
     if (m_includeTime)
-        outTime();
+        outTime(stderr);
 
     va_list ap;
 
@@ -661,7 +662,7 @@ void Log::outBasic(const char* str, ...)
             SetColor(true, m_colors[LogDetails]);
 
         if (m_includeTime)
-            outTime();
+            outTime(stderr);
 
         va_list ap;
         va_start(ap, str);
@@ -701,7 +702,7 @@ void Log::outDetail(const char* str, ...)
             SetColor(true, m_colors[LogDetails]);
 
         if (m_includeTime)
-            outTime();
+            outTime(stderr);
 
         va_list ap;
         va_start(ap, str);
@@ -743,7 +744,7 @@ void Log::outDebug(const char* str, ...)
             SetColor(true, m_colors[LogDebug]);
 
         if (m_includeTime)
-            outTime();
+            outTime(stderr);
 
         va_list ap;
         va_start(ap, str);
@@ -772,7 +773,7 @@ void Log::outDebug(const char* str, ...)
     fflush(stdout);
 }
 
-void Log::outCommand(uint32 account, const char* str, ...)
+void Log::outCommand(const uint32 account, const char* str, ...)
 {
     if (!str)
         return;
@@ -784,7 +785,7 @@ void Log::outCommand(uint32 account, const char* str, ...)
             SetColor(true, m_colors[LogDetails]);
 
         if (m_includeTime)
-            outTime();
+            outTime(stderr);
 
         va_list ap;
         va_start(ap, str);
@@ -858,17 +859,19 @@ void Log::outErrorScriptLib()
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
 
     if (m_includeTime)
-        outTime();
+        outTime(stderr);
 
     fprintf(stderr, "\n");
 
     if (logfile)
     {
         outTimestamp(logfile);
+        
         if (m_scriptLibName)
             fprintf(logfile, "<%s ERROR:> ", m_scriptLibName);
         else
             fprintf(logfile, "<Scripting Library ERROR>: ");
+
         fflush(logfile);
     }
 
@@ -893,7 +896,7 @@ void Log::outErrorScriptLib(const char* err, ...)
         SetColor(false, m_colors[LogError]);
 
     if (m_includeTime)
-        outTime();
+        outTime(stderr);
 
     va_list ap;
 
@@ -938,7 +941,7 @@ void Log::outErrorScriptLib(const char* err, ...)
     fflush(stderr);
 }
 
-void Log::outWorldPacketDump(const char* socket, uint32 opcode, char const* opcodeName, ByteBuffer const& packet, bool incoming)
+void Log::outWorldPacketDump(const char* socket, const uint32 opcode, char const* opcodeName, ByteBuffer const& packet, const bool incoming)
 {
     if (!worldLogfile)
         return;
@@ -964,7 +967,7 @@ void Log::outWorldPacketDump(const char* socket, uint32 opcode, char const* opco
     fflush(worldLogfile);
 }
 
-void Log::outCharDump(const char* str, uint32 account_id, uint32 guid, const char* name)
+void Log::outCharDump(const char* str, const uint32 account_id, const uint32 guid, const char* name)
 {
     std::lock_guard<std::mutex> guard(m_worldLogMtx);
 

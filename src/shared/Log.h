@@ -120,38 +120,47 @@ class Log : public MaNGOS::Singleton<Log, MaNGOS::ClassLevelLockable<Log, std::m
         {
             if (logfile != nullptr)
                 fclose(logfile);
+
             logfile = nullptr;
 
             if (gmLogfile != nullptr)
                 fclose(gmLogfile);
+
             gmLogfile = nullptr;
 
             if (charLogfile != nullptr)
                 fclose(charLogfile);
+
             charLogfile = nullptr;
 
             if (dberLogfile != nullptr)
                 fclose(dberLogfile);
+
             dberLogfile = nullptr;
 
             if (eventAiErLogfile != nullptr)
                 fclose(eventAiErLogfile);
+
             eventAiErLogfile = nullptr;
 
             if (scriptErrLogFile != nullptr)
                 fclose(scriptErrLogFile);
+
             scriptErrLogFile = nullptr;
 
             if (raLogfile != nullptr)
                 fclose(raLogfile);
+
             raLogfile = nullptr;
 
             if (worldLogfile != nullptr)
                 fclose(worldLogfile);
+
             worldLogfile = nullptr;
 
             if (customLogFile != nullptr)
                 fclose(customLogFile);
+
             customLogFile = nullptr;
 
             for (auto& logFile : logFiles)
@@ -168,7 +177,7 @@ class Log : public MaNGOS::Singleton<Log, MaNGOS::ClassLevelLockable<Log, std::m
         void InitColors(const std::string& str);
 
         void out(LogFile t, char const* format, ...) ATTR_PRINTF(3, 4);
-        void outCommand(uint32 account, const char* str, ...) ATTR_PRINTF(3, 4);
+        void outCommand(const uint32 account, const char* str, ...) ATTR_PRINTF(3, 4);
         void outString();                                   // any log level
         // any log level
         void outString(const char* str, ...)      ATTR_PRINTF(2, 3);
@@ -195,21 +204,21 @@ class Log : public MaNGOS::Singleton<Log, MaNGOS::ClassLevelLockable<Log, std::m
         // any log level
         void outErrorScriptLib(const char* err, ...)     ATTR_PRINTF(2, 3);
 
-        void outWorldPacketDump(const char* socket, uint32 opcode, char const* opcodeName, ByteBuffer const& packet, bool incoming);
+        void outWorldPacketDump(const char* socket, const uint32 opcode, char const* opcodeName, ByteBuffer const& packet, const bool incoming);
         // any log level
-        void outCharDump(const char* str, uint32 account_id, uint32 guid, const char* name);
+        void outCharDump(const char* str, const uint32 account_id, const uint32 guid, const char* name);
         void outRALog(const char* str, ...)       ATTR_PRINTF(2, 3);
         void outCustomLog(const char* str, ...)       ATTR_PRINTF(2, 3);
         uint32 GetLogLevel() const { return m_logLevel; }
         void SetLogLevel(char* level);
         void SetLogFileLevel(char* level);
         void SetColor(const bool stdout_stream, Color color);
-        void ResetColor(bool stdout_stream);
-        void outTime() const;
+        void ResetColor(const bool stdout_stream);
+        void outTime(FILE* where) const;
         static void outTimestamp(FILE* file);
         static std::string GetTimestampStr();
-        bool HasLogFilter(uint32 filter) const { return (m_logFilter & filter) != 0; }
-        void SetLogFilter(LogFilters filter, bool on) { if (on) m_logFilter |= filter; else m_logFilter &= ~filter; }
+        bool HasLogFilter(const uint32 filter) const { return (m_logFilter & filter) != 0; }
+        void SetLogFilter(LogFilters filter, const bool on) { if (on) m_logFilter |= filter; else m_logFilter &= ~filter; }
         bool HasLogLevelOrHigher(LogLevel loglvl) const { return m_logLevel >= loglvl || (m_logFileLevel >= loglvl && logfile); }
         bool IsOutCharDump() const { return m_charLog_Dump; }
         bool IsIncludeTime() const { return m_includeTime; }
@@ -224,7 +233,7 @@ class Log : public MaNGOS::Singleton<Log, MaNGOS::ClassLevelLockable<Log, std::m
 
     private:
         FILE* openLogFile(char const* configFileName, char const* configTimeStampFlag, char const* mode);
-        FILE* openGmlogPerAccount(uint32 account);
+        FILE* openGmlogPerAccount(const uint32 account);
 
         FILE* raLogfile;
         FILE* logfile;

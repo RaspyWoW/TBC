@@ -2938,7 +2938,6 @@ void World::LogChat(WorldSession* sess, char const* type, std::string const& msg
     logStmt.Execute();
 }
 
-
 void World::LogTransaction(PlayerTransactionData const& data)
 {
     if (!LogsDatabase || !sWorld.getConfig(CONFIG_BOOL_LOGSDB_TRANSACTIONS))
