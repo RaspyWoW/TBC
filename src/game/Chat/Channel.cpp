@@ -23,8 +23,7 @@
 #include "Chat/Chat.h"
 #include "Anticheat/Anticheat.hpp"
 
-Channel::Channel(const std::string& name, uint32 channel_id/* = 0*/)
-    : m_name(name), m_levelRestricted(true)
+Channel::Channel(const std::string& name, const uint32 channel_id) : m_name(name), m_levelRestricted(true)
 {
     if (ChatChannelsEntry const* builtin = GetChatChannelsEntryFor(name, channel_id))
     {
@@ -51,12 +50,12 @@ Channel::Channel(const std::string& name, uint32 channel_id/* = 0*/)
             m_announcements = false;
         }
 
-        if (m_name == u8"World")
+        if ((m_name == u8"World") || (m_name == u8"Global"))
         {
             m_flags |= CHANNEL_FLAG_GENERAL;
             m_announcements = false;
         }
-        else if (m_name == u8"China" || m_name == u8"中国")
+        else if ((m_name == u8"China") || (m_name == u8"中国"))
         {
             m_flags |= CHANNEL_FLAG_CUSTOM;
             m_announcements = false;
@@ -196,7 +195,7 @@ void Channel::Leave(Player* player, bool send)
         SetOwner(SelectNewOwner(), (m_players.size() > 1));
 }
 
-void Channel::KickOrBan(Player* player, const char* targetName, bool ban)
+void Channel::KickOrBan(Player* player, const char* targetName, const bool ban)
 {
     ObjectGuid guid = player->GetObjectGuid();
 
@@ -509,7 +508,7 @@ void Channel::SendChannelOwnerResponse(Player* player) const
     SendToOne(data, guid);
 }
 
-void Channel::SendChannelListResponse(Player* player, bool display/*= false*/)
+void Channel::SendChannelListResponse(Player* player, const bool display/*= false*/)
 {
     ObjectGuid guid = player->GetObjectGuid();
 
@@ -1029,7 +1028,7 @@ ObjectGuid Channel::SelectNewOwner() const
     return (m_players.empty() ? ObjectGuid() : m_players.begin()->second.player);
 }
 
-void Channel::SetModeFlags(ObjectGuid guid, ChannelMemberFlags flags, bool set)
+void Channel::SetModeFlags(ObjectGuid const guid, ChannelMemberFlags flags, const bool set)
 {
     // Restrict input flags to currently supported by this method
     flags = ChannelMemberFlags(uint8(flags) & (MEMBER_FLAG_MODERATOR | MEMBER_FLAG_MUTED));
@@ -1045,7 +1044,7 @@ void Channel::SetModeFlags(ObjectGuid guid, ChannelMemberFlags flags, bool set)
     }
 }
 
-void Channel::SetOwner(ObjectGuid guid, bool exclaim)
+void Channel::SetOwner(ObjectGuid const guid, const bool exclaim)
 {
     if (m_ownerGuid)
     {
@@ -1088,7 +1087,7 @@ void Channel::SetOwner(ObjectGuid guid, bool exclaim)
     }
 }
 
-bool Channel::SetStatic(bool state, bool command/* = false*/)
+bool Channel::SetStatic(const bool state, const bool command/* = false*/)
 {
     // Only custom channels can be set to static
     if (IsConstant() || !HasFlag(CHANNEL_FLAG_CUSTOM) || m_static == state)
