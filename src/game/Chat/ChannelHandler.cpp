@@ -16,8 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "Globals/ObjectMgr.h"                                      // for normalizePlayerName
 #include "Chat/ChannelMgr.h"
+#include "Globals/ObjectMgr.h"
+#include "World/World.h"
 
 bool WorldSession::CheckChatChannelNameAndPassword(std::string& name, std::string& pass)
 {
@@ -52,6 +53,7 @@ bool WorldSession::CheckChatChannelNameAndPassword(std::string& name, std::strin
         SendPacket(data);
         return false;
     }
+
     return true;
 }
 
@@ -86,7 +88,7 @@ void WorldSession::HandleLeaveChannelOpcode(WorldPacket& recvPacket)
 
     uint32 unk;
     std::string channelname;
-    recvPacket >> unk;                                      // channel id?
+    recvPacket >> unk; // channel id?
     recvPacket >> channelname;
 
     if (channelname.empty())
@@ -96,6 +98,7 @@ void WorldSession::HandleLeaveChannelOpcode(WorldPacket& recvPacket)
     {
         if (Channel* chn = cMgr->GetChannel(channelname, _player))
             chn->Leave(_player, true);
+
         cMgr->LeftChannel(channelname);
     }
 }
@@ -150,6 +153,7 @@ void WorldSession::HandleChannelOwnerOpcode(WorldPacket& recvPacket)
     // recvPacket.hexlike();
     std::string channelname;
     recvPacket >> channelname;
+
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
         if (Channel* chn = cMgr->GetChannel(channelname, _player))
             chn->SendChannelOwnerResponse(_player);
@@ -236,6 +240,10 @@ void WorldSession::HandleChannelInviteOpcode(WorldPacket& recvPacket)
     if (!normalizePlayerName(otp))
         return;
 
+    Player* pPlayer = GetPlayer();
+    if (pPlayer->GetLevel() < sWorld.getConfig(CONFIG_UINT32_CHANNEL_INVITE_MIN_LEVEL))
+        return;
+
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
         if (Channel* chn = cMgr->GetChannel(channelname, _player))
             chn->Invite(_player, otp.c_str());
@@ -298,6 +306,7 @@ void WorldSession::HandleChannelAnnouncementsOpcode(WorldPacket& recvPacket)
     // recvPacket.hexlike();
     std::string channelname;
     recvPacket >> channelname;
+
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
         if (Channel* chn = cMgr->GetChannel(channelname, _player))
             chn->ToggleAnnouncements(_player);
@@ -309,6 +318,7 @@ void WorldSession::HandleChannelModerateOpcode(WorldPacket& recvPacket)
     // recvPacket.hexlike();
     std::string channelname;
     recvPacket >> channelname;
+
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
         if (Channel* chn = cMgr->GetChannel(channelname, _player))
             chn->ToggleModeration(_player);
@@ -320,6 +330,7 @@ void WorldSession::HandleChannelDisplayListQueryOpcode(WorldPacket& recvPacket)
     // recvPacket.hexlike();
     std::string channelname;
     recvPacket >> channelname;
+
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
         if (Channel* chn = cMgr->GetChannel(channelname, _player))
             chn->SendChannelListResponse(_player, true);
@@ -331,9 +342,10 @@ void WorldSession::HandleGetChannelMemberCountOpcode(WorldPacket& recvPacket)
     // recvPacket.hexlike();
     std::string channelname;
     recvPacket >> channelname;
+
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
     {
-        if (Channel* chn = cMgr->GetChannel(channelname, _player))
+        if (Channel const* chn = cMgr->GetChannel(channelname, _player))
         {
             WorldPacket data(SMSG_CHANNEL_MEMBER_COUNT, chn->GetName().size() + 1 + 1 + 4);
             data << chn->GetName();
@@ -350,6 +362,7 @@ void WorldSession::HandleSetChannelWatchOpcode(WorldPacket& recvPacket)
     // recvPacket.hexlike();
     std::string channelname;
     recvPacket >> channelname;
+
     /*if(ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
         if(Channel *chn = cMgr->GetChannel(channelname, _player))
             chn->JoinNotify(_player->GetGUID());*/

@@ -338,6 +338,9 @@ void WorldSession::HandleAuctionPlaceBid(WorldPacket& recv_data)
     if (!auctionId || !price)
         return;                                             // check for cheaters
 
+    if (!sWorld.getConfig(CONFIG_BOOL_GM_ALLOW_TRADES) && GetSecurity() > SEC_PLAYER)
+        return;
+
     AuctionHouseEntry const* auctionHouseEntry = GetCheckedAuctionHouseForAuctioneer(auctioneerGuid);
     if (!auctionHouseEntry)
         return;

@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _CHANNEL_H
-#define _CHANNEL_H
+#pragma once
 
 #include "Common.h"
 #include "Entities/ObjectGuid.h"
@@ -123,20 +122,20 @@ class Channel
             ObjectGuid player;
             uint8 flags;
 
-            inline bool HasFlag(uint8 flag) const { return (flags & flag) != 0; }
-            void SetFlag(uint8 flag, bool state) { if (state) flags |= flag; else flags &= ~flag; }
+            inline bool HasFlag(const uint8 flag) const { return (flags & flag) != 0; }
+            void SetFlag(const uint8 flag, const bool state) { if (state) flags |= flag; else flags &= ~flag; }
             inline bool IsOwner() const { return HasFlag(MEMBER_FLAG_OWNER); }
-            inline void SetOwner(bool state) { SetFlag(MEMBER_FLAG_OWNER, state); }
+            inline void SetOwner(const bool state) { SetFlag(MEMBER_FLAG_OWNER, state); }
             inline bool IsModerator() const { return HasFlag(MEMBER_FLAG_MODERATOR); }
-            inline void SetModerator(bool state) { SetFlag(MEMBER_FLAG_MODERATOR, state); }
+            inline void SetModerator(const bool state) { SetFlag(MEMBER_FLAG_MODERATOR, state); }
             inline bool IsMuted() const { return HasFlag(MEMBER_FLAG_MUTED); }
-            inline void SetMuted(bool state) { SetFlag(MEMBER_FLAG_MUTED, state); }
+            inline void SetMuted(const bool state) { SetFlag(MEMBER_FLAG_MUTED, state); }
         };
 
         typedef std::map<ObjectGuid, PlayerInfo> PlayerList;
 
     public:
-        Channel(const std::string& name, uint32 channel_id = 0);
+        Channel(const std::string& name, const uint32 channel_id = 0);
         std::string GetName() const { return m_name; }
         uint32 GetChannelId() const { return (m_entry ? m_entry->ChannelID : 0); }
         const ChatChannelsEntry* GetChannelEntry() const { return m_entry; }
@@ -151,25 +150,26 @@ class Channel
 
         void Join(Player* player, const char* password);
         void Leave(Player* player, bool send = true);
-        void KickOrBan(Player* player, const char* targetName, bool ban);
+        void KickOrBan(Player* player, const char* targetName, const bool ban);
         void Kick(Player* player, const char* targetName) { KickOrBan(player, targetName, false); }
         void Ban(Player* player, const char* targetName) { KickOrBan(player, targetName, true); }
         void UnBan(Player* player, const char* targetName);
+        bool IsLevelRestricted() const { return m_levelRestricted; }
         void SetPassword(Player* player, const char* password);
-        void SetModeFlags(Player* player, const char* targetName, ChannelMemberFlags flags, bool set);
-        inline void SetModerator(Player* player, const char* targetName, bool set) { SetModeFlags(player, targetName, MEMBER_FLAG_MODERATOR, set); }
-        inline void SetMute(Player* player, const char* targetName, bool set) { SetModeFlags(player, targetName, MEMBER_FLAG_MUTED, set); }
+        void SetModeFlags(Player* player, const char* targetName, ChannelMemberFlags flags, const bool set);
+        inline void SetModerator(Player* player, const char* targetName, const bool set) { SetModeFlags(player, targetName, MEMBER_FLAG_MODERATOR, set); }
+        inline void SetMute(Player* player, const char* targetName, const bool set) { SetModeFlags(player, targetName, MEMBER_FLAG_MUTED, set); }
         void SetOwner(Player* player, const char* targetName);
         void SendChannelOwnerResponse(Player* player) const;
-        void SendChannelListResponse(Player* player, bool display = false);
+        void SendChannelListResponse(Player* player, const bool display = false);
         void ToggleAnnouncements(Player* player);
         void ToggleModeration(Player* player);
         void Say(Player* player, const char* text, uint32 lang);
         void Invite(Player* player, const char* targetName);
         void Voice(ObjectGuid guid1, ObjectGuid guid2) const;
         void DeVoice(ObjectGuid guid1, ObjectGuid guid2) const;
-        void JoinNotify(ObjectGuid guid);                   // invisible notify
-        void LeaveNotify(ObjectGuid guid);                  // invisible notify
+        void JoinNotify(ObjectGuid guid); // Invisible notify
+        void LeaveNotify(ObjectGuid guid); // Invisible notify
 
         // initial packet data (notify type and channel name)
         static void MakeNotifyPacket(WorldPacket& data, const std::string& channel, ChatNotify type);
@@ -212,17 +212,17 @@ class Channel
         static void MakeVoiceOff(WorldPacket& data, const std::string& channel, const ObjectGuid& guid);                                    //+ 0x23
 
         // Make a custom channel acquire global-like properties
-        bool SetStatic(bool state, bool command = false);
+        bool SetStatic(const bool state, const bool command = false);
 
     private:
         void SendToOne(WorldPacket const& data, ObjectGuid receiver) const;
         void SendToAll(WorldPacket const& data) const;
         void SendMessage(WorldPacket const& data, ObjectGuid sender) const;
 
-        bool IsOn(ObjectGuid who) const { return m_players.find(who) != m_players.end(); }
-        bool IsBanned(ObjectGuid guid) const { return m_banned.find(guid) != m_banned.end(); }
+        bool IsOn(ObjectGuid const who) const { return m_players.find(who) != m_players.end(); }
+        bool IsBanned(ObjectGuid const guid) const { return m_banned.find(guid) != m_banned.end(); }
 
-        uint8 GetPlayerFlags(ObjectGuid guid) const
+        uint8 GetPlayerFlags(ObjectGuid const guid) const
         {
             PlayerList::const_iterator p_itr = m_players.find(guid);
             if (p_itr == m_players.end())
@@ -233,8 +233,8 @@ class Channel
 
         ObjectGuid SelectNewOwner() const;
 
-        void SetModeFlags(ObjectGuid guid, ChannelMemberFlags flags, bool set);
-        void SetOwner(ObjectGuid guid, bool exclaim = true);
+        void SetModeFlags(ObjectGuid const guid, ChannelMemberFlags flags, const bool set);
+        void SetOwner(ObjectGuid const guid, const bool exclaim = true);
 
     private:
         std::string                 m_name;
@@ -248,6 +248,5 @@ class Channel
         uint8                       m_flags = CHANNEL_FLAG_NONE;
         // Custom features:
         bool                        m_static = false;
-        bool                        m_realmzone = false;
+        bool                        m_levelRestricted;
 };
-#endif

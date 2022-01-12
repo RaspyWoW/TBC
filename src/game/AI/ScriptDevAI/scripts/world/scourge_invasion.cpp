@@ -934,7 +934,6 @@ struct ScourgeMinion : public CombatAI
         UpdateTimers(diff, m_creature->SelectHostileTarget());
 
         // Instakill every mob nearby, except Players, Pets or NPCs with the same faction.
-        // m_creature->IsValidAttackTarget(m_creature->GetVictim(), true)
         if (m_creature->GetEntry() != NPC_FLAMESHOCKER && m_creature->IsWithinDistInMap(m_creature->GetVictim(), 30.0f) && !m_creature->GetVictim()->IsControlledByPlayer() && m_creature->CanAttack(m_creature->GetVictim()))
             DoCastSpellIfCan(m_creature->GetVictim(), SPELL_SCOURGE_STRIKE, CAST_TRIGGERED);
 

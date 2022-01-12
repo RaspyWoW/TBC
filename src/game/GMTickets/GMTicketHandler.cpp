@@ -97,12 +97,6 @@ void WorldSession::HandleGMTicketCreateOpcode(WorldPacket& recv_data)
     Player* player = GetPlayer();
     const ObjectGuid& guid = player->GetObjectGuid();
 
-    if (!CheckChatMessage(message))
-    {
-        SendGMTicketResult(SMSG_GMTICKET_CREATE, GMTICKET_RESPONSE_CREATE_ERROR);
-        return;
-    }
-
     // Check if open ticket already exists
     if (GMTicket* existing = sTicketMgr.GetTicketByPlayer(guid))
     {
@@ -159,12 +153,6 @@ void WorldSession::HandleGMTicketUpdateTextOpcode(WorldPacket& recv_data)
 
     std::string message;
     recv_data >> message;
-
-    if (!CheckChatMessage(message))
-    {
-        SendGMTicketResult(SMSG_GMTICKET_UPDATETEXT, GMTICKET_RESPONSE_UPDATE_ERROR);
-        return;
-    }
 
     if (sTicketMgr.Update(sTicketMgr.GetTicketByPlayer(GetPlayer()->GetObjectGuid()), message) == GMTicketMgr::COMMAND_RESULT_SUCCESS)
     {
@@ -229,9 +217,6 @@ void WorldSession::HandleGMSurveySubmitOpcode(WorldPacket& recv_data)
 
     std::string comment;
     recv_data >> comment;                                   // Comment
-
-    if (!CheckChatMessage(comment))
-        return;
 
     utf8limit(comment, 11469);                              // Comment max sizes in bytes: Vanilla - 8117:8121, TBC - 11470:11474, Wrath - 593:597
 

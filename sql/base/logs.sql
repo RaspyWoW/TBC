@@ -50,6 +50,63 @@ LOCK TABLES `logs_anticheat` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `logs_characters`
+--
+
+DROP TABLE IF EXISTS `logs_characters`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `logs_characters` (
+  `time` timestamp NOT NULL DEFAULT current_timestamp(),
+  `type` enum('LostSocket','Create','Delete','Login','Logout','') NOT NULL DEFAULT '',
+  `guid` int(11) NOT NULL DEFAULT 0,
+  `account` int(11) NOT NULL DEFAULT 0,
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `ip` varchar(255) NOT NULL DEFAULT '',
+  KEY `guid` (`guid`),
+  KEY `ip` (`ip`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `logs_characters`
+--
+
+LOCK TABLES `logs_characters` WRITE;
+/*!40000 ALTER TABLE `logs_characters` DISABLE KEYS */;
+/*!40000 ALTER TABLE `logs_characters` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `logs_chat`
+--
+
+DROP TABLE IF EXISTS `logs_chat`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `logs_chat` (
+  `time` timestamp NOT NULL DEFAULT current_timestamp(),
+  `type` varchar(32) NOT NULL DEFAULT '',
+  `guid` int(11) NOT NULL DEFAULT 0,
+  `target` int(11) NOT NULL DEFAULT 0,
+  `channelId` int(11) NOT NULL DEFAULT 0,
+  `channelName` varchar(255) NOT NULL DEFAULT '',
+  `message` varchar(255) NOT NULL DEFAULT '',
+  KEY `guid` (`guid`),
+  KEY `target` (`target`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `logs_chat`
+--
+
+LOCK TABLES `logs_chat` WRITE;
+/*!40000 ALTER TABLE `logs_chat` DISABLE KEYS */;
+/*!40000 ALTER TABLE `logs_chat` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `logs_db_version`
 --
 
@@ -100,6 +157,69 @@ LOCK TABLES `logs_spamdetect` WRITE;
 /*!40000 ALTER TABLE `logs_spamdetect` DISABLE KEYS */;
 /*!40000 ALTER TABLE `logs_spamdetect` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `logs_trade`
+--
+
+DROP TABLE IF EXISTS `logs_trade`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `logs_trade` (
+  `time` timestamp NOT NULL DEFAULT current_timestamp(),
+  `type` enum('AuctionBid','AuctionBuyout','SellItem','GM','Mail','QuestMaxLevel','Quest','Loot','Trade','') NOT NULL DEFAULT '',
+  `sender` int(11) unsigned NOT NULL DEFAULT 0,
+  `senderType` int(11) unsigned NOT NULL DEFAULT 0,
+  `senderEntry` int(11) unsigned NOT NULL DEFAULT 0,
+  `receiver` int(11) unsigned NOT NULL DEFAULT 0,
+  `amount` int(11) NOT NULL DEFAULT 0,
+  `data` int(11) NOT NULL DEFAULT 0,
+  KEY `sender` (`sender`),
+  KEY `receiver` (`receiver`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `logs_trade`
+--
+
+LOCK TABLES `logs_trade` WRITE;
+/*!40000 ALTER TABLE `logs_trade` DISABLE KEYS */;
+/*!40000 ALTER TABLE `logs_trade` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `logs_transactions`
+--
+
+DROP TABLE IF EXISTS `logs_transactions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `logs_transactions` (
+  `time` timestamp NOT NULL DEFAULT current_timestamp(),
+  `type` enum('Bid','Buyout','PlaceAuction','Trade','Mail','MailCOD') DEFAULT NULL,
+  `guid1` int(11) unsigned NOT NULL DEFAULT 0,
+  `money1` int(11) unsigned NOT NULL DEFAULT 0,
+  `spell1` int(11) unsigned NOT NULL DEFAULT 0,
+  `items1` varchar(255) NOT NULL DEFAULT '',
+  `guid2` int(11) unsigned NOT NULL DEFAULT 0,
+  `money2` int(11) unsigned NOT NULL DEFAULT 0,
+  `spell2` int(11) unsigned NOT NULL DEFAULT 0,
+  `items2` varchar(255) NOT NULL DEFAULT '',
+  KEY `guid2` (`guid2`),
+  KEY `guid1` (`guid1`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `logs_transactions`
+--
+
+LOCK TABLES `logs_transactions` WRITE;
+/*!40000 ALTER TABLE `logs_transactions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `logs_transactions` ENABLE KEYS */;
+UNLOCK TABLES;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

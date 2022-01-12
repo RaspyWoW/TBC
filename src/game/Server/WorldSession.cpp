@@ -101,7 +101,8 @@ WorldSession::WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8
     m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(sObjectMgr.GetStorageLocaleIndexFor(locale)),
     m_latency(0), m_tutorialState(TUTORIALDATA_UNCHANGED),
     m_timeSyncClockDeltaQueue(6), m_timeSyncClockDelta(0), m_pendingTimeSyncRequests(), m_timeSyncNextCounter(0), m_timeSyncTimer(0),
-    m_accountFlags(accountFlags), m_recruitingFriendId(recruitingFriend), m_isRecruiter(isARecruiter)
+    m_accountFlags(accountFlags), m_recruitingFriendId(recruitingFriend), m_isRecruiter(isARecruiter),
+    m_whisper_targets(id, sWorld.getConfig(CONFIG_UINT32_WHISPER_TARGETS_MAX), sWorld.getConfig(CONFIG_UINT32_WHISPER_TARGETS_BYPASS_LEVEL), sWorld.getConfig(CONFIG_UINT32_WHISPER_TARGETS_DECAY))
     {}
 
 /// WorldSession destructor
@@ -615,6 +616,7 @@ void WorldSession::LogoutPlayer()
 #endif
 
         sLog.outChar("Account: %d (IP: %s) Logout Character:[%s] (guid: %u)", GetAccountId(), GetRemoteAddress().c_str(), _player->GetName(), _player->GetGUIDLow());
+        sWorld.LogCharacter(_player, "Logout");
 
         if (Loot* loot = sLootMgr.GetLoot(_player))
             loot->Release(_player);

@@ -909,6 +909,7 @@ CREATE TABLE `characters` (
   `gender` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `level` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `xp` int(10) unsigned NOT NULL DEFAULT 0,
+  `xp_rate` float NOT NULL DEFAULT '-1.0',
   `money` int(10) unsigned NOT NULL DEFAULT 0,
   `playerBytes` int(10) unsigned NOT NULL DEFAULT 0,
   `playerBytes2` int(10) unsigned NOT NULL DEFAULT 0,
@@ -965,6 +966,7 @@ CREATE TABLE `characters` (
   `deleteInfos_Account` int(11) unsigned DEFAULT NULL,
   `deleteInfos_Name` varchar(12) DEFAULT NULL,
   `deleteDate` bigint(20) unsigned DEFAULT NULL,
+  `allow_export` TINYINT(3) UNSIGNED NOT NULL DEFAULT '1',
   PRIMARY KEY (`guid`),
   KEY `idx_account` (`account`),
   KEY `idx_online` (`online`),
@@ -1997,6 +1999,28 @@ LOCK TABLES `world` WRITE;
 /*!40000 ALTER TABLE `world` DISABLE KEYS */;
 INSERT INTO `world` VALUES (0,''),(1,''),(530,'');
 /*!40000 ALTER TABLE `world` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `whisper_targets`
+--
+CREATE TABLE `whisper_targets` (
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+  `account` int(11) unsigned NOT NULL,
+  `target_guid` int(11) unsigned NOT NULL,
+  `time` int(10) unsigned NOT NULL,
+  UNIQUE KEY `account_target` (`account`,`target_guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `whisper_targets`
+--
+
+LOCK TABLES `whisper_targets` WRITE;
+/*!40000 ALTER TABLE `whisper_targets` DISABLE KEYS */;
+/*!40000 ALTER TABLE `whisper_targets` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --

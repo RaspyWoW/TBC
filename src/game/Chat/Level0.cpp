@@ -356,3 +356,23 @@ bool ChatHandler::HandlePermaPvPCommand(char* args)
 
     return true;
 }
+
+bool ChatHandler::HandleWhisperRestrictionCommand(char* args)
+{
+    if (!*args)
+    {
+        PSendSysMessage("Whisper restriction is %s", GetSession()->GetPlayer()->IsEnabledWhisperRestriction() ? "ON" : "OFF");
+        return true;
+    }
+
+    bool value;
+    if (!ExtractOnOff(&args, value))
+    {
+        SendSysMessage(LANG_USE_BOL);
+        return false;
+    }
+
+    GetSession()->GetPlayer()->SetWhisperRestriction(value);
+    PSendSysMessage("Whisper restriction is %s", value ? "ON" : "OFF");
+    return true;
+}

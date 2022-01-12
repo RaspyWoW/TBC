@@ -1,6 +1,6 @@
-#####################################
-# Playerbot Configuration file      #
-#####################################
+################################
+# Playerbot Configuration file #
+################################
 
 [PlayerbotConf]
 ConfVersion=2018101401
@@ -9,41 +9,51 @@ ConfVersion=2018101401
 # PLAYERBOTAI CONFIGURATION
 #
 #    PlayerbotAI.DisableBots
-#        Disable the bot system
-#        Default: 0 - off
-#                 1 - on
+#        Disable the bot system.
+
+PlayerbotAI.DisableBots = 1
+
 #
 #    PlayerbotAI.DebugWhisper
-#        Enable debug output by whispering master
-#        Default: 0 - off
-#                 1 - on
+#        Enable debug output by whispering master.
+
+PlayerbotAI.DebugWhisper = 0
+
 #
 #    PlayerbotAI.FollowDistanceMin
 #    PlayerbotAI.FollowDistanceMax
-#        Min. and Max. follow distance for bots
-#        Default: 0.5 / 1.0
+#        Min. and Max. follow distance for bots.
+
+PlayerbotAI.FollowDistanceMin = 0.5
+PlayerbotAI.FollowDistanceMax = 1.0
+
 #
 #    PlayerbotAI.MaxNumBots
-#        Limits the number of bots per account (Max 9)
-#        Default: 9
+#        Limits the number of bots per account. (Max 9)
+
+PlayerbotAI.MaxNumBots = 9
+
 #
 #    PlayerbotAI.RestrictBotLevel
-#        Restrict the allowed bot level (Current Max 80)
-#        Default: 80
+#        Restrict the allowed bot level. (Current Max 80)
+
+PlayerbotAI.RestrictBotLevel = 70
+
 #
 #    PlayerbotAI.BotguyQuests
-#        List of Quest ids, any of which, once completed will enable botguy menu on NPCs
-#        List must be enclosed in double quotes ("") and multiple Quest Ids separated by a delimiter(,)
-#        Example: "805,383,2160,54,8350,9313,1656,2159"
-#        Default: "" no quest restriction, memu always displayed by NPCs
+#        List of Quest ids, any of which, once completed will enable botguy menu on NPCs.
+#        List must be enclosed in double quotes ("") and multiple Quest Ids separated by a delimiter(,).
+
+PlayerbotAI.BotguyQuests = ""
+
 #
 #    PlayerbotAI.BotguyCost
-#        Cost (Copper coins) levied on summoning a bot
-#        If player has the cost, botguy menu will be displayed by NPCs
-#        Negative value will disable botguy menu
-#                -1 - Botguy menu off
-#        Default: 0 - no cost, menu always displayed by NPCs
-#                 1...2147483648 cost (in copper) for summoning one bot
+#        Cost (Copper coins) levied on summoning a bot.
+#        If player has the cost, botguy menu will be displayed by NPCs.
+#        (-1 - Disable)
+
+PlayerbotAI.BotguyCost = -1
+
 #
 #    PlayerbotAI.Collect.Combat
 #    PlayerbotAI.Collect.Quest
@@ -51,46 +61,40 @@ ConfVersion=2018101401
 #    PlayerbotAI.Collect.Loot
 #    PlayerbotAI.Collect.Skin
 #    PlayerbotAI.Collect.Objects
-#        Enable collection options for after combat, quest items, profession, all loot, skin, or nearby objects
-#                 0 - off
-#        Default: 1 - on
+#        Enable collection options for after combat, quest items, profession, all loot, skin, or nearby objects.
+
+PlayerbotAI.Collect.Combat = 0
+PlayerbotAI.Collect.Quest = 0
+PlayerbotAI.Collect.Profession = 0
+PlayerbotAI.Collect.Loot = 0
+PlayerbotAI.Collect.Skin = 0
+PlayerbotAI.Collect.Objects = 0
+
 #
 #    PlayerbotAI.Collect.DistanceMax
-#        Maximum distance that can be configured for bots to collect objects. Allowing a higher
-#        distance could increase processor usage for object searching.
-#                 1-100
-#        Default: 50
+#        Maximum distance that can be configured for bots to collect objects.
+#        Allowing a higher distance could increase processor usage for object searching.
+
+PlayerbotAI.Collect.DistanceMax = 50
+
 #
 #    PlayerbotAI.Collect.Distance
 #        Default distance that bots will search within for collection.
-#        Default: 25 (cannot be more than DistanceMax)
+
+PlayerbotAI.Collect.Distance = 25
+
 #
 #    PlayerbotAI.SellGarbage
-#        Allow bots to automatically sell all [GRAY|POOR] quality items as the player activates vendor
-#        Default: 0 - off
-#                 1 - on
+#        Allow bots to automatically sell all [GRAY|POOR] quality items as the player activates vendor.
+
+PlayerbotAI.SellGarbage = 0
+
+#
 #    PlayerbotAI.SellAll.LevelDiff
-#         If 'sell all' command is given prior to selling, bots will sell all low level white items.. this number is the number
-#         of levels LOWER than the bots level the Item must be before bot will sell it.
-#         Default: 10 (10 levels lower than the bot) Don't set to 0 or they'll sell everything! *SellGarbage must be set to 1 to use this*
+#         If 'sell all' command is given prior to selling, bots will sell all low level white items..
+#         This number is the number of levels LOWER than the bots level the Item must be before bot will sell it.
+
+PlayerbotAI.SellAll.LevelDiff = 10
+
 #
 ###################################################################################################################
-
-PlayerbotAI.DisableBots = 0
-PlayerbotAI.DebugWhisper = 0
-PlayerbotAI.FollowDistanceMin = 0.5
-PlayerbotAI.FollowDistanceMax = 1.0
-PlayerbotAI.MaxNumBots = 9
-PlayerbotAI.RestrictBotLevel = 80
-PlayerbotAI.BotguyQuests = ""
-PlayerbotAI.BotguyCost = 0
-PlayerbotAI.Collect.Combat = 1
-PlayerbotAI.Collect.Quest = 1
-PlayerbotAI.Collect.Profession = 1
-PlayerbotAI.Collect.Loot = 1
-PlayerbotAI.Collect.Skin = 1
-PlayerbotAI.Collect.Objects = 1
-PlayerbotAI.Collect.DistanceMax = 50
-PlayerbotAI.Collect.Distance = 25
-PlayerbotAI.SellGarbage = 0
-PlayerbotAI.SellAll.LevelDiff = 10

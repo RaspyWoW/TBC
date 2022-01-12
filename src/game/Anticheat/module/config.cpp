@@ -109,7 +109,7 @@ void AnticheatConfig::loadConfigSettings()
         if (i == CHEAT_TYPE_WARDEN)
         {
             tickCount << GetDetectorName(static_cast<CheatType>(i)) << ".TickCount";
-            tickAction <<GetDetectorName(static_cast<CheatType>(i)) << ".TickAction";
+            tickAction << GetDetectorName(static_cast<CheatType>(i)) << ".TickAction";
             totalCount << GetDetectorName(static_cast<CheatType>(i)) << ".TotalCount";
             totalAction << GetDetectorName(static_cast<CheatType>(i)) << ".TotalAction";
         }

@@ -15,8 +15,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef MANGOSSERVER_CHANNELMGR_H
-#define MANGOSSERVER_CHANNELMGR_H
+
+#pragma once
 
 #include "Common.h"
 #include "Chat/Channel.h"
@@ -32,8 +32,8 @@ class ChannelMgr
 
         const ChannelMap& GetChannels() const { return channels; }
 
-        Channel* GetJoinChannel(const std::string& name, uint32 channel_id);
-        Channel* GetChannel(const std::string& name, Player* p, bool pkt = true);
+        Channel* GetJoinChannel(const std::string& name, const uint32 channel_id);
+        Channel* GetChannel(const std::string& name, Player* p, const bool pkt = true);
         void LeftChannel(const std::string& name);
     private:
         ChannelMap channels;
@@ -43,5 +43,3 @@ class AllianceChannelMgr : public ChannelMgr {};
 class HordeChannelMgr    : public ChannelMgr {};
 
 ChannelMgr* channelMgr(Team team);
-
-#endif
