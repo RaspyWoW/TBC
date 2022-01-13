@@ -5,6 +5,8 @@ REPLACE INTO spell_scripts(Id, ScriptName) VALUES
 (33831,'spell_force_of_nature_summon'),
 (41929,'spell_guardian_aggro_spell'),
 (16739,'spell_orb_of_deception'),
+(34877,'spell_prevent_spell_if_same_aura_on_caster'),
+(35679,'spell_prevent_spell_if_same_aura_on_caster'),
 (41925,'spell_hateful_strike_primer');
 
 -- hateful strike primer - pure serverside - has category cooldo
