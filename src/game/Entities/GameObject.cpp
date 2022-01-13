@@ -210,6 +210,13 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, float x, float
         return false;
     }
 
+    const uint32 max = ObjectGuid::GetMaxCounter(HIGHGUID_GAMEOBJECT);
+    const uint32 generated = guidlow;
+    if (max > generated && (max - generated) < 1000)
+    {
+        sLog.outError("WARNING: APPROACHING MAX GAMEOBJECT GUID. Object: %s, Coords: %0.2f, %0.2f, %0.2f (map: %u)", goinfo->name, x, y, z, map->GetId());
+    }
+
     SetObjectScale(goinfo->size);
 
     SetFloatValue(GAMEOBJECT_POS_X, x);
