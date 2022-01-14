@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __MANGOS_LANGUAGE_H
-#define __MANGOS_LANGUAGE_H
+#pragma once
 
 enum MangosStrings
 {
@@ -825,7 +824,57 @@ enum MangosStrings
     LANG_FAIL_ENTER_SPECTRAL_REALM      = 816,
     //                                    817 used in master branch
     LANG_TELEREQ_QUEST_BLACK_MORASS     = 818,
-    // Room for in-game strings           819-999 not used
+    // Room for in-game strings           819-899 not used
+
+    // Cheat commands
+    LANG_YOU_SET_INSTANT_CAST           = 900,
+    LANG_YOUR_INSTANT_CAST_SET          = 901,
+    LANG_CHEAT_NO_POWER_COST_ON         = 902,
+    LANG_CHEAT_NO_POWER_COST_OFF        = 903,
+    LANG_YOU_SET_NO_POWER_COST          = 904,
+    LANG_YOUR_NO_POWER_COST_SET         = 905,
+    LANG_CHEAT_DEBUFF_IMMUNITY_ON       = 906,
+    LANG_CHEAT_DEBUFF_IMMUNITY_OFF      = 907,
+    LANG_YOU_SET_DEBUFF_IMMUNITY        = 908,
+    LANG_YOUR_DEBUFF_IMMUNITY_SET       = 909,
+    LANG_CHEAT_ALWAYS_CRIT_ON           = 910,
+    LANG_CHEAT_ALWAYS_CRIT_OFF          = 911,
+    LANG_YOU_SET_ALWAYS_CRIT            = 912,
+    LANG_YOUR_ALWAYS_CRIT_SET           = 913,
+    LANG_CHEAT_NO_CAST_CHECK_ON         = 914,
+    LANG_CHEAT_NO_CAST_CHECK_OFF        = 915,
+    LANG_YOU_SET_NO_CAST_CHECK          = 916,
+    LANG_YOUR_NO_CAST_CHECK_SET         = 917,
+    LANG_CHEAT_ALWAYS_PROC_ON           = 918,
+    LANG_CHEAT_ALWAYS_PROC_OFF          = 919,
+    LANG_YOU_SET_ALWAYS_PROC            = 920,
+    LANG_YOUR_ALWAYS_PROC_SET           = 921,
+    LANG_CHEAT_TRIGGER_PASS_ON          = 922,
+    LANG_CHEAT_TRIGGER_PASS_OFF         = 923,
+    LANG_YOU_SET_TRIGGER_PASS           = 924,
+    LANG_YOUR_TRIGGER_PASS_SET          = 925,
+    LANG_CHEAT_IGNORE_TRIGGERS_ON       = 926,
+    LANG_CHEAT_IGNORE_TRIGGERS_OFF      = 927,
+    LANG_YOU_SET_IGNORE_TRIGGERS        = 928,
+    LANG_YOUR_IGNORE_TRIGGERS_SET       = 929,
+    LANG_GOD_ON                         = 930,
+    LANG_GOD_OFF                        = 931,
+    LANG_YOU_SET_WALLCLIMB              = 932,
+    LANG_YOUR_WALLCLIMB_SET             = 933,
+    LANG_CHEAT_NO_CD_ON                 = 934,
+    LANG_CHEAT_NO_CD_OFF                = 935,
+    LANG_YOU_SET_NO_CD                  = 936,
+    LANG_YOUR_NO_CD_SET                 = 937,
+    LANG_YOU_SET_GOD                    = 938,
+    LANG_YOUR_GOD_SET                   = 939,
+    LANG_YOU_SET_IMMUNE_PC              = 940,
+    LANG_YOUR_IMMUNE_PC_SET             = 941,
+    LANG_YOU_SET_IMMUNE_NPC             = 942,
+    LANG_YOUR_IMMUNE_NPC_SET            = 943,
+    LANG_YOU_SET_UNTARGETABLE           = 944,
+    LANG_YOUR_UNTARGETABLE_SET          = 945,
+    LANG_CHEAT_INSTANT_CAST_ON          = 946,
+    LANG_CHEAT_INSTANT_CAST_OFF         = 947,
 
     // Level 4 (CLI only commands)
     LANG_COMMAND_EXIT                   = 1000,
@@ -1098,4 +1147,3 @@ enum MangosStrings
 
     // NOT RESERVED IDS                   12000-1999999999
 };
-#endif

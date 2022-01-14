@@ -709,6 +709,7 @@ class ChatHandler
         bool HandleGetDistanceCommand(char* args);
         bool HandleGetLosCommand(char* args);
         bool HandleModifyStandStateCommand(char* args);
+        bool HandleNameDieCommand(char* args);
         bool HandleDieCommand(char* args);
         bool HandleDamageCommand(char* args);
         bool HandleReviveCommand(char* args);
@@ -796,6 +797,23 @@ class ChatHandler
         bool HandleSunwellGateCounterCommand(char* args);
         bool HandleExpansionRelease(char* args);
 
+        //Cheats
+        bool HandleCheatStatusCommand(char*);
+        bool HandleCheatGodCommand(char*);
+        bool HandleCheatCooldownCommand(char*);
+        bool HandleCheatCastTimeCommand(char*);
+        bool HandleCheatPowerCommand(char*);
+        bool HandleCheatDebuffImmunityCommand(char*);
+        bool HandleCheatAlwaysCritCommand(char*);
+        bool HandleCheatNoCastCheckCommand(char*);
+        bool HandleCheatAlwaysProcCommand(char*);
+        bool HandleCheatTriggerPassCommand(char*);
+        bool HandleCheatIgnoreTriggersCommand(char*);
+        bool HandleCheatImmuneToPlayersCommand(char*);
+        bool HandleCheatImmuneToCreaturesCommand(char*);
+        bool HandleCheatUntargetableCommand(char*);
+        bool HandleCheatWallclimbCommand(char* args);
+
         // Battleground
         bool HandleBattlegroundStartCommand(char* args);
         bool HandleBattlegroundStopCommand(char* args);
@@ -843,6 +861,7 @@ class ChatHandler
         bool HandleSendItemsHelper(MailDraft& draft, char* args);
         bool HandleSendMailHelper(MailDraft& draft, char* args);
         bool HandleSendMoneyHelper(MailDraft& draft, char* args);
+        bool HandleDieHelper(Unit* target);
 
         bool HandleWhisperRestrictionCommand(char* args);
 

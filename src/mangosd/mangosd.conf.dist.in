@@ -1474,6 +1474,12 @@ GM.StartLevel = 1
 GM.LowerSecurity = 0
 
 #
+#    GM.CreditOnDie
+#        Give loot, money, reputation on ".die" command.
+
+GM.CreditOnDie = 1
+
+#
 #    GM.AllowTrades
 #        Allow trades incl. mails, AH, etc.
 

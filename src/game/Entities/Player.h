@@ -435,6 +435,20 @@ enum PlayerFieldBytesOffsets
     PLAYER_FIELD_BYTES_OFFSET_LIFETIME_MAX_PVP_RANK = 3
 };
 
+enum PlayerCheatOptions : uint16
+{
+    PLAYER_CHEAT_GOD             = 0x001,
+    PLAYER_CHEAT_NO_COOLDOWN     = 0x002,
+    PLAYER_CHEAT_NO_CAST_TIME    = 0x004,
+    PLAYER_CHEAT_NO_POWER        = 0x008,
+    PLAYER_CHEAT_DEBUFF_IMMUNITY = 0x010,
+    PLAYER_CHEAT_ALWAYS_CRIT     = 0x020,
+    PLAYER_CHEAT_NO_CHECK_CAST   = 0x040,
+    PLAYER_CHEAT_ALWAYS_PROC     = 0x080,
+    PLAYER_CHEAT_TRIGGER_PASS    = 0x100,
+    PLAYER_CHEAT_IGNORE_TRIGGERS = 0x200
+};
+
 class MirrorTimer
 {
     public:
@@ -1024,6 +1038,29 @@ class Player final : public Unit
         bool isGMVisible() const { return !(m_ExtraFlags & PLAYER_EXTRA_GM_INVISIBLE); }
         void SetGMVisible(const bool on);
         void SetPvPDeath(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_PVP_DEATH; else m_ExtraFlags &= ~PLAYER_EXTRA_PVP_DEATH; }
+
+        void SetCheatGod(const bool on, const bool notify = false);
+        bool IsGod() const { return HasCheatOption(PLAYER_CHEAT_GOD); }
+        void SetCheatNoCooldown(const bool on, const bool notify = false);
+        void SetCheatInstantCast(const bool on, const bool notify = false);
+        void SetCheatNoPowerCost(const bool on, const bool notify = false);
+        void SetCheatDebuffImmunity(const bool on, const bool notify = false);
+        void SetCheatAlwaysCrit(const bool on, const bool notify = false);
+        void SetCheatNoCastCheck(const bool on, const bool notify = false);
+        void SetCheatAlwaysProc(const bool on, const bool notify = false);
+        void SetCheatTriggerPass(const bool on, const bool notify = false);
+        void SetCheatIgnoreTriggers(const bool on, const bool notify = false);
+        uint16 GetCheatOptions() const { return m_cheatOptions; }
+        bool HasCheatOption(PlayerCheatOptions const o) const { return (m_cheatOptions & o); }
+        void EnableCheatOption(PlayerCheatOptions const o) { m_cheatOptions |= o; }
+        void RemoveCheatOption(PlayerCheatOptions const o) { m_cheatOptions &= (~o); }
+        void SetCheatOption(PlayerCheatOptions const o, const bool on)
+        {
+            if (on)
+                EnableCheatOption(o);
+            else
+                RemoveCheatOption(o);
+        }
 
         // 0 = own auction, -1 = enemy auction, 1 = goblin auction
         int GetAuctionAccessMode() const { return m_ExtraFlags & PLAYER_EXTRA_AUCTION_ENEMY ? -1 : (m_ExtraFlags & PLAYER_EXTRA_AUCTION_NEUTRAL ? 1 : 0); }
@@ -2652,6 +2689,8 @@ class Player final : public Unit
 
         std::unordered_map<uint32, TimePoint> m_enteredInstances;
         uint32 m_createdInstanceClearTimer;
+
+        uint16 m_cheatOptions;
 };
 
 inline Player* Object::ToPlayer()

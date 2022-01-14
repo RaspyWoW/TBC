@@ -667,6 +667,8 @@ Player::Player(WorldSession* session): Unit(), m_taxiTracker(*this), m_mover(thi
 
     m_consumedMods = nullptr;
     m_modsSpell = nullptr;
+
+    m_cheatOptions = 0x0;
 }
 
 Player::~Player()
@@ -2617,6 +2619,106 @@ void Player::SetGMVisible(const bool on)
         SetGameMaster(true);
 
         SetVisibility(VISIBILITY_OFF);
+    }
+}
+
+void Player::SetCheatGod(const bool on, const bool notify)
+{
+    SetCheatOption(PLAYER_CHEAT_GOD, on);
+
+    if (notify)
+    {
+        GetSession()->SendNotification(on ? LANG_GOD_ON : LANG_GOD_OFF);
+    }
+}
+
+void Player::SetCheatNoCooldown(const bool on, const bool notify)
+{
+    SetCheatOption(PLAYER_CHEAT_NO_COOLDOWN, on);
+
+    if (notify)
+    {
+        GetSession()->SendNotification(on ? LANG_CHEAT_NO_CD_ON : LANG_CHEAT_NO_CD_OFF);
+    }
+}
+
+void Player::SetCheatInstantCast(const bool on, const bool notify)
+{
+    SetCheatOption(PLAYER_CHEAT_NO_CAST_TIME, on);
+
+    if (notify)
+    {
+        GetSession()->SendNotification(on ? LANG_CHEAT_INSTANT_CAST_ON : LANG_CHEAT_INSTANT_CAST_OFF);
+    }
+}
+
+void Player::SetCheatNoPowerCost(const bool on, const bool notify)
+{
+    SetCheatOption(PLAYER_CHEAT_NO_POWER, on);
+
+    if (notify)
+    {
+        GetSession()->SendNotification(on ? LANG_CHEAT_NO_POWER_COST_ON : LANG_CHEAT_NO_POWER_COST_OFF);
+    }
+}
+
+void Player::SetCheatDebuffImmunity(const bool on, const bool notify)
+{
+    SetCheatOption(PLAYER_CHEAT_DEBUFF_IMMUNITY, on);
+
+    if (notify)
+    {
+        GetSession()->SendNotification(on ? LANG_CHEAT_DEBUFF_IMMUNITY_ON : LANG_CHEAT_DEBUFF_IMMUNITY_OFF);
+    }
+}
+
+void Player::SetCheatAlwaysCrit(const bool on, const bool notify)
+{
+    SetCheatOption(PLAYER_CHEAT_ALWAYS_CRIT, on);
+
+    if (notify)
+    {
+        GetSession()->SendNotification(on ? LANG_CHEAT_ALWAYS_CRIT_ON : LANG_CHEAT_ALWAYS_CRIT_OFF);
+    }
+}
+
+void Player::SetCheatNoCastCheck(const bool on, const bool notify)
+{
+    SetCheatOption(PLAYER_CHEAT_NO_CHECK_CAST, on);
+
+    if (notify)
+    {
+        GetSession()->SendNotification(on ? LANG_CHEAT_NO_CAST_CHECK_ON : LANG_CHEAT_NO_CAST_CHECK_OFF);
+    }
+}
+
+void Player::SetCheatAlwaysProc(const bool on, const bool notify)
+{
+    SetCheatOption(PLAYER_CHEAT_ALWAYS_PROC, on);
+
+    if (notify)
+    {
+        GetSession()->SendNotification(on ? LANG_CHEAT_ALWAYS_PROC_ON : LANG_CHEAT_ALWAYS_PROC_OFF);
+    }
+}
+
+void Player::SetCheatTriggerPass(const bool on, const bool notify)
+{
+    SetCheatOption(PLAYER_CHEAT_TRIGGER_PASS, on);
+
+    if (notify)
+    {
+        GetSession()->SendNotification(on ? LANG_CHEAT_TRIGGER_PASS_ON : LANG_CHEAT_TRIGGER_PASS_OFF);
+    }
+}
+
+void Player::SetCheatIgnoreTriggers(const bool on, const bool notify)
+{
+    SetCheatOption(PLAYER_CHEAT_IGNORE_TRIGGERS, on);
+
+    if (notify)
+    {
+        GetSession()->SendNotification(on ? LANG_CHEAT_IGNORE_TRIGGERS_ON : LANG_CHEAT_IGNORE_TRIGGERS_OFF);
     }
 }
 
