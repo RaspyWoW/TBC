@@ -1,5 +1,10 @@
 
-REPLACE INTO `mangos_string` VALUES
+REPLACE INTO `mangos_string` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`) VALUES
+-- Add texts for personal xp rate command.
+(183, 'You can''t set XP rate below %g!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(184, 'You can''t set XP rate above %g!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(185, 'You have changed %s XP rate to %g times normal experience gain.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+-- Add texts for cheat command.
 (900,'You set instant casting mode to %s for %s.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),
 (901,'Your instant casting mode has been turned %s by %s.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),
 (902,'NO POWER COST cheat is ON',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),
