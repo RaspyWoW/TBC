@@ -821,6 +821,8 @@ struct PreventSpellIfSameAuraOnCaster : public SpellScript
     {
         if (spell->GetCaster()->HasAura(spell->m_spellInfo->Id))
             return SPELL_CAST_OK;
+
+        return SPELL_FAILED_ERROR;
     }
 };
 
