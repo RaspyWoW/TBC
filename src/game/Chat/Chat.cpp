@@ -1029,6 +1029,7 @@ ChatCommand* ChatHandler::getCommandTable()
         { "quit",           SEC_CONSOLE,        true,  &ChatHandler::HandleQuitCommand,                "", nullptr },
         { "mmap",           SEC_ADMINISTRATOR,  false, nullptr,                                        "", mmapCommandTable },
         { "worldstate",     SEC_ADMINISTRATOR,  false, nullptr,                                        "", worldStateTable },
+        { "cheat",          SEC_ADMINISTRATOR,  false, nullptr,                                        "", cheatCommandTable },
         { "xprate",         SEC_PLAYER,         false, &ChatHandler::HandleXpCommand,                  "", nullptr },
         { "permapvp",       SEC_PLAYER,         false, &ChatHandler::HandlePermaPvPCommand,            "", nullptr },
         { "wr",             SEC_PLAYER,         false, &ChatHandler::HandleWhisperRestrictionCommand,  "", nullptr },
