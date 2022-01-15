@@ -1025,7 +1025,14 @@ uint32 Unit::DealDamage(Unit* dealer, Unit* victim, uint32 damage, CleanDamage c
         damage = health - 1;
 
     if (health <= damage)
+    {
+        // Can't kill gods
+        if (Player const* pPlayer = victim->ToPlayer())
+            if (pPlayer->IsGod())
+                return 0;
+
         Kill(dealer, victim, damagetype, spellProto, durabilityLoss, duel_hasEnded);
+    }
     else                                                    // if (health <= damage)
         HandleDamageDealt(dealer, victim, damage, cleanDamage, damagetype, damageSchoolMask, spellProto, duel_hasEnded);
 
@@ -1717,15 +1724,17 @@ void Unit::CalculateSpellDamage(SpellNonMeleeDamage* spellDamageInfo, int32 dama
 {
     SpellSchoolMask damageSchoolMask = spellDamageInfo->schoolMask;
     Unit* pVictim = spellDamageInfo->target;
+    if (!pVictim)
+        return;
 
     if (damage < 0)
         return;
 
-    if (!pVictim)
+    if (!pVictim->IsAlive())
         return;
 
     // Check spell crit chance
-    bool crit = RollSpellCritOutcome(this, pVictim, damageSchoolMask, spellInfo);
+    const bool crit = (RollSpellCritOutcome(this, pVictim, damageSchoolMask, spellInfo) || (IsPlayer() && ToPlayer()->HasCheatOption(PLAYER_CHEAT_ALWAYS_CRIT)));
 
     // damage bonus (per damage class)
     switch (spellInfo->DmgClass)
@@ -2121,8 +2130,11 @@ void Unit::CalculateMeleeDamage(Unit* pVictim, CalcDamageInfo* calcDamageInfo, W
 
 void Unit::DealMeleeDamage(CalcDamageInfo* calcDamageInfo, bool durabilityLoss)
 {
-    if (!calcDamageInfo) return;
+    if (!calcDamageInfo)
+        return;
+
     Unit* victim = calcDamageInfo->target;
+
     if (!victim)
         return;
 
@@ -2209,7 +2221,9 @@ void Unit::DealMeleeDamage(CalcDamageInfo* calcDamageInfo, bool durabilityLoss)
     {
         // If this attack by an NPC dealt some damage from behind to a player, it has a chance to daze victim
         if (CanDazeInCombat(victim) && roll_chance_f(CalculateEffectiveDazeChance(victim, calcDamageInfo->attackType)))
-            CastSpell(victim, 1604, TRIGGERED_OLD_TRIGGERED);
+            if (Player const* pPlayer = victim->ToPlayer())
+                if (!pPlayer->IsGod())
+                    CastSpell(victim, 1604, TRIGGERED_OLD_TRIGGERED);
 
         // update at damage Judgement aura duration that applied by attacker at victim
         if (GetTypeId() == TYPEID_PLAYER)
@@ -2783,6 +2797,9 @@ void Unit::DoExtraAttacks(Unit* pVictim)
 
 MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* pVictim, WeaponAttackType attType, SpellSchoolMask schoolMask) const
 {
+    if (IsPlayer() && ToPlayer()->HasCheatOption(PLAYER_CHEAT_ALWAYS_CRIT))
+        return MELEE_HIT_CRIT;
+
     if (pVictim->GetCombatManager().IsInEvadeMode())
         return MELEE_HIT_EVADE;
 

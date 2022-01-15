@@ -5962,6 +5962,54 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
         {
             switch (m_spellInfo->Id)
             {
+                case 456: // SHOWLABEL Only OFF
+                {
+                    if (Player* pPlayer = ToPlayer(m_caster))
+                        pPlayer->SetGMChat(false);
+                    return;
+                }
+                case 2765: // SHOWLABEL Only ON
+                {
+                    if (Player* pPlayer = ToPlayer(m_caster))
+                        pPlayer->SetGMChat(true);
+                    return;
+                }
+                case 1509: // GM Only OFF
+                {
+                    if (Player* pPlayer = ToPlayer(m_caster))
+                        pPlayer->SetGameMaster(false);
+                    return;
+                }
+                case 18139: // GM Only ON
+                {
+                    if (Player* pPlayer = ToPlayer(m_caster))
+                        pPlayer->SetGameMaster(true);
+                    return;
+                }
+                case 6147: // INVIS Only OFF
+                {
+                    if (Player* pPlayer = ToPlayer(m_caster))
+                        pPlayer->SetGMVisible(true);
+                    return;
+                }
+                case 2763: // INVIS Only ON
+                {
+                    if (Player* pPlayer = ToPlayer(m_caster))
+                        pPlayer->SetGMVisible(false);
+                    return;
+                }
+                case 20114: // BM Only OFF
+                {
+                    if (Player* pPlayer = ToPlayer(m_caster))
+                        pPlayer->SetCheatGod(false, true);
+                    return;
+                }
+                case 20115: // BM Only ON
+                {
+                    if (Player* pPlayer = ToPlayer(m_caster))
+                        pPlayer->SetCheatGod(true, true);
+                    return;
+                }
                 case 5249:                                  // Ice Lock
                 {
                     if (unitTarget)

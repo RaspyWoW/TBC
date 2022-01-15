@@ -2990,6 +2990,10 @@ void Spell::Prepare()
         m_casttime = GetSpellCastTime(m_spellInfo, m_trueCaster, this, true);
     }
 
+    if (Player const* pPlayerCaster = m_caster->ToPlayer())
+        if (pPlayerCaster->HasCheatOption(PLAYER_CHEAT_NO_CAST_TIME))
+            m_casttime = 0;
+
     // set timer base at cast time
     ReSetTimer();
 
@@ -3019,7 +3023,8 @@ void Spell::Prepare()
                 m_caster->SetCurrentCastedSpell(this);
 
             // add gcd server side (client side is handled by client itself)
-            m_caster->AddGCD(*m_spellInfo);
+            if (!m_caster->IsPlayer() || !static_cast<Player*>(m_caster)->HasCheatOption(PLAYER_CHEAT_NO_COOLDOWN))
+                m_caster->AddGCD(*m_spellInfo);
         }
 
         // will show cast bar
@@ -3488,6 +3493,10 @@ void Spell::SendSpellCooldown()
     if (m_spellInfo->HasAttribute(SPELL_ATTR_PASSIVE) || m_channelOnly)
         return;
 
+    if (Player const* pPlayer = m_caster->ToPlayer())
+        if (pPlayer->HasCheatOption(PLAYER_CHEAT_NO_COOLDOWN))
+            return;
+
     m_trueCaster->AddCooldown(*m_spellInfo, m_CastItem ? m_CastItem->GetProto() : nullptr, m_spellInfo->HasAttribute(SPELL_ATTR_DISABLED_WHILE_ACTIVE));
 }
 
@@ -3700,6 +3709,12 @@ void Spell::finish(bool ok)
 
     if (m_notifyAI && m_caster && m_caster->AI())
         m_caster->AI()->OnSpellCastStateChange(this, false);
+
+    if (Player* pPlayer = m_caster->ToPlayer())
+    {
+        if (ok && pPlayer->HasCheatOption(PLAYER_CHEAT_NO_COOLDOWN))
+            pPlayer->SendClearCooldown(m_spellInfo->Id, pPlayer);
+    }
 
     // other code related only to successfully finished spells
     if (!ok)
@@ -4355,6 +4370,10 @@ void Spell::TakePower()
     if (m_CastItem || m_triggeredByAuraSpell || !m_caster)
         return;
 
+    if (Player const* pPlayer = m_caster->ToPlayer())
+        if (pPlayer->HasCheatOption(PLAYER_CHEAT_NO_POWER))
+            return;
+
     // health as power used
     if (m_spellInfo->powerType == POWER_HEALTH)
     {
@@ -4638,6 +4657,9 @@ Unit* Spell::GetPrefilledUnitTargetOrUnitTarget(SpellEffectIndex effIndex) const
 
 SpellCastResult Spell::CheckCast(bool strict)
 {
+    if (m_caster->IsPlayer() && m_caster->ToPlayer()->HasCheatOption(PLAYER_CHEAT_NO_CHECK_CAST))
+        return SPELL_CAST_OK;
+
     // check cooldowns to prevent cheating (ignore passive spells, that client side visual only)
     if (!m_ignoreCooldowns && !m_spellInfo->HasAttribute(SPELL_ATTR_PASSIVE)
             && !m_trueCaster->IsSpellReady(*m_spellInfo, m_CastItem ? m_CastItem->GetProto() : nullptr))
@@ -6439,6 +6461,10 @@ SpellCastResult Spell::CheckPower(bool strict)
 
     m_powerCost = CalculatePowerCost(m_spellInfo, m_caster, this, m_CastItem, !strict);
 
+    if (Player const* pPlayer = m_caster->ToPlayer())
+        if (pPlayer->HasCheatOption(PLAYER_CHEAT_NO_POWER))
+            m_powerCost = 0;
+
     // health as power used - need check health amount
     if (m_spellInfo->powerType == POWER_HEALTH)
     {
@@ -7005,7 +7031,8 @@ bool Spell::CheckTarget(Unit* target, SpellEffectIndex eff, bool targetB, CheckE
         targetType = m_spellInfo->EffectImplicitTargetA[eff], info = SpellTargetInfoTable[m_spellInfo->EffectImplicitTargetA[eff]];
     else
         targetType = m_spellInfo->EffectImplicitTargetB[eff], info = SpellTargetInfoTable[m_spellInfo->EffectImplicitTargetB[eff]];
-    bool scriptTarget = (info.type == TARGET_TYPE_UNIT && info.filter == TARGET_SCRIPT);
+
+    const bool scriptTarget = (info.type == TARGET_TYPE_UNIT && info.filter == TARGET_SCRIPT);
 
     if (target != affectiveCaster)
     {
@@ -7014,8 +7041,7 @@ bool Spell::CheckTarget(Unit* target, SpellEffectIndex eff, bool targetB, CheckE
         if ((!affectiveCaster || target->GetMasterGuid() != affectiveCaster->GetObjectGuid()) && !scriptTarget)
         {
             // unselectable targets skipped in all cases except targets with TARGET_SCRIPT
-            if (!m_ignoreUnselectableTarget && target != m_targets.getUnitTarget() &&
-                    target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+            if (!m_ignoreUnselectableTarget && target != m_targets.getUnitTarget() && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
                 return false;
         }
 
@@ -7526,7 +7552,7 @@ void Spell::ProcSpellAuraTriggers()
                 int32 auraBasePoints = targetTrigger->GetBasePoints();
                 // Calculate chance at that moment (can be depend for example from combo points)
                 int32 chance = m_caster->CalculateSpellEffectValue(target, auraSpellInfo, auraSpellIdx, &auraBasePoints);
-                if (roll_chance_i(chance))
+                if ((m_caster->IsPlayer() && m_caster->ToPlayer()->HasCheatOption(PLAYER_CHEAT_ALWAYS_PROC)) || roll_chance_i(chance))
                 {
                     Spell* spell = new Spell(m_caster, sSpellTemplate.LookupEntry<SpellEntry>(procid), TRIGGERED_OLD_TRIGGERED, ObjectGuid(), nullptr);
                     SpellCastTargets targets;

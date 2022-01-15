@@ -1492,12 +1492,6 @@ GM.AllowTrades = 1
 GM.AllowPublicChannels = 1
 
 #
-#    GM.InvisibleAura
-#        A spell that will be cast when a gm uses ".gm visible off" (Must be aura spell).
-
-GM.InvisibleAura = 37800
-
-#
 #    GM.TicketsQueueStatus
 #        GM tickets queue status on startup, when disabled server will not accept any GM tickets from players.
 

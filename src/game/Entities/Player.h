@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _PLAYER_H
-#define _PLAYER_H
+#pragma once
 
 #include "Common.h"
 #include "Entities/ItemPrototype.h"
@@ -68,12 +67,14 @@ struct AreaTrigger;
 
 typedef std::deque<Mail*> PlayerMails;
 
-#define PLAYER_MAX_SKILLS           127
-#define PLAYER_MAX_DAILY_QUESTS     25
-#define PLAYER_EXPLORED_ZONES_SIZE  128
+constexpr auto PLAYER_MAX_SKILLS{ 127 };
+constexpr auto PLAYER_MAX_DAILY_QUESTS{ 25 };
+constexpr auto PLAYER_EXPLORED_ZONES_SIZE{ 128 };
 
 // TODO: Maybe this can be implemented in configuration file.
-#define PLAYER_NEW_INSTANCE_LIMIT_PER_HOUR 5
+constexpr auto PLAYER_NEW_INSTANCE_LIMIT_PER_HOUR{ 5 };
+
+constexpr auto VISUAL_AURA{ 37800 };
 
 enum EnvironmentFlags
 {
@@ -445,8 +446,7 @@ enum PlayerCheatOptions : uint16
     PLAYER_CHEAT_ALWAYS_CRIT     = 0x020,
     PLAYER_CHEAT_NO_CHECK_CAST   = 0x040,
     PLAYER_CHEAT_ALWAYS_PROC     = 0x080,
-    PLAYER_CHEAT_TRIGGER_PASS    = 0x100,
-    PLAYER_CHEAT_IGNORE_TRIGGERS = 0x200
+    PLAYER_CHEAT_IGNORE_TRIGGERS = 0x100
 };
 
 class MirrorTimer
@@ -1048,7 +1048,6 @@ class Player final : public Unit
         void SetCheatAlwaysCrit(const bool on, const bool notify = false);
         void SetCheatNoCastCheck(const bool on, const bool notify = false);
         void SetCheatAlwaysProc(const bool on, const bool notify = false);
-        void SetCheatTriggerPass(const bool on, const bool notify = false);
         void SetCheatIgnoreTriggers(const bool on, const bool notify = false);
         uint16 GetCheatOptions() const { return m_cheatOptions; }
         bool HasCheatOption(PlayerCheatOptions const o) const { return (m_cheatOptions & o); }
@@ -2773,5 +2772,3 @@ template <class T> void Player::ApplySpellMod(uint32 spellId, SpellModOp op, T& 
     if (totalflat != 0 || totalpct != 100)
         basevalue = T((basevalue + totalflat) * std::max(0, totalpct) / 100);
 }
-
-#endif

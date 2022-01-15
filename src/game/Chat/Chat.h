@@ -807,7 +807,6 @@ class ChatHandler
         bool HandleCheatAlwaysCritCommand(char*);
         bool HandleCheatNoCastCheckCommand(char*);
         bool HandleCheatAlwaysProcCommand(char*);
-        bool HandleCheatTriggerPassCommand(char*);
         bool HandleCheatIgnoreTriggersCommand(char*);
         bool HandleCheatImmuneToPlayersCommand(char*);
         bool HandleCheatImmuneToCreaturesCommand(char*);

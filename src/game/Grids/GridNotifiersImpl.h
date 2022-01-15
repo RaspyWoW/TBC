@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MANGOS_GRIDNOTIFIERSIMPL_H
-#define MANGOS_GRIDNOTIFIERSIMPL_H
+#pragma once
 
 #include "Grids/GridNotifiers.h"
 #include "WorldPacket.h"
@@ -200,9 +199,18 @@ inline void MaNGOS::DynamicObjectUpdater::VisitHelper(Unit* target)
 
     Unit* caster = i_dynobject.GetCaster();
     float radius = i_dynobject.GetRadius();
+
     if (caster->IsPlayerControlled() && !target->IsPlayerControlled())
         radius += target->GetCombatReach();
+
     if (i_dynobject.GetDistance(target, true, DIST_CALC_NONE) > radius * radius)
+        return;
+
+    // Check targets for not_selectable unit flag and remove
+    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SPAWNING | UNIT_FLAG_NOT_SELECTABLE))
+        return;
+
+    if (i_dynobject.GetCasterGuid().IsPlayer() && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PLAYER))
         return;
 
     // Evade target
@@ -665,5 +673,3 @@ void MaNGOS::LocalizedPacketListDo<Builder>::operator()(Player* p)
     for (size_t i = 0; i < data_list->size(); ++i)
         p->SendDirectMessage(*(*data_list)[i]);
 }
-
-#endif                                                      // MANGOS_GRIDNOTIFIERSIMPL_H

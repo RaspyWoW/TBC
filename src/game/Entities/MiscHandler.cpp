@@ -702,6 +702,9 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recv_data)
     DEBUG_LOG("Trigger ID: %u", Trigger_ID);
     Player* player = GetPlayer();
 
+    if (player->HasCheatOption(PLAYER_CHEAT_IGNORE_TRIGGERS))
+        return;
+
     if (player->IsTaxiFlying())
     {
         DEBUG_LOG("Player '%s' (GUID: %u) in flight, ignore Area Trigger ID: %u", player->GetName(), player->GetGUIDLow(), Trigger_ID);
@@ -728,7 +731,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recv_data)
     if (sScriptDevAIMgr.OnAreaTrigger(player, atEntry))
         return;
 
-    uint32 quest_id = sObjectMgr.GetQuestForAreaTrigger(Trigger_ID);
+    const uint32 quest_id = sObjectMgr.GetQuestForAreaTrigger(Trigger_ID);
     if (quest_id && player->IsAlive() && player->IsActiveQuest(quest_id))
     {
         Quest const* pQuest = sObjectMgr.GetQuestTemplate(quest_id);
@@ -771,18 +774,16 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recv_data)
     // ghost resurrected at enter attempt to dungeon with corpse (including fail enter cases)
     if (!player->IsAlive() && targetMapEntry->IsDungeon())
     {
-        auto data = player->CheckAndRevivePlayerOnDungeonEnter(targetMapEntry, at->target_mapId);
+        const auto data = player->CheckAndRevivePlayerOnDungeonEnter(targetMapEntry, at->target_mapId);
 		if (!data.first)
 			return;
+
 		if (data.second)
 			at = data.second;
     }
 
     if (at->conditionId && !sObjectMgr.IsConditionSatisfied(at->conditionId, player, player->GetMap(), nullptr, CONDITION_FROM_AREATRIGGER_TELEPORT))
-    {
-        /*TODO player->GetSession()->SendAreaTriggerMessage("%s", "YOU SHALL NOT PASS!");*/
         return;
-    }
 
     // teleport player (trigger requirement will be checked on TeleportTo)
     player->TeleportTo(at->target_mapId, at->target_X, at->target_Y, at->target_Z, at->target_Orientation, TELE_TO_NOT_LEAVE_TRANSPORT, at);

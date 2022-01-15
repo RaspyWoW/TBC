@@ -669,7 +669,11 @@ bool Unit::IsTriggeredAtSpellProcEvent(ProcExecutionData& data, SpellAuraHolder*
     }
     // Apply chance modifier aura
     if (Player* modOwner = GetSpellModOwner())
+    {
         modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CHANCE_OF_SUCCESS, chance);
+        if (modOwner->HasCheatOption(PLAYER_CHEAT_ALWAYS_PROC))
+            return true;
+    }
 
     // proc chance is reduced by an additional 3.333% per level past 60
     if (holder->IsReducedProcChancePast60() && GetLevel() > 60)

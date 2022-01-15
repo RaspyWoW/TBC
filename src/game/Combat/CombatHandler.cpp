@@ -37,7 +37,6 @@ void WorldSession::HandleAttackSwingOpcode(WorldPacket& recv_data)
     }
 
     Unit* enemy = _player->GetMap()->GetUnit(guid);
-
     if (!enemy)
     {
         sLog.outError("WORLD: %s isn't unit", guid.GetString().c_str());
@@ -45,8 +44,9 @@ void WorldSession::HandleAttackSwingOpcode(WorldPacket& recv_data)
     }
 
     Unit* mover = _player->GetMover();
+    MANGOS_ASSERT(mover);
 
-    if (!mover->CanAttackNow(enemy))
+    if (!mover->CanAttackNow(enemy) || enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SPAWNING | UNIT_FLAG_NOT_SELECTABLE))
     {
         // stop attack state at client
         SendAttackStop(nullptr);

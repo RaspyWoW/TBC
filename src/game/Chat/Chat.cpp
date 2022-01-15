@@ -917,7 +917,6 @@ ChatCommand* ChatHandler::getCommandTable()
         { "criticals",      SEC_ADMINISTRATOR, false, &ChatHandler::HandleCheatAlwaysCritCommand,       "", nullptr },
         { "castchecks",     SEC_ADMINISTRATOR, false, &ChatHandler::HandleCheatNoCastCheckCommand,      "", nullptr },
         { "procs",          SEC_ADMINISTRATOR, false, &ChatHandler::HandleCheatAlwaysProcCommand,       "", nullptr },
-        { "triggerpass",    SEC_ADMINISTRATOR, false, &ChatHandler::HandleCheatTriggerPassCommand,      "", nullptr },
         { "ignoretriggers", SEC_ADMINISTRATOR, false, &ChatHandler::HandleCheatIgnoreTriggersCommand,   "", nullptr },
         { "immunepc",       SEC_ADMINISTRATOR, false, &ChatHandler::HandleCheatImmuneToPlayersCommand,  "", nullptr },
         { "immunenpc",      SEC_ADMINISTRATOR, false, &ChatHandler::HandleCheatImmuneToCreaturesCommand,"", nullptr },
@@ -929,7 +928,7 @@ ChatCommand* ChatHandler::getCommandTable()
 
     static ChatCommand commandTable[] =
     {
-        { "anticheat",      SEC_ADMINISTRATOR,  true,  nullptr,                                        "", anticheatCommandTable},
+        { "anticheat",      SEC_GAMEMASTER,     true,  nullptr,                                        "", anticheatCommandTable},
         { "account",        SEC_MODERATOR,      true,  nullptr,                                        "", accountCommandTable  },
         { "auction",        SEC_ADMINISTRATOR,  false, nullptr,                                        "", auctionCommandTable  },
 #ifdef BUILD_AHBOT

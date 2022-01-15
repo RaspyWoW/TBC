@@ -7357,33 +7357,6 @@ bool ChatHandler::HandleCheatAlwaysProcCommand(char* args)
     return true;
 }
 
-bool ChatHandler::HandleCheatTriggerPassCommand(char* args)
-{
-    if (*args)
-    {
-        bool value;
-        if (!ExtractOnOff(&args, value))
-        {
-            SendSysMessage(LANG_USE_BOL);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        Player* target;
-        if (!ExtractPlayerTarget(&args, &target))
-            return false;
-
-        target->SetCheatTriggerPass(value, true);
-
-        PSendSysMessage(LANG_YOU_SET_TRIGGER_PASS, value ? "on" : "off", GetNameLink(target).c_str());
-
-        if (needReportToTarget(target))
-            ChatHandler(target).PSendSysMessage(LANG_YOUR_TRIGGER_PASS_SET, value ? "on" : "off", GetNameLink().c_str());
-    }
-
-    return true;
-}
-
 bool ChatHandler::HandleCheatIgnoreTriggersCommand(char* args)
 {
     if (*args)
@@ -7576,9 +7549,6 @@ bool ChatHandler::HandleCheatStatusCommand(char* args)
 
     if (target->HasCheatOption(PLAYER_CHEAT_ALWAYS_PROC))
         SendSysMessage("- Always proc");
-
-    if (target->HasCheatOption(PLAYER_CHEAT_TRIGGER_PASS))
-        SendSysMessage("- Areatrigger pass");
 
     if (target->HasCheatOption(PLAYER_CHEAT_IGNORE_TRIGGERS))
         SendSysMessage("- Ignore areatriggers");

@@ -234,7 +234,8 @@ bool ChatHandler::HandleGMVisibleCommand(char* args)
 {
     if (!*args)
     {
-        PSendSysMessage(LANG_YOU_ARE, m_session->GetPlayer()->isGMVisible() ?  GetMangosString(LANG_VISIBLE) : GetMangosString(LANG_INVISIBLE));
+        const bool visible = GetSession()->GetPlayer()->isGMVisible();
+        PSendSysMessage(LANG_YOU_ARE, visible ? GetMangosString(LANG_VISIBLE) : GetMangosString(LANG_INVISIBLE));
         return true;
     }
 
@@ -247,7 +248,7 @@ bool ChatHandler::HandleGMVisibleCommand(char* args)
     }
 
     Player* player = m_session->GetPlayer();
-    SpellEntry const* invisibleAuraInfo = sSpellTemplate.LookupEntry<SpellEntry>(sWorld.getConfig(CONFIG_UINT32_GM_INVISIBLE_AURA));
+    SpellEntry const* invisibleAuraInfo = sSpellTemplate.LookupEntry<SpellEntry>(VISUAL_AURA);
     if (!invisibleAuraInfo || !IsSpellAppliesAura(invisibleAuraInfo))
         invisibleAuraInfo = nullptr;
 
@@ -255,6 +256,7 @@ bool ChatHandler::HandleGMVisibleCommand(char* args)
     {
         player->SetGMVisible(true);
         m_session->SendNotification(LANG_INVISIBLE_VISIBLE);
+
         if (invisibleAuraInfo)
             player->RemoveAurasDueToSpell(invisibleAuraInfo->Id);
     }
@@ -262,6 +264,7 @@ bool ChatHandler::HandleGMVisibleCommand(char* args)
     {
         m_session->SendNotification(LANG_INVISIBLE_INVISIBLE);
         player->SetGMVisible(false);
+
         if (invisibleAuraInfo)
             player->CastSpell(player, invisibleAuraInfo, TRIGGERED_OLD_TRIGGERED);
     }

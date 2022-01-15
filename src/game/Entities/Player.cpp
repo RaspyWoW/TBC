@@ -2599,20 +2599,36 @@ void Player::SetGameMaster(const bool on)
 
 void Player::SetGMVisible(const bool on)
 {
+    SpellEntry const* invisibleAuraInfo = sSpellTemplate.LookupEntry<SpellEntry>(VISUAL_AURA);
+    if (!invisibleAuraInfo || !IsSpellAppliesAura(invisibleAuraInfo))
+        invisibleAuraInfo = nullptr;
+
     if (on)
     {
+        if (invisibleAuraInfo)
+            RemoveAurasDueToSpell(invisibleAuraInfo->Id);
+
         m_ExtraFlags &= ~PLAYER_EXTRA_GM_INVISIBLE; // Remove flag
 
         // Reapply stealth/invisibility if active or show if not any
         if (HasAuraType(SPELL_AURA_MOD_STEALTH))
+        {
             SetVisibility(VISIBILITY_GROUP_STEALTH);
+        }
         else if (HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
+        {
             SetVisibility(VISIBILITY_GROUP_INVISIBILITY);
+        }
         else
+        {
             SetVisibility(VISIBILITY_ON);
+        }
     }
     else
     {
+        if (invisibleAuraInfo)
+            CastSpell(this, invisibleAuraInfo, TRIGGERED_OLD_TRIGGERED);
+
         m_ExtraFlags |= PLAYER_EXTRA_GM_INVISIBLE; // Add flag
 
         SetAcceptWhispers(false);
@@ -2620,6 +2636,8 @@ void Player::SetGMVisible(const bool on)
 
         SetVisibility(VISIBILITY_OFF);
     }
+
+    CharacterDatabase.PExecute("UPDATE `characters` SET `extra_flags` = %u WHERE `guid` = %u", m_ExtraFlags, GetGUIDLow());
 }
 
 void Player::SetCheatGod(const bool on, const bool notify)
@@ -2699,16 +2717,6 @@ void Player::SetCheatAlwaysProc(const bool on, const bool notify)
     if (notify)
     {
         GetSession()->SendNotification(on ? LANG_CHEAT_ALWAYS_PROC_ON : LANG_CHEAT_ALWAYS_PROC_OFF);
-    }
-}
-
-void Player::SetCheatTriggerPass(const bool on, const bool notify)
-{
-    SetCheatOption(PLAYER_CHEAT_TRIGGER_PASS, on);
-
-    if (notify)
-    {
-        GetSession()->SendNotification(on ? LANG_CHEAT_TRIGGER_PASS_ON : LANG_CHEAT_TRIGGER_PASS_OFF);
     }
 }
 
@@ -7991,7 +7999,7 @@ void Player::CastItemCombatSpell(Unit* Target, WeaponAttackType attType, bool sp
 
             ApplySpellMod(spellInfo->Id, SPELLMOD_CHANCE_OF_SUCCESS, chance);
 
-            if (roll_chance_f(chance))
+            if (roll_chance_f(chance) || HasCheatOption(PLAYER_CHEAT_ALWAYS_PROC))
             {
                 if (IsPositiveSpell(spellInfo->Id, this, Target))
                     CastSpell(this, spellInfo->Id, TRIGGERED_OLD_TRIGGERED, item, nullptr, ObjectGuid(), nullptr);
@@ -15746,6 +15754,11 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
                     SetAcceptWhispers(true);
                 break;
         }
+
+        if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+            SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+        SetCheatGod(true);
     }
 
     if (extraflags & PLAYER_EXTRA_WHISP_RESTRICTION)
@@ -21764,6 +21777,9 @@ void Player::SendDuelCountdown(uint32 counter) const
 
 bool Player::IsImmuneToSpellEffect(SpellEntry const* spellInfo, SpellEffectIndex index, bool castOnSelf) const
 {
+    if (HasCheatOption(PLAYER_CHEAT_DEBUFF_IMMUNITY) && spellInfo->EffectApplyAuraName[index] && !IsPositiveEffect(spellInfo, index))
+        return true;
+
     switch (spellInfo->Effect[index])
     {
         case SPELL_EFFECT_ATTACK_ME:
