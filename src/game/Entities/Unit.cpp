@@ -8480,7 +8480,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
         if (InstanceData* mapInstance = GetInstanceData())
             mapInstance->OnCreatureEnterCombat(creature);
 
-        creature->CallAssistance();
+        creature->CallAssistance(enemy);
 
         creature->SetCanCheckForHelp(false);
         creature->m_events.AddEvent(new UnitLambdaEvent(*creature, [](Unit& unit)
