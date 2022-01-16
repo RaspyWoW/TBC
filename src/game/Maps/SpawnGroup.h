@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MANGOS_SPAWN_GROUP_H
-#define MANGOS_SPAWN_GROUP_H
+#pragma once
 
 #include "Platform/Define.h"
 #include "Entities/ObjectGuid.h"
@@ -58,6 +57,7 @@ class SpawnGroup
         SpawnGroupEntry const& m_entry;
         Map& m_map;
         std::map<uint32, uint32> m_objects;
+        std::map<uint32, uint32> m_chosenEntries; // Dungeon saving for entry per dynguid
         uint32 m_objectTypeId;
         bool m_enabled;
 };
@@ -211,5 +211,3 @@ class FormationData
 
         float m_currentSpread;
 };
-
-#endif
