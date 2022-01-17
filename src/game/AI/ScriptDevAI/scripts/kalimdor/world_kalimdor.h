@@ -16,7 +16,6 @@ enum
     // Quest 6134
     GO_GHOST_MAGNET             = 177746,
     NPC_MAGRAMI_SPECTRE         = 11560,
-    SPELL_SPIRIT_SPAWN_OUT      = 17680,
 
     // Quest 8868
     NPC_MINION_OMEN             = 15466,

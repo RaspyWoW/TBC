@@ -22,6 +22,7 @@
 #include "World/WorldStateDefines.h"
 #include "GameEvents/GameEventMgr.h"
 #include "AI/ScriptDevAI/scripts/world/brewfest.h"
+#include "AI/ScriptDevAI/scripts/world/scourge_invasion.h"
 
 /* *********************************************************
  *                  EASTERN KINGDOMS
@@ -235,6 +236,7 @@ struct world_map_eastern_kingdoms : public ScriptedMap, public TimerManager
                 m_npcEntryGuidStore[pCreature->GetEntry()] = pCreature->GetObjectGuid();
                 break;
             case NPC_COSTUMED_ORPHAN_MATRON:
+            case NPC_NECROPOLIS_HEALTH:
                 m_npcEntryGuidCollection[pCreature->GetEntry()].push_back(pCreature->GetObjectGuid());
                 break;
         }
@@ -259,9 +261,24 @@ struct world_map_eastern_kingdoms : public ScriptedMap, public TimerManager
             case NPC_ARGENT_PROTECTOR:
                 _spawnProtector.erase(pCreature->GetObjectGuid());
                 break;
+            case NPC_NECROPOLIS_HEALTH:
+                m_npcEntryGuidCollection.erase(pCreature->GetObjectGuid());
+                break;
             default:
                 _spawn.erase(pCreature->GetObjectGuid());
                 break;
+        }
+    }
+
+    void OnObjectCreate(GameObject* pGo) override
+    {
+        switch (pGo->GetEntry())
+        {
+            case GO_SUMMON_CIRCLE:
+            {
+                m_goEntryGuidCollection[pGo->GetEntry()].push_back(pGo->GetObjectGuid());
+                break;
+            }
         }
     }
 

@@ -16,8 +16,7 @@
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
-#ifndef WORLD_STATE_H
-#define WORLD_STATE_H
+#pragma once
 
 #include "Policies/Singleton.h"
 #include "Globals/ObjectMgr.h"
@@ -518,7 +517,7 @@ class WorldState
         void StartNewInvasion(uint32 zoneId);
         void StartNewCityAttack(uint32 zoneId);
         bool ResumeInvasion(ScourgeInvasionData::InvasionZone& zone);
-        bool SummonMouth(Map* map, ScourgeInvasionData::InvasionZone& zone, Position position);
+        bool SummonMouth(Map* map, ScourgeInvasionData::InvasionZone& zone, Position position, bool newInvasion);
         bool SummonPallid(Map* map, ScourgeInvasionData::CityAttack& zone, Position position, uint32 spawnLoc);
         void HandleActiveZone(uint32 attackTimeVar, uint32 zoneId, uint32 remainingVar, TimePoint now);
 
@@ -642,6 +641,3 @@ class WorldState
 };
 
 #define sWorldState MaNGOS::Singleton<WorldState>::Instance()
-
-#endif
-

@@ -21,6 +21,7 @@
 #include "World/WorldStateDefines.h"
 #include "GameEvents/GameEventMgr.h"
 #include "AI/ScriptDevAI/scripts/world/brewfest.h"
+#include "AI/ScriptDevAI/scripts/world/scourge_invasion.h"
 
 /* *********************************************************
  *                     KALIMDOR
@@ -107,6 +108,7 @@ struct world_map_kalimdor : public ScriptedMap
                 break;
             case NPC_MASKED_ORPHAN_MATRON:
             case NPC_COSTUMED_ORPHAN_MATRON:
+            case NPC_NECROPOLIS_HEALTH:
                 m_npcEntryGuidCollection[pCreature->GetEntry()].push_back(pCreature->GetObjectGuid());
                 break;
         }
@@ -190,6 +192,9 @@ struct world_map_kalimdor : public ScriptedMap
             case NPC_COLOSSUS_OF_ASHI:
                 WorldObject::SpawnCreature(155123, instance);
                 break;
+            case NPC_NECROPOLIS_HEALTH:
+                m_npcEntryGuidCollection.erase(pCreature->GetObjectGuid());
+                break;
         }
     }
 
@@ -215,6 +220,9 @@ struct world_map_kalimdor : public ScriptedMap
                 break;
             case GO_AIR_RIFT:
                 m_aElementalRiftGUIDs[ELEMENTAL_AIR].push_back(pGo->GetObjectGuid());
+                break;
+            case GO_SUMMON_CIRCLE:
+                m_goEntryGuidCollection[pGo->GetEntry()].push_back(pGo->GetObjectGuid());
                 break;
         }
     }

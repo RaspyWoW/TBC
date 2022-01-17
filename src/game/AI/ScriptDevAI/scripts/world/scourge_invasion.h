@@ -14,8 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef SCOURGE_INVASION_H
-#define SCOURGE_INVASION_H
+#pragma once
 
 #include "World/WorldState.h"
 
@@ -250,38 +249,38 @@ enum ScourgeInvasionNPC
 
 enum ScourgeInvasionMisc
 {
-    ITEM_NECROTIC_RUNE                                  = 22484,
+    ITEM_NECROTIC_RUNE = 22484,
 
     // Invisible Objects
-    GOBJ_BUTTRESS_TRAP                                  = 181112, // [Guessed] Those objects can't be sniffed and are not available in any database.
+    GO_BUTTRESS_TRAP = 181112, // [Guessed] Those objects can't be sniffed and are not available in any database.
 
-    GOBJ_SUMMON_MINION_TRAP_GHOST_GHOUL                 = 181111, // Object is not in sniffed files or any database such as WoWHead, but spell 28196 (Create Minion Trap: Ghost/Skeleton) should probably summon them.
-    GOBJ_SUMMON_MINION_TRAP_GHOST_SKELETON              = 181155, // ""
-    GOBJ_SUMMON_MINION_TRAP_GHOUL_SKELETON              = 181156, // ""
+    GO_SUMMON_MINION_TRAP_GHOST_GHOUL = 181111, // Object is not in sniffed files or any database such as WoWHead, but spell 28196 (Create Minion Trap: Ghost/Skeleton) should probably summon them.
+    GO_SUMMON_MINION_TRAP_GHOST_SKELETON = 181155, // ""
+    GO_SUMMON_MINION_TRAP_GHOUL_SKELETON = 181156, // ""
 
     // Visible Objects
-    GOBJ_SUMMON_CIRCLE                                  = 181136,
-    GOBJ_SUMMONER_SHIELD                                = 181142,
+    GO_SUMMON_CIRCLE = 181136,
+    GO_SUMMONER_SHIELD = 181142,
 
-    GOBJ_UNDEAD_FIRE                                    = 181173,
-    GOBJ_UNDEAD_FIRE_AURA                               = 181174,
-    GOBJ_SKULLPILE_01                                   = 181191,
-    GOBJ_SKULLPILE_02                                   = 181192,
-    GOBJ_SKULLPILE_03                                   = 181193,
-    GOBJ_SKULLPILE_04                                   = 181194,
+    GO_UNDEAD_FIRE = 181173,
+    GO_UNDEAD_FIRE_AURA = 181174,
+    GO_SKULLPILE_01 = 181191,
+    GO_SKULLPILE_02 = 181192,
+    GO_SKULLPILE_03 = 181193,
+    GO_SKULLPILE_04 = 181194,
 
-    GOBJ_NECROPOLIS_TINY                                = 181154, // Necropolis (scale 1.0).
-    GOBJ_NECROPOLIS_SMALL                               = 181373, // Necropolis (scale 1.5).
-    GOBJ_NECROPOLIS_MEDIUM                              = 181374, // Necropolis (scale 2.0).
-    GOBJ_NECROPOLIS_BIG                                 = 181215, // Necropolis (scale 2.5).
-    GOBJ_NECROPOLIS_HUGE                                = 181223, // Necropolis (scale 3.5).
-    GOBJ_NECROPOLIS_CITY                                = 181172, // Necropolis at the Citys (scale 2.5).
+    GO_NECROPOLIS_TINY = 181154, // Necropolis (scale 1.0).
+    GO_NECROPOLIS_SMALL = 181373, // Necropolis (scale 1.5).
+    GO_NECROPOLIS_MEDIUM = 181374, // Necropolis (scale 2.0).
+    GO_NECROPOLIS_BIG = 181215, // Necropolis (scale 2.5).
+    GO_NECROPOLIS_HUGE = 181223, // Necropolis (scale 3.5).
+    GO_NECROPOLIS_CITY = 181172, // Necropolis at the Citys (scale 2.5).
 
     // These timers may fail if you set it under 1 minute.
-    ZONE_ATTACK_TIMER_MIN                               = 60 * 45, // 45 min.
-    ZONE_ATTACK_TIMER_MAX                               = 60 * 60, // 60 min.
-    CITY_ATTACK_TIMER_MIN                               = 60 * 45, // 45 min.
-    CITY_ATTACK_TIMER_MAX                               = 60 * 60, // 60 min.
+    ZONE_ATTACK_TIMER_MIN = 60 * 45, // 45 min.
+    ZONE_ATTACK_TIMER_MAX = 60 * 60, // 60 min.
+    CITY_ATTACK_TIMER_MIN = 60 * 45, // 45 min.
+    CITY_ATTACK_TIMER_MAX = 60 * 60, // 60 min.
 };
 
 enum ScourgeInvasionNPCEvents
@@ -417,5 +416,3 @@ enum ScourgeInvasionLang
 
     BCT_CULTIST_ENGINEER_GOSSIP                        = 8436, // 12111 - This cultist is in a deep trance...
 };
-
-#endif
