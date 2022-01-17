@@ -264,4 +264,5 @@ private:
     bool HandleMasterDistanceCheck(Unit& owner, const uint32& time_diff);
     FormationSlotDataSPtr m_slot;
     bool m_headingToMaster;
+    float m_lastAngle;
 };
