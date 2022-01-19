@@ -2004,9 +2004,11 @@ UNLOCK TABLES;
 --
 -- Table structure for table `whisper_targets`
 --
-CREATE TABLE `whisper_targets` (
+
+DROP TABLE IF EXISTS `whisper_targets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `whisper_targets` (
   `account` int(11) unsigned NOT NULL,
   `target_guid` int(11) unsigned NOT NULL,
   `time` int(10) unsigned NOT NULL,
