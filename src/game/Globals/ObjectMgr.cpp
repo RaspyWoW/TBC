@@ -4982,7 +4982,7 @@ void ObjectMgr::LoadQuestLocales()
     {
         BarGoLink bar(1);
         bar.step();
-        sLog.outString(">> Loaded 0 Quest locale strings. DB table `locales_quest` is empty.");
+        sLog.outString(">> Loaded 0 NpcText locale strings. DB table `locales_quest` is empty.");
         return;
     }
 
