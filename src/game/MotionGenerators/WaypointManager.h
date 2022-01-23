@@ -102,9 +102,7 @@ class WaypointManager
                     wpMap = &m_pathMap;
                     break;
                 case PATH_FROM_ENTRY:
-                    if (pathId >= 0xFF || pathId < 0)
-                        return nullptr;
-                    key = (entry << 8) + pathId;
+                    key = entry;
                     wpMap = &m_pathTemplateMap;
                     break;
                 case PATH_FROM_EXTERNAL:
