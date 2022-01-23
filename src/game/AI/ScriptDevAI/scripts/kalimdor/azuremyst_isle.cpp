@@ -215,68 +215,82 @@ struct npc_magwinAI : public npc_escortAI
         switch (uiPointId)
         {
             case 1:
+            {
                 m_creature->SetStandState(UNIT_STAND_STATE_STAND);
                 DoScriptText(SAY_START, m_creature);
+
+                if (Player* pPlayer = GetPlayerForEscort())
+                    m_creature->SetFacingToObject(pPlayer);
+
                 break;
+            }
             case 21:
+            {
                 DoScriptText(SAY_PROGRESS, m_creature);
                 break;
+            }
             case 34:
+            {
                 SetRun();
                 DoScriptText(SAY_END1, m_creature);
+
                 if (Player* pPlayer = GetPlayerForEscort())
                     pPlayer->RewardPlayerAndGroupAtEventExplored(QUEST_A_CRY_FOR_HELP, m_creature);
+
                 if (Creature* pFather = GetClosestCreatureWithEntry(m_creature, NPC_COWLEN, 30.0f))
                 {
                     pFather->SetStandState(UNIT_STAND_STATE_STAND);
                     pFather->SetFacingToObject(m_creature);
                 }
                 break;
+            }
             case 35:
+            {
                 if (Creature* pFather = GetClosestCreatureWithEntry(m_creature, NPC_COWLEN, 30.0f))
                     DoScriptText(SAY_DAUGHTER, pFather);
                 break;
+            }
             case 36:
+            {
                 DoScriptText(EMOTE_HUG, m_creature);
                 break;
+            }
             case 37:
+            {
                 if (Player* pPlayer = GetPlayerForEscort())
                     DoScriptText(SAY_END2, m_creature, pPlayer);
                 break;
+            }
             case 38:
+            {
                 if (Creature* pFather = GetClosestCreatureWithEntry(m_creature, NPC_COWLEN, 30.0f))
                 {
                     pFather->SetStandState(UNIT_STAND_STATE_SIT);
                     pFather->GetMotionMaster()->MoveTargetedHome();
                 }
+
                 SetEscortPaused(true);
                 m_creature->ForcedDespawn(10000);
                 m_creature->GetMotionMaster()->MoveRandomAroundPoint(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 3.0f);
                 break;
+            }
         }
     }
 
-    void ReceiveAIEvent(AIEventType eventType, Unit* /*pSender*/, Unit* pInvoker, uint32 uiMiscValue) override
+    void StartEvent(Player* player, Quest const* quest)
     {
-        if (eventType == AI_EVENT_START_ESCORT && pInvoker->GetTypeId() == TYPEID_PLAYER)
-        {
-            m_creature->SetFactionTemporary(FACTION_ESCORT_A_NEUTRAL_ACTIVE, TEMPFACTION_RESTORE_RESPAWN | TEMPFACTION_TOGGLE_IMMUNE_TO_NPC);
-            Start(false, (Player*)pInvoker, GetQuestTemplateStore(uiMiscValue));
-        }
+        m_creature->SetFactionTemporary(FACTION_ESCORT_A_NEUTRAL_ACTIVE, TEMPFACTION_RESTORE_RESPAWN | TEMPFACTION_TOGGLE_IMMUNE_TO_NPC);
+        Start(false, player, quest);
     }
 };
 
 bool QuestAccept_npc_magwin(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
 {
     if (pQuest->GetQuestId() == QUEST_A_CRY_FOR_HELP)
-        pCreature->AI()->SendAIEvent(AI_EVENT_START_ESCORT, pPlayer, pCreature, pQuest->GetQuestId());
+        if (npc_magwinAI* ai = dynamic_cast<npc_magwinAI*>(pCreature->AI()))
+            ai->StartEvent(pPlayer, pQuest);
 
     return true;
-}
-
-UnitAI* GetAI_npc_magwinAI(Creature* pCreature)
-{
-    return new npc_magwinAI(pCreature);
 }
 
 void AddSC_azuremyst_isle()
@@ -288,7 +302,7 @@ void AddSC_azuremyst_isle()
 
     pNewScript = new Script;
     pNewScript->Name = "npc_magwin";
-    pNewScript->GetAI = &GetAI_npc_magwinAI;
+    pNewScript->GetAI = &GetNewAIInstance<npc_magwinAI>;
     pNewScript->pQuestAcceptNPC = &QuestAccept_npc_magwin;
     pNewScript->RegisterSelf();
 }
