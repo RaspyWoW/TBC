@@ -14,8 +14,7 @@
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef COMBAT_AI_H
-#define COMBAT_AI_H
+#pragma once
 
 #include "Entities/Creature.h"
 #include "AI/ScriptDevAI/include/sc_creature.h"
@@ -43,6 +42,7 @@ class CombatAI : public ScriptedAI
             AddOnKillText(fargs...);
         }
         void KilledUnit(Unit* /*victim*/) override;
+        // virtual void ExecuteAction(uint32 action) {}
     private:
         ObjectGuid m_storedTarget;
 
@@ -51,5 +51,3 @@ class CombatAI : public ScriptedAI
 
         bool m_stopTargeting;
 };
-
-#endif

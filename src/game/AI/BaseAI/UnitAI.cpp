@@ -688,6 +688,35 @@ float UnitAI::CalculateSpellRange(SpellEntry const* spellInfo) const
     return maxRange;
 }
 
+CreatureList UnitAI::DoFindFriendlyMissingBuff(float range, uint32 spellId, bool inCombat, bool self) const
+{
+    return DoFindFriendlyMissingBuff(sSpellTemplate.LookupEntry<SpellEntry>(spellId), inCombat, self);
+}
+
+CreatureList UnitAI::DoFindFriendlyMissingBuff(SpellEntry const* spellInfo, bool inCombat, bool self) const
+{
+    CreatureList list;
+    const float maxRange = CalculateSpellRange(spellInfo);
+    if (inCombat == false)
+    {
+        MaNGOS::FriendlyMissingBuffInRangeInCombatCheck u_check(m_unit, maxRange, spellInfo->Id);
+        MaNGOS::CreatureListSearcher<MaNGOS::FriendlyMissingBuffInRangeInCombatCheck> searcher(list, u_check);
+        Cell::VisitGridObjects(m_unit, searcher, maxRange);
+    }
+    else if (inCombat == true)
+    {
+        MaNGOS::FriendlyMissingBuffInRangeNotInCombatCheck u_check(m_unit, maxRange, spellInfo->Id);
+        MaNGOS::CreatureListSearcher<MaNGOS::FriendlyMissingBuffInRangeNotInCombatCheck> searcher(list, u_check);
+
+        Cell::VisitGridObjects(m_unit, searcher, maxRange);
+    }
+
+    if (!self) // just fooling compiler if non-unit - safe because we dont access any actual members/functions
+        list.erase(std::remove(list.begin(), list.end(), (Creature*)m_unit), list.end());
+
+    return list;
+}
+
 CreatureList UnitAI::DoFindFriendlyEligibleDispel(uint32 spellId, bool self) const
 {
     return DoFindFriendlyEligibleDispel(sSpellTemplate.LookupEntry<SpellEntry>(spellId), self);
@@ -1213,6 +1242,21 @@ std::pair<bool, Unit*> UnitAI::ChooseTarget(CreatureSpellListTargeting* targetDa
                 case SPELL_LIST_TARGET_DISPELLABLE_FRIENDLY_NO_SELF:
                 {
                     CreatureList list = DoFindFriendlyEligibleDispel(spellId, targetData->Id == SPELL_LIST_TARGET_DISPELLABLE_FRIENDLY);
+                    if (list.empty())
+                        result = false;
+                    else
+                    {
+                        auto itr = list.begin();
+                        std::advance(itr, urand(0, list.size() - 1));
+                        target = *itr;
+                    }
+                    break;
+                }
+                case SPELL_LIST_TARGET_FRIENDLY_MISSING_BUFF:
+                case SPELL_LIST_TARGET_FRIENDLY_MISSING_BUFF_NO_SELF:
+                {
+                    SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spellId);
+                    CreatureList list = DoFindFriendlyMissingBuff(spellInfo, true, targetData->Id == SPELL_LIST_TARGET_FRIENDLY_MISSING_BUFF);
                     if (list.empty())
                         result = false;
                     else

@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CREATURE_SPELL_LIST_H
-#define CREATURE_SPELL_LIST_H
+#pragma once
 
 #include "Platform/Define.h"
 #include <map>
@@ -38,6 +37,8 @@ enum SpellListTargetingHardcoded
     SPELL_LIST_TARGET_SELF    = 2,
     SPELL_LIST_TARGET_DISPELLABLE_FRIENDLY = 3,
     SPELL_LIST_TARGET_DISPELLABLE_FRIENDLY_NO_SELF = 4,
+    SPELL_LIST_TARGET_FRIENDLY_MISSING_BUFF = 5,
+    SPELL_LIST_TARGET_FRIENDLY_MISSING_BUFF_NO_SELF = 6,
     SPELL_LIST_HARDCODED_MAX  = 100,
 };
 
@@ -87,5 +88,3 @@ struct CreatureSpellListContainer
     std::map<uint32, CreatureSpellList> spellLists;
     std::map<uint32, CreatureSpellListTargeting> targeting;
 };
-
-#endif
