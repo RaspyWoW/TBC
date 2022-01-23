@@ -112,6 +112,7 @@ struct npc_kelerun_bloodmournAI : public ScriptedAI
 
     void StartEvent(Player* player)
     {
+        Reset();
         m_creature->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
         m_bIsEventInProgress = true;
         m_playerGuid = player->GetObjectGuid();
