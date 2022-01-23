@@ -290,13 +290,13 @@ static const DialogueEntry aEventDialogue[] =
     {SAY_AKAMA_LEAVE,           NPC_AKAMA,              0},
     // Maiev cutscene
     {DUMMY_EMOTE_ID_4,          0,                      1500},
-    {SAY_ILLIDAN_SPEECH_6,      NPC_ILLIDAN_STORMRAGE,  7000},
+    {SAY_ILLIDAN_SPEECH_6,      NPC_ILLIDAN_STORMRAGE,  7500},
     {SPELL_SUMMMON_MAIEV,       0,                      1000},
-    {SAY_MAIEV_SPEECH_7,        NPC_MAIEV_SHADOWSONG,   2000},
+    {SAY_MAIEV_SPEECH_7,        NPC_MAIEV_SHADOWSONG,   2500},
     {EMOTE_ONESHOT_EXCLAMATION, 0,                      6000},
-    {SAY_ILLIDAN_SPEECH_8,      NPC_ILLIDAN_STORMRAGE,  4000},
+    {SAY_ILLIDAN_SPEECH_8,      NPC_ILLIDAN_STORMRAGE,  4500},
     {EMOTE_STATE_READY1H,       0,                      2000},
-    {SAY_MAIEV_SPEECH_9,        NPC_MAIEV_SHADOWSONG,   2000},
+    {SAY_MAIEV_SPEECH_9,        NPC_MAIEV_SHADOWSONG,   2500},
     {EMOTE_ONESHOT_YES,         0,                      2500},
     {EMOTE_ONESHOT_ROAR,        0,                      2500},
     {DUMMY_EMOTE_ID_5,          0,                      1000},
@@ -762,30 +762,39 @@ struct boss_illidan_stormrageAI : public CombatAI, private DialogueHelper
         switch (summoned->GetEntry())
         {
             case NPC_FLAME_CRASH:
+            {
                 summoned->SetCanEnterCombat(false);
                 summoned->AI()->SetCombatMovement(false);
                 summoned->CastSpell(nullptr, SPELL_INSTANT_BLADE_BIRTH, TRIGGERED_NONE);
                 summoned->AI()->DoCastSpellIfCan(nullptr, SPELL_FLAME_CRASH_EFFECT, CAST_TRIGGERED | CAST_AURA_NOT_PRESENT);
                 break;
+            }
             case NPC_BLADE_OF_AZZINOTH:
+            {
                 summoned->CastSpell(nullptr, SPELL_INSTANT_BLADE_BIRTH, TRIGGERED_NONE);
                 summoned->CastSpell(nullptr, SPELL_RANGE_MARKER, TRIGGERED_OLD_TRIGGERED);
                 summoned->CastSpell(nullptr, SPELL_SUMMON_TEAR_AZZINOTH, TRIGGERED_OLD_TRIGGERED);
                 m_bladesGuidList.push_back(summoned->GetObjectGuid());
                 break;
+            }
             case NPC_ILLIDAN_TARGET:
+            {
                 summoned->AI()->SetCombatMovement(false);
                 summoned->AI()->SetReactState(REACT_PASSIVE);
                 summoned->CastSpell(nullptr, SPELL_EYE_BLAST_TRIGGER, TRIGGERED_OLD_TRIGGERED);
                 summoned->SetCanEnterCombat(false);
                 DoCastSpellIfCan(summoned, SPELL_EYE_BLAST_DUMMY);
                 break;
+            }
             case NPC_SHADOW_DEMON:
                 break;
             case NPC_MAIEV_SHADOWSONG:
+            {
                 summoned->SetFacingToObject(m_creature);
+                m_creature->SetFacingToObject(summoned);
                 m_creature->SetTarget(summoned);
                 break;
+            }
             case NPC_CAGE_TRAP_TRIGGER_1:
             case NPC_CAGE_TRAP_TRIGGER_2:
             case NPC_CAGE_TRAP_TRIGGER_3:
@@ -794,8 +803,10 @@ struct boss_illidan_stormrageAI : public CombatAI, private DialogueHelper
             case NPC_CAGE_TRAP_TRIGGER_6:
             case NPC_CAGE_TRAP_TRIGGER_7:
             case NPC_CAGE_TRAP_TRIGGER_8:
+            {
                 m_cageTrapVisualGuids.push_back(summoned->GetObjectGuid());
                 break;
+            }
         }
     }
 
