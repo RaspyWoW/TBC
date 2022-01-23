@@ -142,9 +142,6 @@ void instance_zulaman::OnCreatureCreate(Creature* creature)
             else
                 sDrumTriggerGuidSet.insert(creature->GetObjectGuid());
             break;
-        case NPC_REINFORCEMENT:
-            creature->SetInCombatWithZone();
-            break;
         case NPC_DRAGONHAWK_EGG:
             creature->SetCorpseDelay(5);
             break;
@@ -248,14 +245,23 @@ void instance_zulaman::OnCreatureRespawn(Creature* creature)
 	switch (creature->GetEntry())
 	{
 		case NPC_HATCHLING:
-			if (Creature * janalai = GetSingleCreatureFromStorage(NPC_JANALAI))
-				janalai->AI()->JustSummoned(creature);
-			break;
+        {
+            if (Creature* janalai = GetSingleCreatureFromStorage(NPC_JANALAI))
+                janalai->AI()->JustSummoned(creature);
+            break;
+        }
         case NPC_WORLD_TRIGGER_NOT_IMMUNE_PC:
+        {
             creature->SetCanEnterCombat(false);
             creature->AI()->SetReactState(REACT_PASSIVE);
             creature->AI()->SetCombatMovement(false);
             break;
+        }
+        case NPC_REINFORCEMENT:
+        {
+            creature->SetInCombatWithZone();
+            break;
+        }
 	}
 }
 
