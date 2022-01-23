@@ -1152,22 +1152,11 @@ void ObjectMgr::LoadSpawnGroups()
                 continue;
             }
 
-            //todo this check have to be done after loading movement_table (load movement before spawn_group)
-//             if (fEntry->MovementID)
-//             {
-//                 auto path = sWaypointMgr.GetPathFromOrigin(fEntry->MovementID, 0, 0, WaypointPathOrigin::PATH_FROM_MOVEMENT_TEMPLATE);
-//                 if (!path)
-//                 {
-//                     sLog.outErrorDb("LoadSpawnGroups: No path ID(%u) found for formation ID(%u) in `movement_template` ID:%u. Ignoring movement.", fEntry->MovementID, fEntry->GroupId);
-//                     fEntry->MovementID = 0;
-//                 }
-//             }
-
             fEntry->Type = static_cast<SpawnGroupFormationType>(fType);
 
-            if (fEntry->Spread > 15.0f || fEntry->Spread < 0.5f)
+            if (fEntry->Spread > 15.0f || fEntry->Spread < -15)
             {
-                sLog.outErrorDb("LoadSpawnGroups: Invalid spread value (%5.2f) should be between (0.5..15) in formation ID:%u . Skipping.", fEntry->Spread, fEntry->GroupId);
+                sLog.outErrorDb("LoadSpawnGroups: Invalid spread value (%5.2f) should be between (-15..15) in formation ID:%u . Skipping.", fEntry->Spread, fEntry->GroupId);
                 continue;
             }
 
