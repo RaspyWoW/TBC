@@ -127,8 +127,6 @@ class FormationSlotData
         bool CanFollow() const { return m_canFollow; }
         void SetCanFollow(bool canFollow) { m_canFollow = canFollow; }
 
-        bool& GetRecomputePosition() { return m_recomputePosition; }
-
         CreatureGroup* GetCreatureGroup() { return m_creatureGroup; }
         FormationData* GetFormationData() { return m_creatureGroup->GetFormationData(); }
         void SetOwner(Unit* owner) { m_owner = owner; }
