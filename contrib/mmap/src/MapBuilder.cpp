@@ -73,19 +73,20 @@ namespace MMAP
     }
 
     MapBuilder::MapBuilder(const char* configInputPath, int threads, bool skipLiquid, bool skipContinents, bool skipJunkMaps,
-        bool skipBattlegrounds, bool debug, const char* offMeshFilePath) :
+                           bool skipBattlegrounds, bool debug, const char* offMeshFilePath, const char* workdir) :
         m_taskQueue(new TaskQueue(this, threads)),
         m_debug(debug),
         m_skipContinents(skipContinents),
         m_skipJunkMaps(skipJunkMaps),
         m_skipBattlegrounds(skipBattlegrounds),
-        m_offMeshFilePath(offMeshFilePath)
+        m_offMeshFilePath(offMeshFilePath),
+        m_workdir(workdir)
     {
         std::ifstream jsonConfig(configInputPath);
         if (jsonConfig)
             m_config = json::parse(jsonConfig);
 
-        m_terrainBuilder = new TerrainBuilder(skipLiquid);
+        m_terrainBuilder = new TerrainBuilder(skipLiquid, workdir);
         m_rcContext = new rcContext(false);
 
         printf("Using %d thread(s) for processing.\n", threads);
@@ -140,9 +141,12 @@ namespace MMAP
         std::vector<std::string> files;
         uint32 mapID, tileX, tileY, tileID, count = 0;
         char filter[12];
+        char maps_dir[1024];
+        char vmaps_dir[1024];
 
         printf("Discovering maps... ");
-        getDirContents(files, "maps");
+        sprintf(maps_dir, "%s/maps", m_workdir);
+        getDirContents(files, maps_dir);
         for (uint32 i = 0; i < files.size(); ++i)
         {
             mapID = uint32(atoi(files[i].substr(0, 3).c_str()));
@@ -154,7 +158,8 @@ namespace MMAP
         }
 
         files.clear();
-        getDirContents(files, "vmaps", "*.vmtree");
+        sprintf(vmaps_dir, "%s/vmaps", m_workdir);
+        getDirContents(files, vmaps_dir, "*.vmtree");
         for (uint32 i = 0; i < files.size(); ++i)
         {
             mapID = uint32(atoi(files[i].substr(0, 3).c_str()));
@@ -172,7 +177,7 @@ namespace MMAP
 
             sprintf(filter, "%03u*.vmtile", mapID);
             files.clear();
-            getDirContents(files, "vmaps", filter);
+            getDirContents(files, vmaps_dir, filter);
             for (uint32 i = 0; i < files.size(); ++i)
             {
                 tileX = uint32(atoi(files[i].substr(7, 2).c_str()));
@@ -185,7 +190,7 @@ namespace MMAP
 
             sprintf(filter, "%03u*", mapID);
             files.clear();
-            getDirContents(files, "maps", filter);
+            getDirContents(files, maps_dir, filter);
             for (uint32 i = 0; i < files.size(); ++i)
             {
                 tileY = uint32(atoi(files[i].substr(3, 2).c_str()));
@@ -214,18 +219,20 @@ namespace MMAP
     /**************************************************************************/
     bool MapBuilder::IsMapDone(uint32 mapId) const
     {
-        const auto itr = std::find(m_mapDone.begin(), m_mapDone.end(), mapId);
+        auto itr = std::find(m_mapDone.begin(), m_mapDone.end(), mapId);
         return itr != m_mapDone.end();
     }
 
     /**************************************************************************/
-
     void MapBuilder::buildGameObject(std::string modelName, uint32 displayId)
     {
+        std::string fullName(m_workdir);
+        fullName += "/vmaps/" + modelName;
+
         printf("Building GameObject model %s\n", modelName.c_str());
         WorldModel m;
         MeshData meshData;
-        if (!m.readFile("vmaps/" + modelName))
+        if (!m.readFile(fullName))
         {
             printf("* Unable to open file\n");
             return;
@@ -408,7 +415,7 @@ namespace MMAP
         //fclose(file);
 
         char fileName[255];
-        sprintf(fileName, "mmaps/go%04u.mmtile", displayId);
+        sprintf(fileName, "%s/mmaps/go%04u.mmtile", m_workdir, displayId);
         FILE* file = fopen(fileName, "wb");
         if (!file)
         {
@@ -433,7 +440,8 @@ namespace MMAP
         {
             iv.generateObjFile(modelName, meshData);
             // Write navmesh data
-            std::string fname = "meshes/" + modelName + ".nav";
+            std::string fname = "/meshes/" + modelName + ".nav";
+            fname = m_workdir + fname;
             FILE* file = fopen(fname.c_str(), "wb");
             if (file)
             {
@@ -590,7 +598,7 @@ namespace MMAP
             }
 
             // passing by value
-            const auto builder = [=]()
+            auto builder = [=]()
             {
                 // build tile with copy version of the navmesh
                 buildTile(mapID, tileX, tileY, navMeshCopy, currentTile, uint32(tiles->size()));
@@ -703,8 +711,8 @@ namespace MMAP
             return;
         }
 
-        char fileName[25];
-        sprintf(fileName, "mmaps/%03u.mmap", mapID);
+        char fileName[1024];
+        sprintf(fileName, "%s/mmaps/%03u.mmap", m_workdir, mapID);
 
         FILE* file = fopen(fileName, "wb");
         if (!file)
@@ -731,7 +739,7 @@ namespace MMAP
         sprintf(tileString, "[Map %03i] [%02i,%02i]: ", mapID, tileX, tileY);
         printf("%s Building movemap tiles...                          \r", tileString);
 
-        IntermediateValues iv;
+        IntermediateValues iv(m_workdir);
 
         float* tVerts = meshData.solidVerts.getCArray();
         int tVertCount = meshData.solidVerts.size() / 3;
@@ -775,7 +783,12 @@ namespace MMAP
                 tileCfg.bmin[2] = config.bmin[2] + float(y * config.tileSize - config.borderSize) * config.cs;
                 tileCfg.bmax[0] = config.bmin[0] + float((x + 1) * config.tileSize + config.borderSize) * config.cs;
                 tileCfg.bmax[2] = config.bmin[2] + float((y + 1) * config.tileSize + config.borderSize) * config.cs;
-
+// 
+//                 float tbmin[2], tbmax[2];
+//                 tbmin[0] = tileCfg.bmin[0];
+//                 tbmin[1] = tileCfg.bmin[2];
+//                 tbmax[0] = tileCfg.bmax[0];
+//                 tbmax[1] = tileCfg.bmax[2];
                 buildCommonTile(tileString, tile, tileCfg, tVerts, tVertCount, tTris, tTriCount, lVerts, lVertCount, lTris, lTriCount, lTriFlags);
             }
         }
@@ -882,7 +895,7 @@ namespace MMAP
         do
         {
             // these values are checked within dtCreateNavMeshData - handle them here
-            // so we have a clear error message
+            // so we have a clear error messages
             if (params.nvp > DT_VERTS_PER_POLYGON)
             {
                 printf("%s Invalid verts-per-polygon value!                   \n", tileString);
@@ -937,8 +950,8 @@ namespace MMAP
             }
 
             // file output
-            char fileName[255];
-            sprintf(fileName, "mmaps/%03u%02i%02i.mmtile", mapID, tileY, tileX);
+            char fileName[1024];
+            sprintf(fileName, "%s/mmaps/%03u%02i%02i.mmtile", m_workdir, mapID, tileY, tileX);
             FILE* file = fopen(fileName, "wb");
             if (!file)
             {
@@ -1162,7 +1175,7 @@ namespace MMAP
     bool MapBuilder::shouldSkipTile(uint32 mapID, uint32 tileX, uint32 tileY)
     {
         char fileName[255];
-        sprintf(fileName, "mmaps/%03u%02i%02i.mmtile", mapID, tileY, tileX);
+        sprintf(fileName, "%s/mmaps/%03u%02i%02i.mmtile", m_workdir, mapID, tileY, tileX);
         FILE* file = fopen(fileName, "rb");
         if (!file)
             return false;
@@ -1184,8 +1197,7 @@ namespace MMAP
 
     json MapBuilder::getDefaultConfig()
     {
-        return
-        {
+        return {
             {"borderSize", 5},
             {"detailSampleDist", 2.0f},
             {"detailSampleMaxError", BASE_UNIT_DIM * 2},

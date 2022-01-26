@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef VMAPEXPORT_H
-#define VMAPEXPORT_H
+#pragma once
 
 #define __STDC_LIMIT_MACROS
 
@@ -38,7 +37,8 @@ enum ModelFlags
 
 struct WMODoodadData;
 
-extern const char* szWorkDirWmo;
+const int path_l = 1024;
+extern char szWorkDirWmo[path_l + 512];
 extern const char* szRawVMAPMagic;                          // vmap magic string for extracted raw vmap data
 extern std::unordered_map<std::string, WMODoodadData> WmoDoodads;
 
@@ -56,5 +56,3 @@ bool ExtractSingleWmo(std::string& fname);
 bool ExtractSingleModel(std::string& origPath, std::string& fixedName, StringSet& failedPaths);
 
 void ExtractGameobjectModels();
-
-#endif
