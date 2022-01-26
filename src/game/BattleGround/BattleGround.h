@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __BATTLEGROUND_H
-#define __BATTLEGROUND_H
+#pragma once
 
 #include "Common.h"
 #include "Globals/SharedDefines.h"
@@ -26,14 +25,13 @@
 #include "Entities/ObjectGuid.h"
 
 // magic event-numbers
-#define BG_EVENT_NONE 255
+constexpr auto BG_EVENT_NONE{ 255 };
 // those generic events should get a high event id
-#define BG_EVENT_DOOR 254
+constexpr auto BG_EVENT_DOOR{ 254 };
 // only arena event
 // cause this buff apears 90sec after start in every bg i implement it here
-#define ARENA_BUFF_EVENT 253
-#define ARENA_TIMELIMIT_POINTS_LOSS -16
-
+constexpr auto ARENA_BUFF_EVENT{ 253 };
+constexpr auto ARENA_TIMELIMIT_POINTS_LOSS{ -16 };
 
 class Creature;
 class GameObject;
@@ -253,7 +251,7 @@ class BattleGroundScore
 {
     public:
         BattleGroundScore() : killingBlows(0), deaths(0), honorableKills(0),
-            bonusHonor(0), damageDone(0), healingDone(0)
+            bonusHonor(0), damageDone(0), healingDone(0), Team(ALLIANCE)
         {}
         virtual ~BattleGroundScore() {}                     // virtual destructor is used when deleting score from scores map
 
@@ -276,6 +274,7 @@ class BattleGroundScore
         uint32 bonusHonor;
         uint32 damageDone;
         uint32 healingDone;
+        uint32 Team;
 };
 
 /*
@@ -738,5 +737,3 @@ inline void FillInitialWorldState(ByteBuffer& data, uint32& count, WorldStatePai
         ++count;
     }
 }
-
-#endif
