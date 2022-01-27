@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MANGOS_SPAWN_GROUP_DEFINE_H
-#define MANGOS_SPAWN_GROUP_DEFINE_H
+#pragma once
 
 #include "Platform/Define.h"
 #include <string>
@@ -55,6 +54,8 @@ struct SpawnGroupDbGuids
     uint32 Id;
     uint32 DbGuid;
     int32 SlotId;
+    uint32 OwnEntry;
+    bool RandomEntry;
 };
 
 enum SpawnGroupType
@@ -148,5 +149,3 @@ struct SpawnGroupEntryContainer
     std::map<uint32, SpawnGroupEntry> spawnGroupMap;
     std::map<std::pair<uint32, uint32>, SpawnGroupEntry*> spawnGroupByGuidMap;
 };
-
-#endif
