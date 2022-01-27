@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _MMAP_TERRAIN_BUILDER_H
-#define _MMAP_TERRAIN_BUILDER_H
+#pragma once
 
 #include "MMapCommon.h"
 #include "MotionGenerators/MoveMapSharedDefines.h"
@@ -82,7 +81,7 @@ namespace MMAP
     class TerrainBuilder
     {
         public:
-            TerrainBuilder(bool skipLiquid, const char* workdir);
+            TerrainBuilder(bool skipLiquid, const char* workdir = "./");
             ~TerrainBuilder();
 
             void loadMap(uint32 mapID, uint32 tileX, uint32 tileY, MeshData& meshData);
@@ -134,5 +133,3 @@ namespace MMAP
             TerrainBuilder(const TerrainBuilder& tb);
     };
 }
-
-#endif
