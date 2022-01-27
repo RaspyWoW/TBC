@@ -523,6 +523,7 @@ ChatCommand* ChatHandler::getCommandTable()
         { "spawndist",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcSpawnDistCommand,        "", nullptr },
         { "spawntime",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcSpawnTimeCommand,        "", nullptr },
         { "say",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcSayCommand,              "", nullptr },
+        { "spelllist",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcListSpells,              "", nullptr },
         { "textemote",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcTextEmoteCommand,        "", nullptr },
         { "unfollow",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcUnFollowCommand,         "", nullptr },
         { "whisper",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcWhisperCommand,          "", nullptr },

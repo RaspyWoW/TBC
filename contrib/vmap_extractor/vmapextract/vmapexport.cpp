@@ -66,16 +66,17 @@ typedef struct
 map_id* map_ids;
 uint16* LiqType = 0;
 uint32 map_count;
-char output_path[128] = ".";
-char input_path[1024] = ".";
+char output_path[path_l] = ".";
+char input_path[path_l] = ".";
 bool hasInputPathParam = false;
+bool hasOutputPathParam = false;
 bool preciseVectorData = false;
 std::unordered_map<std::string, WMODoodadData> WmoDoodads;
 
 // Constants
 
 //static const char * szWorkDirMaps = ".\\Maps";
-const char* szWorkDirWmo = "./Buildings";
+char szWorkDirWmo[path_l + 512];
 const char* szRawVMAPMagic = "VMAPs05";
 
 std::map<std::pair<uint32, uint16>, uint32> uniqueObjectIds;
@@ -156,7 +157,7 @@ bool ExtractSingleWmo(std::string& fname)
 {
     // Copy files from archive
 
-    char szLocalFile[1024];
+    char szLocalFile[path_l + 512];
     char* plain_name = GetPlainName(&fname[0]);
     fixnamen(plain_name, strlen(plain_name));
     fixname2(plain_name, strlen(plain_name));
@@ -211,7 +212,7 @@ bool ExtractSingleWmo(std::string& fname)
             strcpy(temp, fname.c_str());
             temp[fname.length() - 4] = 0;
             char groupFileName[1500];
-            const int snRes = snprintf(groupFileName, sizeof(groupFileName), "%s_%03d.wmo", temp, i);
+            const auto snRes = snprintf(groupFileName, sizeof(groupFileName), "%s_%03d.wmo", temp, i);
             if (snRes < 0 || snRes >= sizeof(groupFileName))
             {
                 printf("ERROR: WMO Path is too long!\n");
@@ -344,7 +345,7 @@ bool fillArchiveNameVector(std::vector<std::string>& pArchiveNames)
 
     printf("\nGame path: %s\n", input_path);
 
-    char path[1500];
+    char path[path_l + 512];
     string in_path(input_path);
     std::vector<std::string> locales, searchLocales;
 
@@ -389,7 +390,7 @@ bool fillArchiveNameVector(std::vector<std::string>& pArchiveNames)
 
     // now, scan for the patch levels in the core dir
     printf("Scanning patch levels from data directory.\n");
-    const int snRes = snprintf(path, sizeof(path), "%spatch", input_path);
+    const auto snRes = snprintf(path, sizeof(path), "%spatch", input_path);
     if (snRes < 0 || snRes >= sizeof(path))
     {
         printf("ERROR: Path is too long!\n");
@@ -405,7 +406,7 @@ bool fillArchiveNameVector(std::vector<std::string>& pArchiveNames)
     for (std::vector<std::string>::iterator i = locales.begin(); i != locales.end(); ++i)
     {
         printf("Locale: %s\n", i->c_str());
-        const int snRes = snprintf(path, sizeof(path), "%s%s/patch-%s", input_path, i->c_str(), i->c_str());
+       const auto snRes = snprintf(path, sizeof(path), "%s%s/patch-%s", input_path, i->c_str(), i->c_str());
         if (snRes < 0 || snRes >= sizeof(path))
         {
             printf("ERROR: Path is too long!\n");
@@ -432,6 +433,7 @@ bool processArgv(int argc, char** argv)
     bool result = true;
     hasInputPathParam = false;
     preciseVectorData = false;
+    sprintf(szWorkDirWmo, "%s", "./Buildings");
 
     for (int i = 1; i < argc; ++i)
     {
@@ -447,6 +449,22 @@ bool processArgv(int argc, char** argv)
                 strcpy(input_path, argv[i + 1]);
                 if (input_path[strlen(input_path) - 1] != '\\' && input_path[strlen(input_path) - 1] != '/')
                     strcat(input_path, "/");
+                ++i;
+            }
+            else
+            {
+                result = false;
+            }
+        }
+        else if (strcmp("-o", argv[i]) == 0)
+        {
+            if ((i + 1) < argc)
+            {
+                hasOutputPathParam = true;
+                strcpy(output_path, argv[i + 1]);
+                if (output_path[strlen(output_path) - 1] != '\\' && output_path[strlen(output_path) - 1] != '/')
+                    strcat(output_path, "/");
+                sprintf(szWorkDirWmo, "%s/Buildings", output_path);
                 ++i;
             }
             else
@@ -475,6 +493,7 @@ bool processArgv(int argc, char** argv)
         printf("   -s : (default) small size (data size optimization), ~500MB less vmap data.\n");
         printf("   -l : large size, ~500MB more vmap data. (might contain more details)\n");
         printf("   -d <path>: Path to the vector data source folder.\n");
+        printf("   -o <path>: Path to the output folder.\n");
         printf("   -? : This message.\n");
     }
     return result;
