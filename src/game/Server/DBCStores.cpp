@@ -213,7 +213,7 @@ inline void LoadDBC(uint32& availableDbcLocales, BarGoLink& bar, StoreProblemLis
     // compatibility format and C++ structure sizes
     MANGOS_ASSERT(DBCFileLoader::GetFormatRecordSize(storage.GetFormat()) == sizeof(T) || LoadDBC_assert_print(DBCFileLoader::GetFormatRecordSize(storage.GetFormat()), sizeof(T), filename));
 
-    std::string dbc_filename = dbc_path + filename;
+    const std::string dbc_filename = dbc_path + filename;
     if (storage.Load(dbc_filename.c_str()))
     {
         bar.step();
@@ -249,7 +249,7 @@ void LoadDBCStores(const std::string& dataPath)
 
     if (!std::filesystem::exists(dbcPath))
     {
-        sLog.outError("DBC directory does not exist", dataPath.c_str());
+        sLog.outError("DBC directory %s does not exist", dataPath.c_str());
         Log::WaitBeforeContinueIfNeed();
         exit(1);
     }
