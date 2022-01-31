@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __BATTLEGROUNDEY_H
-#define __BATTLEGROUNDEY_H
+#pragma once
 
 #include "Tools/Language.h"
 
@@ -25,9 +24,9 @@ class BattleGround;
 
 enum EYUpdateTimers
 {
-    EY_FLAG_RESPAWN_TIME                                = 10 * IN_MILLISECONDS,
-    EY_RESOURCES_UPDATE_TIME                            = 2 * IN_MILLISECONDS,
-    EY_FEL_REAVER_FLAG_UPDATE_TIME                      = 1 * IN_MILLISECONDS,
+    EY_FLAG_RESPAWN_TIME = 10 * IN_MILLISECONDS,
+    EY_RESOURCES_UPDATE_TIME = 2 * IN_MILLISECONDS,
+    EY_FEL_REAVER_FLAG_UPDATE_TIME = 1 * IN_MILLISECONDS,
 };
 
 enum EYWorldStates
@@ -206,11 +205,11 @@ enum EYFlagState
     EY_FLAG_STATE_ON_GROUND             = 4
 };
 
-static const uint8 eyTickPoints[EY_MAX_NODES] = {1, 2, 5, 10};
-static const uint32 eyFlagPoints[EY_MAX_NODES] = {75, 85, 100, 500};
+static constexpr uint8 eyTickPoints[EY_MAX_NODES] = {1, 2, 5, 10};
+static constexpr uint32 eyFlagPoints[EY_MAX_NODES] = {75, 85, 100, 500};
 
-static const uint32 eyGraveyards[EY_MAX_NODES] = {GRAVEYARD_FEL_REAVER_RUINS, GRAVEYARD_BLOOD_ELF_TOWER, GRAVEYARD_DRAENEI_RUINS, GRAVEYARD_MAGE_TOWER};
-static const uint32 eyTriggers[EY_MAX_NODES] = {AREATRIGGER_FEL_REAVER_RUINS_BUFF, AREATRIGGER_BLOOD_ELF_TOWER_BUFF, AREATRIGGER_DRAENEI_RUINS_BUFF, AREATRIGGER_MAGE_TOWER_BUFF};
+static constexpr uint32 eyGraveyards[EY_MAX_NODES] = {GRAVEYARD_FEL_REAVER_RUINS, GRAVEYARD_BLOOD_ELF_TOWER, GRAVEYARD_DRAENEI_RUINS, GRAVEYARD_MAGE_TOWER};
+static constexpr uint32 eyTriggers[EY_MAX_NODES] = {AREATRIGGER_FEL_REAVER_RUINS_BUFF, AREATRIGGER_BLOOD_ELF_TOWER_BUFF, AREATRIGGER_DRAENEI_RUINS_BUFF, AREATRIGGER_MAGE_TOWER_BUFF};
 
 struct EYTowerEvent
 {
@@ -248,7 +247,7 @@ static const EYTowerEvent eyTowerEvents[EY_MAX_NODES][4] =
     },
 };
 
-static const uint32 eyTowers[EY_MAX_NODES] = {GO_CAPTURE_POINT_FEL_REAVER_RUINS, GO_CAPTURE_POINT_BLOOD_ELF_TOWER, GO_CAPTURE_POINT_DRAENEI_RUINS, GO_CAPTURE_POINT_MAGE_TOWER};
+static constexpr uint32 eyTowers[EY_MAX_NODES] = {GO_CAPTURE_POINT_FEL_REAVER_RUINS, GO_CAPTURE_POINT_BLOOD_ELF_TOWER, GO_CAPTURE_POINT_DRAENEI_RUINS, GO_CAPTURE_POINT_MAGE_TOWER};
 
 class BattleGroundEYScore : public BattleGroundScore
 {
@@ -314,7 +313,7 @@ class BattleGroundEY : public BattleGround
         EYFlagState m_flagState;
         ObjectGuid m_flagCarrier;
         ObjectGuid m_droppedFlagGuid;
-        ObjectGuid m_mainFlagGuid;
+        uint32 m_mainFlagDbGuid;
 
         uint8 m_towersAlliance;
         uint8 m_towersHorde;
@@ -330,4 +329,3 @@ class BattleGroundEY : public BattleGround
         uint32 m_flagRespawnTimer;
         uint32 m_resourceUpdateTimer;
 };
-#endif
