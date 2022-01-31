@@ -3874,14 +3874,22 @@ void Spell::SendCastResult(Player const* caster, SpellEntry const* spellInfo, ui
         case SPELL_FAILED_EQUIPPED_ITEM_CLASS_OFFHAND:
             data << uint32(spellInfo->EquippedItemClass);
             data << uint32(spellInfo->EquippedItemSubClassMask);
-            data << uint32(spellInfo->EquippedItemInventoryTypeMask);
             break;
-        case SPELL_FAILED_PROSPECT_NEED_MORE:
+        case SPELL_FAILED_NEED_EXOTIC_AMMO:
+            data << uint32(spellInfo->EquippedItemSubClassMask);
+            break;
+        case SPELL_FAILED_NEED_MORE_ITEMS:
             data << param1;
             data << param2;
             break;
         case SPELL_FAILED_PREVENTED_BY_MECHANIC:
             data << param1;
+            break;
+        case SPELL_FAILED_REAGENTS:
+            data << param1;                                 // item id
+            break;
+        case SPELL_FAILED_MIN_SKILL:
+            data << uint32(0);                              // SkillLine.dbc id
             break;
         default:
             break;
@@ -6612,8 +6620,9 @@ SpellCastResult Spell::CheckItems()
     // if not item target then required item must be equipped (for triggered case not report error)
     else
     {
-        if (m_caster->IsPlayer() && !static_cast<Player*>(m_caster)->HasItemFitToSpellReqirements(m_spellInfo))
-            return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_EQUIPPED_ITEM_CLASS;
+        uint32 error = SPELL_FAILED_EQUIPPED_ITEM_CLASS;
+        if (m_caster->IsPlayer() && !static_cast<Player*>(m_caster)->HasItemFitToSpellReqirements(m_spellInfo, nullptr, &error))
+            return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT : SpellCastResult(error);
     }
 
     // check reagents (ignore triggered spells with reagents processed by original spell) and special reagent ignore case.
@@ -6648,7 +6657,10 @@ SpellCastResult Spell::CheckItems()
                 }
 
                 if (!p_caster->HasItemCount(itemid, itemcount))
+                {
+                    m_param1 = itemid;
                     return SPELL_FAILED_REAGENTS;
+                }
             }
         }
 
@@ -6804,7 +6816,7 @@ SpellCastResult Spell::CheckItems()
                 {
                     m_param1 = itemTarget->GetEntry();
                     m_param2 = requiredCount - int32(itemTarget->GetCount());
-                    return SPELL_FAILED_PROSPECT_NEED_MORE;
+                    return SPELL_FAILED_NEED_MORE_ITEMS;
                 }
 
                 if (!LootTemplates_Prospecting.HaveLootFor(m_targets.getItemTargetEntry()))
