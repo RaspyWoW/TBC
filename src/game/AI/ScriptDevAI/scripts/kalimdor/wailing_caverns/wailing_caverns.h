@@ -2,8 +2,7 @@
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
-#ifndef DEF_WAILING_CAVERNS_H
-#define DEF_WAILING_CAVERNS_H
+#pragma once
 
 enum
 {
@@ -44,8 +43,11 @@ class instance_wailing_caverns : public ScriptedInstance
         const char* Save() const override { return m_strInstData.c_str(); }
         void Load(const char* chrIn) override;
 
+        void DespawnAll(); // After naralex leaves
+
     protected:
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         std::string m_strInstData;
+
+        GuidVector m_spawns;
 };
-#endif
