@@ -966,17 +966,16 @@ int32 Pet::GetTPForSpell(uint32 spellid) const
 
     SkillLineAbilityMapBounds bounds = sSpellMgr.GetSkillLineAbilityMapBoundsBySpellId(spellid);
 
-    for (SkillLineAbilityMap::const_iterator _spell_idx = bounds.first; _spell_idx != bounds.second; ++_spell_idx)
+    if (bounds.first != bounds.second)
     {
-        if (!_spell_idx->second->reqtrainpoints)
-            return 0;
+        basetrainp = bounds.first->second->reqtrainpoints;
 
-        basetrainp = _spell_idx->second->reqtrainpoints;
-        break;
+        if (basetrainp == 0)
+            return 0;
     }
 
     uint32 spenttrainp = 0;
-    uint32 chainstart = sSpellMgr.GetFirstSpellInChain(spellid);
+    const uint32 chainstart = sSpellMgr.GetFirstSpellInChain(spellid);
 
     for (PetSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {

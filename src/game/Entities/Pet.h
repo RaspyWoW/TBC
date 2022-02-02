@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MANGOSSERVER_PET_H
-#define MANGOSSERVER_PET_H
+#pragma once
 
 #include "Common.h"
 #include "Entities/ObjectGuid.h"
@@ -326,4 +325,3 @@ class Pet : public Creature
             MANGOS_ASSERT(false);
         }
 };
-#endif
